@@ -1,0 +1,32 @@
+{
+    "title": "Get in Touch",
+    "subtitle": "Have questions about our missing persons platform? Need help uploading a photo? We're here to support you every step of the way.",
+    "emergency": {
+        "title": "Emergency?",
+        "description": "If you have immediate information about a missing person or need urgent assistance, please contact local authorities immediately."
+    },
+    "form": {
+        "title": "Send us a message",
+        "subjects": {
+            "reportMissing": "Report a Missing Person",
+            "reportSighting": "Report a Sighting",
+            "techSupport": "Technical Support",
+            "general": "General Inquiry",
+            "partnership": "Partnership Inquiry"
+        },
+        "messagePlaceholder": "How can we help you?",
+        "submitButton": "Send Message"
+    },
+    "otherWays": {
+        "title": "Other Ways to Reach Us",
+        "email": "Email",
+        "hotline": "24/7 Hotline",
+        "liveChat": "Live Chat",
+        "availability": "Available 24/7"
+    },
+    "faq": {
+        "title": "Have Questions?",
+        "description": "Check out our FAQ section for quick answers to common questions.",
+        "button": "View FAQ"
+    }
+}

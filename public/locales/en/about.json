@@ -1,0 +1,49 @@
+{
+    "hero": {
+        "title": "Reuniting Families, One Photo at a Time",
+        "subtitle": "We're on a mission to help families find their missing loved ones through the power of community and technology."
+    },
+    "mission": {
+        "title": "Our Mission",
+        "description": "Every day, families around the world search desperately for their missing loved ones. Lqani.ma harnesses the power of community and advanced photo-matching technology to help reunite families and bring hope to those who need it most."
+    },
+    "howItWorks": {
+        "title": "How It Works",
+        "step1": {
+            "title": "Upload a Photo",
+            "description": "Family members upload photos of their missing loved ones with relevant details."
+        },
+        "step2": {
+            "title": "Community Reports",
+            "description": "Community members who encounter someone upload their photo to help identify them."
+        },
+        "step3": {
+            "title": "AI Matching",
+            "description": "Our advanced AI compares photos to find potential matches."
+        },
+        "step4": {
+            "title": "Reunite Families",
+            "description": "When a match is found, we notify both parties to help facilitate reunion."
+        }
+    },
+    "values": {
+        "title": "Our Core Values",
+        "privacy": {
+            "title": "Privacy First",
+            "description": "Your data is encrypted and protected. We never share personal information without consent."
+        },
+        "community": {
+            "title": "Community Powered",
+            "description": "Every member of our community plays a vital role in reuniting families."
+        },
+        "compassion": {
+            "title": "Compassion Driven",
+            "description": "We understand the pain of separation and work tirelessly to bring families together."
+        }
+    },
+    "cta": {
+        "title": "Join Us in Making a Difference",
+        "description": "Whether you're searching for a loved one or want to help others, your participation matters.",
+        "button": "Get Started Today"
+    }
+}

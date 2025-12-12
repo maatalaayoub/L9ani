@@ -1,0 +1,12 @@
+{
+    "title": "My Reports",
+    "subtitle": "View and manage your missing person reports",
+    "noReports": {
+        "title": "No Reports Yet",
+        "description": "You haven't created any missing person reports yet. Upload a photo to get started.",
+        "button": "Create New Report"
+    },
+    "reportedOn": "Reported on",
+    "viewDetails": "View Details",
+    "edit": "Edit"
+}

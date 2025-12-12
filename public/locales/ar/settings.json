@@ -1,0 +1,25 @@
+{
+    "title": "الإعدادات",
+    "subtitle": "إدارة تفضيلات التطبيق والتنبيهات الخاصة بك.",
+    "appearance": {
+        "title": "المظهر",
+        "themePreference": "تفضيلات المظهر",
+        "language": "اللغة",
+        "themes": {
+            "light": "فاتح",
+            "dark": "داكن",
+            "system": "تلقائي"
+        }
+    },
+    "notifications": {
+        "title": "الإشعارات",
+        "sightingAlerts": {
+            "title": "تنبيهات المشاهدة",
+            "description": "احصل على إشعار عند العثور على تطابقات محتملة"
+        },
+        "newDeviceLogin": {
+            "title": "تسجيل دخول من جهاز جديد",
+            "description": "تنبيهات أمنية للأجهزة غير المعروفة"
+        }
+    }
+}

@@ -1,0 +1,92 @@
+{
+    "defaultUsername": "username",
+    "buttons": {
+        "editProfile": "Edit Profile",
+        "saving": "Saving...",
+        "saveChanges": "Save Changes"
+    },
+    "chooseAvatar": "Choose an Avatar",
+    "sections": {
+        "personalInfo": "Personal Information",
+        "accountStatus": "Account Status"
+    },
+    "labels": {
+        "userId": "User ID",
+        "memberSince": "Member Since",
+        "plan": "Plan",
+        "freeTier": "Free Tier"
+    },
+    "notSet": "Not set",
+    "errors": {
+        "sessionInvalid": "Session invalid (User not found). Please Sign Out and Log In again.",
+        "updateFailed": "Error updating profile: ",
+        "invalidCode": "Invalid verification code",
+        "verificationFailed": "Verification failed",
+        "resendFailed": "Failed to resend code",
+        "invalidEmail": "Please enter a valid email",
+        "emailInUse": "Email is already in use",
+        "requestFailed": "Failed to request email change",
+        "updateEmailFailed": "Failed to update email",
+        "verifyCodeFailed": "Failed to verify code",
+        "deleteFailed": "Failed to delete account. Please try again."
+    },
+    "username": {
+        "empty": "Username cannot be empty",
+        "tooShort": "Username must be at least 3 characters",
+        "tooLong": "Username cannot exceed 20 characters",
+        "startNumber": "Username cannot start with a number",
+        "invalidChars": "Only letters, numbers, \"_\" and \".\" are allowed",
+        "verifyError": "Could not verify username"
+    },
+    "verify": {
+        "button": "Verify",
+        "title": "Check your email",
+        "description": "We've sent a 6-digit confirmation code to",
+        "didNotReceive": "Didn't receive the code?",
+        "clickToResend": "Click to resend",
+        "sending": "Sending...",
+        "verifyCode": "Verify Code",
+        "verifying": "Verifying...",
+        "success": {
+            "title": "Verified!",
+            "description": "Your account is now fully active.",
+            "codeResent": "New code sent! Check your email."
+        }
+    },
+    "emailChange": {
+        "title": "Change Email",
+        "step1": {
+            "description": "Enter your new email address. We will verify your identity first.",
+            "placeholder": "New Email Address",
+            "button": "Continue",
+            "sending": "Sending Code..."
+        },
+        "step2": {
+            "title": "Security Check",
+            "description": "Please enter the code sent to your",
+            "currentEmail": "current email",
+            "authorize": "to authorize this change.",
+            "button": "Confirm Change",
+            "verifying": "Verifying..."
+        },
+        "step3": {
+            "title": "Email Updated!",
+            "description": "Please verify your new email address."
+        }
+    },
+    "dangerZone": {
+        "title": "Danger Zone",
+        "deleteAccount": "Delete Account",
+        "description": "Permanently delete your account and all your data. This action cannot be undone.",
+        "confirmModal": {
+            "title": "Delete Account?",
+            "description": "Are you sure you want to delete your account? This action is",
+            "irreversible": "irreversible",
+            "suffix": "and ensures all your data is permanently removed."
+        },
+        "buttons": {
+            "confirm": "Confirm Delete",
+            "deleting": "Deleting..."
+        }
+    }
+}

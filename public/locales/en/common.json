@@ -1,0 +1,47 @@
+{
+    "buttons": {
+        "login": "Log in",
+        "signup": "Sign up",
+        "logout": "Logout",
+        "save": "Save",
+        "cancel": "Cancel",
+        "submit": "Submit",
+        "close": "Close",
+        "back": "Back",
+        "next": "Next",
+        "upload": "Upload",
+        "delete": "Delete",
+        "edit": "Edit",
+        "view": "View"
+    },
+    "labels": {
+        "email": "Email",
+        "password": "Password",
+        "username": "Username",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "phone": "Phone Number",
+        "message": "Message",
+        "subject": "Subject",
+        "name": "Name"
+    },
+    "messages": {
+        "loading": "Loading...",
+        "success": "Success!",
+        "error": "An error occurred",
+        "noData": "No data available",
+        "loginRequired": "Login Required",
+        "pleaseLogin": "Please log in to continue",
+        "pageNotFound": "Page Not Found",
+        "pageNotFoundDesc": "Oops! The page you are looking for has been removed or relocated.",
+        "goHome": "Go Back Home"
+    },
+    "navigation": {
+        "home": "Home",
+        "about": "About",
+        "contact": "Contact",
+        "profile": "Profile",
+        "settings": "Settings",
+        "myReport": "My Report"
+    }
+}

@@ -1,0 +1,33 @@
+{
+    "hero": {
+        "title": "Help Find Missing Loved Ones",
+        "subtitle": "Together, we can reunite families through the power of community and advanced photo matching technology.",
+        "uploadButton": "Upload a Photo",
+        "reportSighting": "Report a Sighting"
+    },
+    "features": {
+        "title": "How We Help",
+        "upload": {
+            "title": "Upload Photos",
+            "description": "Share photos of missing loved ones or report sightings to help families reconnect."
+        },
+        "match": {
+            "title": "AI Matching",
+            "description": "Our advanced technology compares photos to find potential matches quickly and accurately."
+        },
+        "reunite": {
+            "title": "Reunite Families",
+            "description": "When matches are found, we help facilitate safe communication and reunification."
+        }
+    },
+    "stats": {
+        "families": "Families Helped",
+        "photos": "Photos Uploaded",
+        "matches": "Successful Matches"
+    },
+    "cta": {
+        "title": "Ready to Help?",
+        "description": "Join thousands of community members who are making a difference every day.",
+        "button": "Get Started"
+    }
+}

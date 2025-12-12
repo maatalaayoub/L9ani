@@ -1,65 +1,105 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useRef } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import { supabase } from '@/lib/supabase';
 
 const CryptoContext = createContext();
 
 export function CryptoProvider({ children }) {
-    const [coins, setCoins] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [isSearchFocused, setIsSearchFocused] = useState(false);
+    const [user, setUser] = useState(null);
+    const [profile, setProfile] = useState(null);
+    const [isAuthLoading, setIsAuthLoading] = useState(true);
 
-    // Cache reference to avoid reloading if we already have data
-    const dataFetchedRef = useRef(false);
+    // Check for existing session on mount
+    useEffect(() => {
+        const initializeSession = async () => {
+            try {
+                const storedToken = localStorage.getItem('supabase_token');
+                const storedUser = localStorage.getItem('supabase_user');
 
-    const fetchCoins = async () => {
-        // If we already have data, don't set loading to true to avoid flicker
-        if (!dataFetchedRef.current) {
-            setLoading(true);
-        }
-        setError(null);
+                if (storedToken && storedUser) {
+                    // Restore session to Supabase client
+                    const { data, error } = await supabase.auth.setSession({
+                        access_token: storedToken,
+                        refresh_token: localStorage.getItem('supabase_refresh_token') || '',
+                    });
 
-        try {
-            // Fetching 100 coins with sparkline data, price changes, etc.
-            // vs_currency: usd
-            // order: market_cap_desc
-            // per_page: 100
-            // page: 1
-            // sparkline: true
-            // price_change_percentage: 1h,24h,7d
-            const res = await fetch(
-                "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=true&price_change_percentage=1h,24h,7d"
-            );
-
-            if (!res.ok) {
-                throw new Error("Failed to fetch data from CoinGecko");
+                    if (!error && data?.user) {
+                        // Use fresh user data from the session
+                        const freshUser = data.user;
+                        setUser(freshUser);
+                        localStorage.setItem('supabase_user', JSON.stringify(freshUser));
+                        await fetchProfile(freshUser.id);
+                    } else if (!error) {
+                        // Fallback to stored user
+                        const parsedUser = JSON.parse(storedUser);
+                        setUser(parsedUser);
+                        await fetchProfile(parsedUser.id);
+                    } else {
+                        // Token invalid/expired
+                        logout();
+                    }
+                }
+            } catch (error) {
+                console.error("Session initialization error:", error);
+            } finally {
+                setIsAuthLoading(false);
             }
+        };
 
-            const data = await res.json();
-            setCoins(data);
-            dataFetchedRef.current = true;
-        } catch (err) {
-            console.error(err);
-            setError(err.message);
-        } finally {
-            if (loading) setLoading(false);
+        initializeSession();
+    }, []);
+
+    const fetchProfile = async (userId) => {
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('auth_user_id', userId)
+                .single();
+
+            if (data) setProfile(data);
+        } catch (error) {
+            console.error('Error loading profile', error);
         }
     };
 
-    useEffect(() => {
-        // Initial fetch
-        fetchCoins();
+    const login = async (sessionData, userData) => {
+        localStorage.setItem('supabase_token', sessionData.access_token);
+        localStorage.setItem('supabase_refresh_token', sessionData.refresh_token);
+        localStorage.setItem('supabase_user', JSON.stringify(userData));
 
-        // Poll every 60 seconds to respect public API rate limits (usually 10-30 req/min depending on load)
-        const interval = setInterval(() => {
-            fetchCoins();
-        }, 60000);
+        // Set session on the supabase client so RLS works
+        await supabase.auth.setSession({
+            access_token: sessionData.access_token,
+            refresh_token: sessionData.refresh_token,
+        });
 
-        return () => clearInterval(interval);
-    }, []);
+        setUser(userData);
+        fetchProfile(userData.id);
+    };
+
+    const logout = async () => {
+        await supabase.auth.signOut();
+        localStorage.removeItem('supabase_token');
+        localStorage.removeItem('supabase_refresh_token');
+        localStorage.removeItem('supabase_user');
+        setUser(null);
+        setProfile(null);
+        window.location.reload();
+    };
 
     return (
-        <CryptoContext.Provider value={{ coins, loading, error, refresh: fetchCoins }}>
+        <CryptoContext.Provider value={{
+            isSearchFocused,
+            setIsSearchFocused,
+            user,
+            profile,
+            login,
+            logout,
+            isAuthLoading
+        }}>
             {children}
         </CryptoContext.Provider>
     );

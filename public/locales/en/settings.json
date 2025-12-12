@@ -1,0 +1,25 @@
+{
+    "title": "Settings",
+    "subtitle": "Manage your application preferences and alerts.",
+    "appearance": {
+        "title": "Appearance",
+        "themePreference": "Theme Preference",
+        "language": "Language",
+        "themes": {
+            "light": "Light",
+            "dark": "Dark",
+            "system": "System"
+        }
+    },
+    "notifications": {
+        "title": "Notifications",
+        "sightingAlerts": {
+            "title": "Sighting Alerts",
+            "description": "Get notified when potential matches are found"
+        },
+        "newDeviceLogin": {
+            "title": "New Device Login",
+            "description": "Security alerts for unrecognized devices"
+        }
+    }
+}
