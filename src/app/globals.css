@@ -341,3 +341,173 @@ html[dir="rtl"] .sidebar-item {
   background: inherit;
   animation: pulse-ring 1.5s ease-out infinite;
 }
+
+/* ============================================
+   OPENLAYERS MAP STYLING - Modern & Stylish
+   ============================================ */
+
+/* Map container styling */
+.ol-viewport {
+  border-radius: 0.5rem;
+  cursor: pointer !important;
+}
+
+.ol-viewport canvas {
+  border-radius: 0.5rem;
+}
+
+/* Zoom controls styling - Glass morphism effect */
+.ol-zoom {
+  top: 12px;
+  left: auto !important;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: transparent !important;
+}
+
+.ol-zoom button {
+  width: 36px !important;
+  height: 36px !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #374151 !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-size: 20px !important;
+  font-weight: 300 !important;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 0 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.ol-zoom button:hover {
+  background: rgba(249, 115, 22, 0.95) !important;
+  color: white !important;
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.35), 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.ol-zoom button:active {
+  transform: scale(0.98);
+}
+
+.ol-zoom button:focus {
+  outline: none !important;
+}
+
+/* Dark mode zoom controls */
+.dark .ol-zoom button {
+  background: rgba(31, 41, 55, 0.95) !important;
+  color: #e5e7eb !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+}
+
+.dark .ol-zoom button:hover {
+  background: rgba(249, 115, 22, 0.95) !important;
+  color: white !important;
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4), 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Attribution styling - Minimal and clean */
+.ol-attribution {
+  bottom: 8px;
+  right: 8px;
+  max-width: calc(100% - 1rem);
+  background: transparent !important;
+}
+
+.ol-attribution:not(.ol-collapsed) {
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.ol-attribution ul {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.ol-attribution button {
+  display: none !important;
+}
+
+.ol-attribution a {
+  color: #6b7280 !important;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.ol-attribution a:hover {
+  color: #f97316 !important;
+}
+
+.dark .ol-attribution:not(.ol-collapsed) {
+  background: rgba(17, 24, 39, 0.85) !important;
+}
+
+.dark .ol-attribution a {
+  color: #9ca3af !important;
+}
+
+.dark .ol-attribution a:hover {
+  color: #fb923c !important;
+}
+
+/* Hide rotate control */
+.ol-rotate {
+  display: none !important;
+}
+
+/* Smooth map interactions */
+.ol-viewport {
+  transition: filter 0.3s ease;
+}
+
+/* Map loading overlay style helper */
+.map-loading-overlay {
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+}
+
+.dark .map-loading-overlay {
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+}
+
+/* Marker drop animation */
+@keyframes marker-drop {
+  0% {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(5px);
+    opacity: 1;
+  }
+  80% {
+    transform: translateY(-3px);
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Marker bounce animation */
+@keyframes marker-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}

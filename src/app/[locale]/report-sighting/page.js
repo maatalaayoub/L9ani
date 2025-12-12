@@ -41,165 +41,154 @@ export default function ReportSightingPage() {
     const [photos, setPhotos] = useState([]);
     const [photoPreviews, setPhotoPreviews] = useState([]);
 
-    // Load Leaflet
+    // Initialize OpenLayers map
     useEffect(() => {
         let isMounted = true;
         
-        const loadLeaflet = async () => {
-            if (typeof window === 'undefined') return;
-            
-            // Check if Leaflet is already loaded
-            if (window.L) {
-                if (isMounted) setMapLoaded(true);
-                return;
-            }
+        const initMap = async () => {
+            if (typeof window === 'undefined' || !mapRef.current || mapInstanceRef.current) return;
 
             try {
-                // Load Leaflet CSS
-                if (!document.querySelector('link[href*="leaflet"]')) {
-                    const link = document.createElement('link');
-                    link.rel = 'stylesheet';
-                    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-                    document.head.appendChild(link);
+                // Dynamic imports for OpenLayers
+                const { default: Map } = await import('ol/Map');
+                const { default: View } = await import('ol/View');
+                const { default: TileLayer } = await import('ol/layer/Tile');
+                const { default: VectorLayer } = await import('ol/layer/Vector');
+                const { default: XYZ } = await import('ol/source/XYZ');
+                const { default: VectorSource } = await import('ol/source/Vector');
+                const { default: Feature } = await import('ol/Feature');
+                const { default: Point } = await import('ol/geom/Point');
+                const { fromLonLat, toLonLat } = await import('ol/proj');
+                const { default: Style } = await import('ol/style/Style');
+                const { default: Icon } = await import('ol/style/Icon');
+
+                if (!isMounted || !mapRef.current) return;
+
+                // Beautiful SVG marker pin
+                const markerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="50" viewBox="0 0 40 50">
+                    <defs>
+                        <linearGradient id="pinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ff8c42;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#f97316;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <path fill="url(#pinGradient)" d="M20 0C9 0 0 9 0 20c0 11 20 30 20 30s20-19 20-30C40 9 31 0 20 0z"/>
+                    <circle cx="20" cy="18" r="8" fill="white"/>
+                    <circle cx="20" cy="18" r="4" fill="#f97316"/>
+                </svg>`;
+
+                // Create marker source and layer
+                const markerSource = new VectorSource();
+                const markerLayer = new VectorLayer({
+                    source: markerSource,
+                    zIndex: 100
+                });
+
+                // Create map with OpenStreetMap tiles (reliable and free)
+                const map = new Map({
+                    target: mapRef.current,
+                    layers: [
+                        new TileLayer({
+                            source: new XYZ({
+                                url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                attributions: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                            })
+                        }),
+                        markerLayer
+                    ],
+                    view: new View({
+                        center: fromLonLat([-7.0926, 31.7917]), // Morocco
+                        zoom: 6,
+                        maxZoom: 19,
+                        minZoom: 3
+                    })
+                });
+
+                // Store refs for later use
+                mapInstanceRef.current = map;
+                markerRef.current = { source: markerSource, feature: null, fromLonLat, toLonLat, Feature, Point, Style, Icon, markerSvg };
+
+                // Create marker style function
+                const createMarkerStyle = () => new Style({
+                    image: new Icon({
+                        src: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(markerSvg),
+                        scale: 1,
+                        anchor: [0.5, 1],
+                        anchorXUnits: 'fraction',
+                        anchorYUnits: 'fraction'
+                    })
+                });
+
+                // Handle map clicks to place marker
+                map.on('singleclick', (e) => {
+                    const coords = toLonLat(e.coordinate);
+                    const lng = coords[0];
+                    const lat = coords[1];
+
+                    // Clear existing markers
+                    markerSource.clear();
+
+                    // Add new marker with beautiful pin style
+                    const marker = new Feature({
+                        geometry: new Point(fromLonLat([lng, lat]))
+                    });
+                    marker.setStyle(createMarkerStyle());
+                    markerSource.addFeature(marker);
+                    markerRef.current.feature = marker;
+
+                    // Update form data
+                    setFormData(prev => ({
+                        ...prev,
+                        coordinates: { lat: lat.toFixed(6), lng: lng.toFixed(6) }
+                    }));
+                });
+
+                // Try to get user's location
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const { latitude, longitude } = position.coords;
+                            map.getView().animate({
+                                center: fromLonLat([longitude, latitude]),
+                                zoom: 13,
+                                duration: 1000
+                            });
+                        },
+                        () => {
+                            // Geolocation denied or failed, keep default view
+                        },
+                        { timeout: 10000 }
+                    );
                 }
 
-                // Load Leaflet JS using a promise to ensure proper loading
-                await new Promise((resolve, reject) => {
-                    if (document.querySelector('script[src*="leaflet"]')) {
-                        // Wait for existing script to load
-                        const checkLoaded = setInterval(() => {
-                            if (window.L) {
-                                clearInterval(checkLoaded);
-                                resolve();
-                            }
-                        }, 100);
-                        setTimeout(() => {
-                            clearInterval(checkLoaded);
-                            reject(new Error('Leaflet loading timeout'));
-                        }, 10000);
-                    } else {
-                        const script = document.createElement('script');
-                        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-                        script.onload = resolve;
-                        script.onerror = reject;
-                        document.head.appendChild(script);
-                    }
-                });
-                
-                if (isMounted && window.L) {
+                if (isMounted) {
                     setMapLoaded(true);
                 }
+
+                // Fix map size after render
+                setTimeout(() => {
+                    map.updateSize();
+                }, 100);
+
             } catch (err) {
-                console.error('Error loading Leaflet:', err);
+                console.error('Error initializing OpenLayers map:', err);
+                // Set mapLoaded anyway so user sees the error state
+                if (isMounted) setMapLoaded(true);
             }
         };
 
-        loadLeaflet();
+        initMap();
         
         return () => {
             isMounted = false;
         };
     }, []);
 
-    // Initialize map when loaded
-    useEffect(() => {
-        if (!mapLoaded || !mapRef.current || mapInstanceRef.current) return;
-        
-        const L = window.L;
-        if (!L) return;
-
-        // Detect if mobile device
-        const isMobile = window.innerWidth <= 768 || 'ontouchstart' in window;
-
-        try {
-            // Initialize map centered on Morocco
-            const map = L.map(mapRef.current, {
-                center: [31.7917, -7.0926],
-                zoom: 6,
-                scrollWheelZoom: true,
-                // Require two fingers to drag on mobile
-                dragging: !isMobile,
-                tap: !isMobile,
-                touchZoom: true
-            });
-
-            // Enable dragging with two fingers on mobile
-            if (isMobile) {
-                map.on('touchstart', function(e) {
-                    if (e.originalEvent.touches.length === 1) {
-                        map.dragging.disable();
-                    } else if (e.originalEvent.touches.length === 2) {
-                        map.dragging.enable();
-                    }
-                });
-            }
-            
-            // Add OpenStreetMap tiles
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-                maxZoom: 19
-            }).addTo(map);
-
-            // Add click handler to place marker
-            map.on('click', (e) => {
-                const { lat, lng } = e.latlng;
-                
-                // Remove existing marker
-                if (markerRef.current) {
-                    map.removeLayer(markerRef.current);
-                }
-
-                // Add new marker
-                markerRef.current = L.marker([lat, lng], {
-                    draggable: true
-                }).addTo(map);
-
-                // Update coordinates
-                setFormData(prev => ({
-                    ...prev,
-                    coordinates: { lat: lat.toFixed(6), lng: lng.toFixed(6) }
-                }));
-
-                // Handle marker drag
-                markerRef.current.on('dragend', (e) => {
-                    const position = e.target.getLatLng();
-                    setFormData(prev => ({
-                        ...prev,
-                        coordinates: { lat: position.lat.toFixed(6), lng: position.lng.toFixed(6) }
-                    }));
-                });
-            });
-
-            mapInstanceRef.current = map;
-
-            // Fix map size after render
-            setTimeout(() => {
-                map.invalidateSize();
-            }, 100);
-
-            // Try to get user's location
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const { latitude, longitude } = position.coords;
-                        map.setView([latitude, longitude], 13);
-                    },
-                    () => {
-                        // Geolocation denied or failed, keep default view
-                    },
-                    { timeout: 10000 }
-                );
-            }
-        } catch (err) {
-            console.error('Error initializing map:', err);
-        }
-    }, [mapLoaded]);
-
     // Cleanup map on unmount
     useEffect(() => {
         return () => {
             if (mapInstanceRef.current) {
-                mapInstanceRef.current.remove();
+                mapInstanceRef.current.setTarget(null);
                 mapInstanceRef.current = null;
             }
         };
