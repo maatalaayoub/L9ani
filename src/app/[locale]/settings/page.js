@@ -22,7 +22,7 @@ export default function Settings() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-[#0f172a] transition-colors duration-300">
-            <main className="max-w-4xl mx-auto p-6 md:p-12">
+            <main className="max-w-4xl mx-auto p-6 pt-24 md:p-12 md:pt-28">
                 <div className="mb-8">
                     <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
                         {t('title')}

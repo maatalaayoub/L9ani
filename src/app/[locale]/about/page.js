@@ -9,7 +9,7 @@ export default function About() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-[#101828] dark:to-[#0a0f1e]">
-            <div className="max-w-5xl mx-auto px-6 py-20 sm:py-28">
+            <div className="max-w-5xl mx-auto px-6 pt-24 pb-20 sm:pt-28 sm:pb-28">
                 {/* Hero Section */}
                 <div className="text-center mb-16">
                     <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-6">
