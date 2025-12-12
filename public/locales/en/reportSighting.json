@@ -1,0 +1,85 @@
+{
+    "title": "Report a Sighting",
+    "subtitle": "Have you seen someone who might be missing? Your report could help reunite them with their family.",
+    "backToHome": "Back to Home",
+    "optional": "Optional",
+    "veryImportant": "Very Important",
+    
+    "heroTitle": "Your Observation Could Save a Life",
+    "heroDescription": "If you've seen someone who appears lost, confused, or matches a missing person report, please share the details below. Every piece of information matters.",
+
+    "sections": {
+        "photos": {
+            "title": "Photos of the Person",
+            "description": "Upload clear photos of the person you've seen (up to 5 photos)"
+        },
+        "location": {
+            "title": "Sighting Location",
+            "description": "Where did you see this person? Mark the location on the map or describe it"
+        },
+        "personDetails": {
+            "title": "Person's Name",
+            "description": "Did they tell you their name? This information is crucial for identification!",
+            "importanceNote": "If the person mentioned their name, please provide it - it greatly helps in matching with missing person reports"
+        },
+        "contact": {
+            "title": "Your Contact Information",
+            "description": "So we can follow up with you about the sighting",
+            "yourName": "Your Name",
+            "importantIfProvided": "Important if provided"
+        },
+        "additionalInfo": {
+            "title": "Additional Information",
+            "description": "Any other details about your encounter or conversation"
+        }
+    },
+
+    "fields": {
+        "mapLocation": "Pin Location on Map",
+        "coordinates": "Coordinates",
+        "mapHint": "Click on the map to mark where you saw the person. You can drag the marker to adjust.",
+        "mapMobileHint": "Use two fingers to move the map",
+        "city": "City",
+        "locationDescription": "Location Description",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "reporterFirstName": "Your First Name",
+        "reporterLastName": "Your Last Name",
+        "phone": "Your Phone Number",
+        "email": "Your Email"
+    },
+
+    "placeholders": {
+        "city": "e.g., Casablanca",
+        "locationDescription": "e.g., Near the central market on Mohammed V street",
+        "firstName": "Enter first name if they told you",
+        "lastName": "Enter last name if they told you",
+        "reporterFirstName": "Enter your first name",
+        "reporterLastName": "Enter your last name",
+        "phone": "+212 6XX XXX XXX",
+        "email": "your.email@example.com",
+        "additionalInfo": "Describe your encounter with this person. Did they say anything? How did they appear? Were they alone or with someone? Any distinguishing features you noticed?"
+    },
+
+    "buttons": {
+        "submitReport": "Submit Sighting Report",
+        "submitting": "Submitting..."
+    },
+
+    "errors": {
+        "maxPhotos": "You can upload a maximum of 5 photos",
+        "photoRequired": "Please upload at least one photo of the person you've seen",
+        "phoneRequired": "Phone number is required so we can contact you",
+        "locationRequired": "Please provide the city and location description",
+        "submitFailed": "Failed to submit the report. Please try again."
+    },
+
+    "success": {
+        "reportSubmitted": "Thank you! Your sighting report has been submitted successfully. We will review it and contact you if needed."
+    },
+
+    "reward": {
+        "title": "🎁 Potential Reward",
+        "description": "If your sighting report helps reunite a missing person with their family, and the photo you uploaded matches a wanted person, you may be eligible to receive a reward. Your contribution could make a real difference!"
+    }
+}

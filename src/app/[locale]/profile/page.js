@@ -481,17 +481,16 @@ export default function ProfilePage() {
             <div className="max-w-3xl mx-auto space-y-6">
 
                 {/* 1. Header Card - Avatar & Summary */}
-                <div className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden relative border border-gray-200 dark:border-gray-800">
-                    <div className="h-32 bg-gradient-to-r from-blue-600 to-indigo-700"></div>
-                    <div className="px-6 pb-6 relative">
-                        <div className="flex flex-col sm:flex-row items-center sm:items-end -mt-12 mb-4 space-y-4 sm:space-y-0">
+                <div className="bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm">
+                    <div className="p-6 sm:p-8">
+                        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
                             {/* Avatar */}
-                            <div className="relative group mx-auto sm:mx-0">
-                                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-white dark:border-gray-900 bg-gray-200 dark:bg-gray-800 flex items-center justify-center overflow-hidden shadow-md">
+                            <div className="relative group flex-shrink-0">
+                                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden ring-2 ring-gray-200 dark:ring-gray-700">
                                     {formData.avatar_url ? (
                                         <img src={formData.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                                     ) : (
-                                        <span className="text-3xl font-bold text-gray-400">
+                                        <span className="text-2xl sm:text-3xl font-semibold text-gray-500 dark:text-gray-400">
                                             {formData.first_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
                                         </span>
                                     )}
@@ -499,50 +498,50 @@ export default function ProfilePage() {
                                 {isEditing && (
                                     <button
                                         onClick={() => setShowAvatarSelector(!showAvatarSelector)}
-                                        className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                                        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                    >
+                                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                         </svg>
                                     </button>
                                 )}
                             </div>
 
-                            {/* Name & Role */}
-                            <div className="flex-1 text-center sm:text-start sm:rtl:text-right sm:ltr:text-left sm:ms-6 mb-2">
-                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                            {/* Name & Username */}
+                            <div className="flex-1 text-center sm:text-start sm:rtl:text-right sm:ltr:text-left min-w-0">
+                                <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white truncate">
                                     {formData.first_name} {formData.last_name}
                                 </h1>
-                                <p className="text-gray-500 dark:text-gray-400 font-medium">@{formData.username || t('defaultUsername')}</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5" dir="ltr">@{formData.username || t('defaultUsername')}</p>
                             </div>
 
                             {/* Edit Toggle */}
-                            <div className="mb-2">
+                            <div className="flex-shrink-0 mt-2 sm:mt-0">
                                 {!isEditing ? (
                                     <button
                                         onClick={() => setIsEditing(true)}
-                                        className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full font-medium transition-colors shadow-lg hover:shadow-indigo-500/30 flex items-center gap-2"
+                                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                         {t('buttons.editProfile')}
                                     </button>
                                 ) : (
-                                    <div className="flex space-x-2">
+                                    <div className="flex gap-2">
                                         <button
                                             onClick={handleCancel}
-                                            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                                            className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                                         >
                                             {tCommon('buttons.cancel')}
                                         </button>
                                         <button
                                             onClick={handleSave}
                                             disabled={loading || !hasChanges || isCheckingUsername || usernameAvailable === false}
-                                            className={`px-6 py-2 rounded-full font-medium transition-colors shadow-lg flex items-center gap-2 ${loading || !hasChanges || isCheckingUsername || usernameAvailable === false
-                                                ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed shadow-none'
-                                                : 'bg-green-600 hover:bg-green-700 text-white hover:shadow-green-500/30'
+                                            className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${loading || !hasChanges || isCheckingUsername || usernameAvailable === false
+                                                ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                                                : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100'
                                                 }`}
                                         >
-
                                             {loading ? t('buttons.saving') : t('buttons.saveChanges')}
                                         </button>
                                     </div>
@@ -552,9 +551,9 @@ export default function ProfilePage() {
 
                         {/* Avatar Selector Panel */}
                         {isEditing && showAvatarSelector && (
-                            <div className="mt-4 p-4 bg-gray-50 dark:bg-black/50 rounded-xl border border-gray-100 dark:border-gray-800 animate-in fade-in slide-in-from-top-2">
-                                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t('chooseAvatar')}</p>
-                                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                            <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+                                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">{t('chooseAvatar')}</p>
+                                <div className="flex gap-3 overflow-x-auto pb-2">
                                     {PRESET_AVATARS.map((src, idx) => (
                                         <button
                                             key={idx}
@@ -562,19 +561,18 @@ export default function ProfilePage() {
                                                 setFormData({ ...formData, avatar_url: src });
                                                 setShowAvatarSelector(false);
                                             }}
-                                            className="relative flex-shrink-0 group"
+                                            className="relative flex-shrink-0"
                                         >
                                             <img
                                                 src={src}
                                                 alt={`Avatar ${idx}`}
-                                                className={`w-16 h-16 rounded-full object-cover border-2 transition-all ${formData.avatar_url === src ? 'border-blue-500 scale-110' : 'border-transparent group-hover:border-gray-300 dark:group-hover:border-gray-600'}`}
+                                                className={`w-14 h-14 rounded-full object-cover transition-all ${formData.avatar_url === src ? 'ring-2 ring-gray-900 dark:ring-white ring-offset-2 dark:ring-offset-gray-900' : 'hover:opacity-80'}`}
                                             />
                                         </button>
                                     ))}
                                 </div>
                             </div>
                         )}
-
                     </div>
                 </div>
 
@@ -768,13 +766,23 @@ export default function ProfilePage() {
                 </div>
 
                 {message && (
-                    <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] p-4 bg-green-500 text-white rounded-lg shadow-2xl animate-in slide-in-from-top-5">
-                        {message}
+                    <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg animate-in slide-in-from-top-5">
+                        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                            <svg className="w-3 h-3 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{message}</span>
                     </div>
                 )}
                 {error && (
-                    <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] p-4 bg-red-500 text-white rounded-lg shadow-2xl animate-in slide-in-from-top-5">
-                        {error}
+                    <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 border border-red-200 dark:border-red-900/50 rounded-lg shadow-lg animate-in slide-in-from-top-5">
+                        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                            <svg className="w-3 h-3 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </div>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{error}</span>
                     </div>
                 )}
                 {/* Verification Modal */}
@@ -961,7 +969,6 @@ export default function ProfilePage() {
                         </div>
                     </div>
                 )}
-            </div>
 
             {/* 3. Danger Zone */}
             <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-red-200 dark:border-red-900/30 mt-8">
@@ -983,6 +990,7 @@ export default function ProfilePage() {
                         {t('dangerZone.deleteAccount')}
                     </button>
                 </div>
+            </div>
             </div>
 
             {/* Delete Confirmation Modal */}

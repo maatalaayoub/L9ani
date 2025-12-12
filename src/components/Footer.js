@@ -77,7 +77,7 @@ export default function Footer() {
                             <a href="tel:+1-800-FIND-HELP" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 text-sm transition-colors block">
                                 {t('hotline') || '24/7 Hotline'}
                             </a>
-                            <Link href="/about" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 text-sm transition-colors block">
+                            <Link href="/privacy" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 text-sm transition-colors block">
                                 {t('privacyPolicy')}
                             </Link>
                         </div>
@@ -94,7 +94,7 @@ export default function Footer() {
                             <Link href="/about" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                                 {t('termsOfService')}
                             </Link>
-                            <Link href="/about" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                            <Link href="/privacy" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                                 {t('privacyPolicy')}
                             </Link>
                             <Link href="/contact" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">

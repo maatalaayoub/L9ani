@@ -1,0 +1,49 @@
+{
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated: December 12, 2025",
+    "sections": {
+        "introduction": {
+            "title": "Introduction",
+            "content": "Welcome to Lqani.ma. We understand the sensitive nature of our mission - helping families reunite with their missing loved ones. Your privacy and the security of your personal information are of utmost importance to us. This Privacy Policy explains how we collect, use, protect, and share information when you use our platform. By using Lqani.ma, you agree to the terms outlined in this policy."
+        },
+        "dataCollection": {
+            "title": "Information We Collect",
+            "content": "To provide our services effectively, we collect the following types of information:",
+            "items": {
+                "personal": "Account Information: Name, email address, phone number, and password when you register",
+                "photos": "Missing Person Data: Photos, physical descriptions, last known location, and circumstances of disappearance",
+                "device": "Technical Data: IP address, browser type, device information, and cookies for security and service improvement",
+                "usage": "Usage Information: How you interact with our platform, search queries, and features you use"
+            }
+        },
+        "dataUsage": {
+            "title": "How We Use Your Information",
+            "content": "Your information is used solely to fulfill our mission of reuniting families:",
+            "items": {
+                "matching": "Photo Matching: Using advanced technology to compare uploaded photos and identify potential matches",
+                "communication": "Notifications: Alerting you about potential sightings, matches, or important updates about your case",
+                "improvement": "Platform Enhancement: Improving our matching algorithms and user experience based on anonymized data",
+                "security": "Safety & Verification: Preventing fraud, verifying reports, and ensuring the platform is used for legitimate purposes"
+            }
+        },
+        "dataProtection": {
+            "title": "Data Protection & Security",
+            "content": "We implement industry-standard security measures to protect your sensitive information. All data is encrypted using SSL/TLS during transmission and AES-256 encryption at rest. Access to personal data is strictly limited to authorized personnel. We conduct regular security audits and vulnerability assessments. Our servers are hosted in secure, SOC 2 compliant data centers. We never sell your personal information to third parties."
+        },
+        "yourRights": {
+            "title": "Your Rights",
+            "content": "You have full control over your personal information:",
+            "items": {
+                "access": "Access: Request a copy of all personal data we hold about you",
+                "correction": "Correction: Update or correct any inaccurate information in your profile",
+                "deletion": "Deletion: Request permanent deletion of your account and associated data",
+                "portability": "Portability: Receive your data in a portable format to transfer elsewhere"
+            }
+        },
+        "contact": {
+            "title": "Contact Us",
+            "content": "If you have questions about this Privacy Policy, want to exercise your rights, or have concerns about how your data is handled, please reach out to our privacy team.",
+            "button": "Contact Our Privacy Team"
+        }
+    }
+}

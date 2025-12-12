@@ -46,7 +46,7 @@ export default function Header() {
                             {/* Sidebar Toggle Button (Desktop) */}
                             <button
                                 onClick={() => setIsMenuOpen(true)}
-                                className="p-2 -ml-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-full transition-all duration-200 hidden sm:block"
+                                className="btn-icon p-2 -ml-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-full hidden sm:block"
                                 aria-label="Open Menu"
                             >
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,7 +88,7 @@ export default function Header() {
                         {/* Right Actions */}
                         <div className="flex items-center gap-2">
                             {/* My Report Button - Hidden on mobile, visible on desktop */}
-                            <Link href="/my-report" onClick={closeDialogs} className="hidden md:flex items-center gap-2 px-3 py-2 rounded-full border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200">
+                            <Link href="/my-report" onClick={closeDialogs} className="btn-outline hidden md:flex items-center gap-2 px-3 py-2 rounded-full border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
@@ -96,25 +96,25 @@ export default function Header() {
                             </Link>
 
                             {/* Upload Photo Button - Report Missing Person - Hidden on mobile */}
-                            <button className="hidden md:flex items-center gap-2 px-3 py-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200">
+                            <Link href="/report-missing" onClick={closeDialogs} className="hidden md:inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold shadow-lg hover:shadow-blue-500/40 transition-shadow">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
                                 <span className="hidden lg:inline">{t('reportMissing')}</span>
-                            </button>
+                            </Link>
 
                             {/* Report Sighting Button - Hidden on mobile, visible on desktop */}
-                            <button className="hidden md:flex items-center gap-2 px-3 py-2 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200">
+                            <Link href="/report-sighting" onClick={closeDialogs} className="btn-gradient btn-ripple hidden md:flex items-center gap-2 px-3 py-2 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm font-semibold shadow-lg hover:shadow-orange-500/40">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
                                 <span className="hidden lg:inline">{t('sighting')}</span>
-                            </button>
+                            </Link>
 
                             {/* Notifications - Only visible when logged in */}
                             {user && (
-                                <button className="flex relative p-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
+                                <button className="btn-icon flex relative p-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                                     </svg>
@@ -139,32 +139,30 @@ export default function Header() {
                                         <div className="w-20 h-9 bg-gray-100 dark:bg-gray-800 rounded-full animate-pulse"></div>
                                     </div>
                                 ) : user ? (
-                                    <div className="flex items-center gap-3 pl-2">
+                                    <div className="flex items-center gap-3">
                                         <Link
                                             href="/profile"
                                             onClick={closeDialogs}
-                                            className="flex items-center gap-3 pl-1 pr-3 py-1 rounded-full border border-transparent hover:border-gray-200 dark:hover:border-white/10 bg-transparent hover:bg-gray-50 dark:hover:bg-white/5 transition-all duration-200"
+                                            className="btn-outline flex items-center gap-2 px-3 py-2 rounded-full border border-gray-300 dark:border-gray-700 bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500"
                                         >
                                             {profile?.avatar_url ? (
                                                 <img
                                                     src={profile.avatar_url}
                                                     alt="Profile"
-                                                    className="w-8 h-8 rounded-full object-cover ring-2 ring-white dark:ring-gray-800"
+                                                    className="w-6 h-6 rounded-full object-cover"
                                                 />
                                             ) : (
-                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-md ring-2 ring-white dark:ring-gray-800">
+                                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
                                                     {profile?.first_name?.[0]?.toUpperCase() || profile?.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
                                                 </div>
                                             )}
-                                            <div className="text-sm">
-                                                <p className="font-semibold text-gray-700 dark:text-gray-200 leading-none">
-                                                    {profile?.first_name || 'User'}
-                                                </p>
-                                            </div>
+                                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                {profile?.first_name || 'User'}
+                                            </span>
                                         </Link>
                                         <button
                                             onClick={logout}
-                                            className="p-2 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all duration-200"
+                                            className="btn-icon p-2 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full"
                                             title="Logout"
                                         >
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -179,7 +177,7 @@ export default function Header() {
                                                 setInitialTab("login");
                                                 setIsLoginDialogOpen(true);
                                             }}
-                                            className="px-5 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white transition-colors"
+                                            className="btn-outline px-5 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 rounded-full border border-transparent hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50"
                                         >
                                             {tCommon('buttons.login')}
                                         </button>
@@ -188,7 +186,7 @@ export default function Header() {
                                                 setInitialTab("signup");
                                                 setIsLoginDialogOpen(true);
                                             }}
-                                            className="px-5 py-2 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-semibold shadow-lg shadow-gray-900/20 hover:shadow-gray-900/30 dark:hover:shadow-white/20 hover:-translate-y-0.5 transition-all duration-300"
+                                            className="btn-gradient btn-ripple px-5 py-2 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-semibold shadow-lg shadow-gray-900/20 hover:shadow-gray-900/40 dark:hover:shadow-white/30"
                                         >
                                             {tCommon('buttons.signup')}
                                         </button>
@@ -209,13 +207,13 @@ export default function Header() {
 
             {/* Sidebar Overlay */}
             <div
-                className={`fixed inset-0 z-[60] bg-gray-900/20 dark:bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                className={`sidebar-overlay fixed inset-0 z-[60] bg-gray-900/20 dark:bg-black/40 backdrop-blur-sm ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                 onClick={() => setIsMenuOpen(false)}
             />
 
             {/* Sidebar Slide-over */}
             <div
-                className={`fixed inset-y-0 ${locale === 'ar' ? 'right-0' : 'left-0'} z-[70] w-[280px] bg-white dark:bg-[#0f172a] shadow-2xl shadow-black/10 transform transition-transform duration-300 cubic-bezier(0.4, 0, 0.2, 1) ${isMenuOpen ? 'translate-x-0' : (locale === 'ar' ? 'translate-x-full' : '-translate-x-full')}`}
+                className={`sidebar-slide fixed inset-y-0 ${locale === 'ar' ? 'right-0 sidebar-slide-rtl' : 'left-0'} z-[70] w-[280px] bg-white dark:bg-[#0f172a] shadow-2xl shadow-black/20 dark:shadow-black/40 ${isMenuOpen ? 'translate-x-0' : (locale === 'ar' ? 'translate-x-full' : '-translate-x-full')}`}
             >
                 <div className="flex flex-col h-full bg-white dark:bg-[#0f172a] overflow-y-auto scrollbar-hide">
                     <div className="p-6">
@@ -223,7 +221,7 @@ export default function Header() {
                             <span className="text-xl font-bold text-gray-900 dark:text-white">Menu</span>
                             <button
                                 onClick={() => setIsMenuOpen(false)}
-                                className="p-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white bg-gray-100 dark:bg-white/5 rounded-full transition-colors"
+                                className="btn-icon p-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white bg-gray-100 dark:bg-white/5 rounded-full hover:bg-gray-200 dark:hover:bg-white/10 hover:rotate-90"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -257,9 +255,9 @@ export default function Header() {
                             <Link
                                 href="/"
                                 onClick={closeDialogs}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 sm:hidden ${isActive('/')
+                                className={`sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 sm:hidden ${isActive('/')
                                     ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium'
-                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'
+                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:translate-x-1'
                                     }`}
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -278,9 +276,9 @@ export default function Header() {
                                 <Link
                                     href="/my-report"
                                     onClick={closeDialogs}
-                                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive('/my-report')
+                                    className={`sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive('/my-report')
                                         ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium'
-                                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'
+                                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:translate-x-1'
                                         }`}
                                 >
                                     <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -290,35 +288,40 @@ export default function Header() {
                                 </Link>
 
                                 {/* Report Missing Person */}
-                                <button
+                                <Link
+                                    href="/report-missing"
                                     onClick={closeDialogs}
-                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5"
+                                    className={`sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive('/report-missing')
+                                        ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium'
+                                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:translate-x-1'
+                                        }`}
                                 >
                                     <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                     <span className="whitespace-nowrap">{t('reportMissingPerson')}</span>
-                                </button>
+                                </Link>
 
                                 {/* Report Sighting */}
-                                <button
+                                <Link
+                                    href="/report-sighting"
                                     onClick={closeDialogs}
-                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5"
+                                    className="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:translate-x-1"
                                 >
                                     <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                     </svg>
                                     <span className="whitespace-nowrap">{t('sighting')}</span>
-                                </button>
+                                </Link>
                             </div>
 
                             <Link
                                 href="/settings"
                                 onClick={closeDialogs}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive('/settings')
+                                className={`sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive('/settings')
                                     ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium'
-                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'
+                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:translate-x-1'
                                     }`}
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -331,9 +334,9 @@ export default function Header() {
                             <Link
                                 href="/about"
                                 onClick={closeDialogs}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive('/about')
+                                className={`sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive('/about')
                                     ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium'
-                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'
+                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:translate-x-1'
                                     }`}
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -345,15 +348,29 @@ export default function Header() {
                             <Link
                                 href="/contact"
                                 onClick={closeDialogs}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive('/contact')
+                                className={`sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive('/contact')
                                     ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium'
-                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'
+                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:translate-x-1'
                                     }`}
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
                                 {tCommon('navigation.contact')}
+                            </Link>
+
+                            <Link
+                                href="/privacy"
+                                onClick={closeDialogs}
+                                className={`sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive('/privacy')
+                                    ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium'
+                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:translate-x-1'
+                                    }`}
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                                {tCommon('navigation.privacy')}
                             </Link>
                         </div>
 
@@ -367,7 +384,7 @@ export default function Header() {
                                             setIsLoginDialogOpen(true);
                                             setIsMenuOpen(false);
                                         }}
-                                        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-bold hover:border-blue-500 hover:text-blue-600 dark:hover:border-blue-400 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-all duration-200 active:scale-[0.98]"
+                                        className="btn-outline w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-bold hover:border-blue-500 hover:text-blue-600 dark:hover:border-blue-400 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 active:scale-[0.98]"
                                     >
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
@@ -380,7 +397,7 @@ export default function Header() {
                                             setIsLoginDialogOpen(true);
                                             setIsMenuOpen(false);
                                         }}
-                                        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-bold bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                                        className="btn-gradient btn-ripple w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-bold bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 active:scale-[0.98]"
                                     >
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -394,7 +411,7 @@ export default function Header() {
                                         logout();
                                         setIsMenuOpen(false);
                                     }}
-                                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 font-medium transition-colors active:scale-98"
+                                    className="btn-outline w-full flex items-center justify-center gap-2 py-3 rounded-xl text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 font-medium active:scale-[0.98]"
                                 >
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -410,32 +427,32 @@ export default function Header() {
             {/* Bottom Navigation Bar (Mobile Only) */}
             <div className="fixed bottom-0 inset-x-0 z-[60] bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-lg border-t border-gray-200 dark:border-gray-800 pb-safe sm:hidden">
                 <div className="flex justify-around items-center h-16 px-2 flex-row-reverse">
-                    <Link href="/" onClick={closeDialogs} className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive('/') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}>
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <Link href="/" onClick={closeDialogs} className={`group flex flex-col items-center justify-center w-full h-full space-y-1 active:scale-95 transition-all duration-200 ${isActive('/') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}>
+                        <svg className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                         </svg>
                         <span className="text-[10px] font-medium">{tCommon('navigation.home')}</span>
                     </Link>
 
-                    <button className="flex flex-col items-center justify-center w-full h-full space-y-1 text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <Link href="/report-sighting" onClick={closeDialogs} className="group flex flex-col items-center justify-center w-full h-full space-y-1 text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 active:scale-95 transition-all duration-200">
+                        <svg className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
                         <span className="text-[10px] font-medium">{t('sighting')}</span>
-                    </button>
+                    </Link>
 
-                    <button className="flex flex-col items-center justify-center w-full h-full space-y-1 text-white">
-                        <div className="w-12 h-12 -mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <Link href="/report-missing" onClick={closeDialogs} className="group flex flex-col items-center justify-center w-full h-full space-y-1 text-white active:scale-95 transition-transform duration-200">
+                        <div className="w-12 h-12 -mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center shadow-lg group-hover:shadow-blue-500/50 group-hover:scale-110 group-active:scale-100 transition-all duration-200">
+                            <svg className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
                             </svg>
                         </div>
                         <span className="text-[10px] font-medium text-blue-600 dark:text-blue-400">{t('upload')}</span>
-                    </button>
+                    </Link>
 
-                    <Link href="/my-report" onClick={closeDialogs} className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive('/my-report') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}>
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <Link href="/my-report" onClick={closeDialogs} className={`group flex flex-col items-center justify-center w-full h-full space-y-1 active:scale-95 transition-all duration-200 ${isActive('/my-report') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}>
+                        <svg className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         <span className="text-[10px] font-medium">{t('myReport')}</span>
@@ -443,12 +460,12 @@ export default function Header() {
 
                     <button
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isMenuOpen ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-blue-600'}`}
+                        className={`group flex flex-col items-center justify-center w-full h-full space-y-1 active:scale-95 transition-all duration-200 ${isMenuOpen ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-blue-600'}`}
                     >
                         {user && profile?.avatar_url ? (
-                            <img src={profile.avatar_url} className="w-6 h-6 rounded-full border border-gray-300 dark:border-gray-600 ring-2 ring-transparent group-hover:ring-blue-500 transition-all" alt="Menu" />
+                            <img src={profile.avatar_url} className="w-6 h-6 rounded-full border border-gray-300 dark:border-gray-600 ring-2 ring-transparent group-hover:ring-blue-500 group-hover:scale-110 transition-all duration-200" alt="Menu" />
                         ) : (
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8h16M4 16h16" />
                             </svg>
                         )}

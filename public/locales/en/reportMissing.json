@@ -1,0 +1,77 @@
+{
+    "title": "Report a Missing Person",
+    "subtitle": "Please provide as much detail as possible to help us locate the missing person. All information is kept confidential.",
+    "backToReports": "Back to My Reports",
+
+    "sections": {
+        "photos": {
+            "title": "Photos of the Missing Person",
+            "description": "Upload clear, recent photos. Multiple angles help improve identification accuracy.",
+            "uploadButton": "Click to upload photos",
+            "hint": "Upload up to 5 photos (JPG, PNG)"
+        },
+        "personalInfo": {
+            "title": "Personal Information"
+        },
+        "healthStatus": {
+            "title": "Health Status"
+        },
+        "location": {
+            "title": "Location Information"
+        },
+        "additionalInfo": {
+            "title": "Additional Information",
+            "description": "Any other details that could help identify this person (clothing, distinguishing features, circumstances of disappearance, etc.)"
+        }
+    },
+
+    "fields": {
+        "firstName": "First Name",
+        "lastName": "Last Name / Surname",
+        "dateOfBirth": "Date of Birth",
+        "gender": "Gender",
+        "healthStatus": "Health Condition",
+        "healthDetails": "Please describe the condition",
+        "city": "City",
+        "lastKnownLocation": "Last Known Location",
+        "additionalInfo": "Additional Details"
+    },
+
+    "placeholders": {
+        "firstName": "Enter first name",
+        "lastName": "Enter last name or surname",
+        "healthDetails": "Describe any physical or mental health conditions...",
+        "city": "e.g., Casablanca",
+        "lastKnownLocation": "e.g., Near Central Market, downtown area",
+        "additionalInfo": "Describe clothing, distinguishing features, time last seen, circumstances..."
+    },
+
+    "options": {
+        "selectGender": "Select gender",
+        "male": "Male",
+        "female": "Female",
+        "health": {
+            "healthy": "Healthy",
+            "physical": "Physical Condition",
+            "mental": "Mental Condition",
+            "both": "Both"
+        }
+    },
+
+    "buttons": {
+        "submitReport": "Submit Report",
+        "submitting": "Submitting..."
+    },
+
+    "errors": {
+        "maxPhotos": "You can upload a maximum of 5 photos",
+        "nameRequired": "First name and last name are required",
+        "photoRequired": "Please upload at least one photo",
+        "locationRequired": "City and last known location are required",
+        "submitFailed": "Failed to submit report. Please try again."
+    },
+
+    "success": {
+        "reportSubmitted": "Report submitted successfully! Redirecting..."
+    }
+}

@@ -2,14 +2,34 @@
 
 import { Link } from "@/i18n/navigation";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLanguage, useTranslations } from "@/context/LanguageContext";
 
 export default function Settings() {
     const { theme, setTheme } = useTheme();
     const { locale, changeLocale } = useLanguage();
     const [mounted, setMounted] = useState(false);
+    const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
+    const langDropdownRef = useRef(null);
     const t = useTranslations('settings');
+
+    const languages = [
+        { code: 'en', name: 'English (US)' },
+        { code: 'ar', name: 'العربية (Arabic)' }
+    ];
+
+    const currentLang = languages.find(l => l.code === locale) || languages[0];
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (langDropdownRef.current && !langDropdownRef.current.contains(event.target)) {
+                setIsLangDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     // useEffect only runs on the client, so now we can safely show the UI
     useEffect(() => {
@@ -34,7 +54,7 @@ export default function Settings() {
 
                 <div className="space-y-8">
                     {/* Appearance Section */}
-                    <div className="bg-white/80 dark:bg-[#1e293b]/50 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 p-8 shadow-xl shadow-gray-200/20 dark:shadow-black/20">
+                    <div className="relative z-10 bg-white/80 dark:bg-[#1e293b]/50 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 p-8 shadow-xl shadow-gray-200/20 dark:shadow-black/20">
                         <div className="flex items-center gap-3 mb-6">
                             <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400">
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,20 +97,42 @@ export default function Settings() {
                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
                                     {t('appearance.language')}
                                 </label>
-                                <div className="relative">
-                                    <select
-                                        value={locale}
-                                        onChange={(e) => changeLocale(e.target.value)}
-                                        className="w-full appearance-none ps-4 pe-12 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all cursor-pointer"
+                                <div className="relative" ref={langDropdownRef}>
+                                    {/* Custom Dropdown Button */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
+                                        className="w-full flex items-center justify-between ps-4 pe-4 py-3.5 rounded-xl border-2 border-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 outline-none transition-all cursor-pointer"
                                     >
-                                        <option value="en">English (US)</option>
-                                        <option value="ar">العربية (Arabic)</option>
-                                    </select>
-                                    <div className="absolute end-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <span className="text-base font-medium">
+                                            {currentLang.name}
+                                        </span>
+                                        <svg className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${isLangDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                                         </svg>
-                                    </div>
+                                    </button>
+
+                                    {/* Dropdown Menu */}
+                                    {isLangDropdownOpen && (
+                                        <div className="absolute z-[100] w-full mt-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg overflow-hidden">
+                                            {languages.map((lang) => (
+                                                <button
+                                                    key={lang.code}
+                                                    onClick={() => {
+                                                        changeLocale(lang.code);
+                                                        setIsLangDropdownOpen(false);
+                                                    }}
+                                                    className={`w-full flex items-center px-4 py-3.5 text-start text-base font-medium transition-colors ${
+                                                        locale === lang.code
+                                                            ? 'bg-blue-500 text-white'
+                                                            : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800'
+                                                    }`}
+                                                >
+                                                    {lang.name}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

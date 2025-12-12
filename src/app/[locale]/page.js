@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "@/context/LanguageContext";
+import { Link } from '@/i18n/navigation';
 
 export default function HomePage() {
     const t = useTranslations('home');
@@ -17,12 +18,12 @@ export default function HomePage() {
                         {t('hero.subtitle')}
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full font-semibold text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200">
+                        <Link href="/report-missing" className="px-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg font-medium text-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors">
                             {t('hero.uploadButton')}
-                        </button>
-                        <button className="px-8 py-4 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full font-semibold text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200">
+                        </Link>
+                        <Link href="/report-missing" className="px-8 py-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-lg font-medium text-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             {t('hero.reportSighting')}
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </div>
@@ -84,9 +85,9 @@ export default function HomePage() {
                     <p className="text-lg mb-8 opacity-90 max-w-2xl mx-auto">
                         {t('cta.description')}
                     </p>
-                    <button className="px-8 py-4 bg-white text-blue-600 rounded-full font-semibold text-lg hover:bg-gray-100 transition-colors shadow-lg">
+                    <Link href="/report-missing" className="px-8 py-4 bg-white text-blue-600 rounded-lg font-medium text-lg hover:bg-gray-100 transition-colors">
                         {t('cta.button')}
-                    </button>
+                    </Link>
                 </div>
             </div>
         </div>
