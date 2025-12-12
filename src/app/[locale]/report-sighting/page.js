@@ -5,6 +5,8 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import { useTranslations, useLanguage } from "@/context/LanguageContext";
+import Image from 'next/image';
+import 'ol/ol.css';
 
 export default function ReportSightingPage() {
     const { user, isAuthLoading } = useAuth();
@@ -374,10 +376,12 @@ export default function ReportSightingPage() {
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-6">
                                     {photoPreviews.map((preview, index) => (
                                         <div key={index} className="relative aspect-square">
-                                            <img 
+                                            <Image 
                                                 src={preview} 
                                                 alt={`Preview ${index + 1}`} 
-                                                className="w-full h-full object-cover rounded-lg border border-gray-200 dark:border-gray-700"
+                                                fill
+                                                className="object-cover rounded-lg border border-gray-200 dark:border-gray-700"
+                                                unoptimized
                                             />
                                             <button
                                                 type="button"
@@ -478,8 +482,8 @@ export default function ReportSightingPage() {
                                         name="city"
                                         value={formData.city}
                                         onChange={handleChange}
-                                        dir="auto"
-                                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                                        dir={isRTL ? 'rtl' : 'ltr'}
+                                        className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
                                         placeholder={t('placeholders.city')}
                                     />
                                 </div>
@@ -494,8 +498,8 @@ export default function ReportSightingPage() {
                                         name="locationDescription"
                                         value={formData.locationDescription}
                                         onChange={handleChange}
-                                        dir="auto"
-                                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                                        dir={isRTL ? 'rtl' : 'ltr'}
+                                        className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
                                         placeholder={t('placeholders.locationDescription')}
                                     />
                                 </div>
@@ -538,8 +542,8 @@ export default function ReportSightingPage() {
                                         name="firstName"
                                         value={formData.firstName}
                                         onChange={handleChange}
-                                        dir="auto"
-                                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                                        dir={isRTL ? 'rtl' : 'ltr'}
+                                        className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
                                         placeholder={t('placeholders.firstName')}
                                     />
                                 </div>
@@ -554,8 +558,8 @@ export default function ReportSightingPage() {
                                         name="lastName"
                                         value={formData.lastName}
                                         onChange={handleChange}
-                                        dir="auto"
-                                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                                        dir={isRTL ? 'rtl' : 'ltr'}
+                                        className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
                                         placeholder={t('placeholders.lastName')}
                                     />
                                 </div>
@@ -563,7 +567,7 @@ export default function ReportSightingPage() {
                         </div>
                     </div>
 
-                    {/* Section 4: Your Contact Information (Combined) */}
+                    {/* Section 4: Your Contact Information (All in one block) */}
                     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-gray-100 dark:border-gray-800">
                             <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -574,29 +578,32 @@ export default function ReportSightingPage() {
                             </h2>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('sections.contact.description')}</p>
                         </div>
-                        <div className="p-6 space-y-5">
-                            {/* Your Name - Important if provided */}
-                            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-900/30">
-                                <div className="flex items-center gap-2 mb-3">
+                        <div className="p-6">
+                            {/* All contact fields in one cohesive block */}
+                            <div className="p-5 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-900/30 space-y-5">
+                                {/* Header */}
+                                <div className="flex items-center gap-2">
                                     <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                     </svg>
-                                    <span className="text-sm font-medium text-blue-700 dark:text-blue-300">{t('sections.contact.yourName')}</span>
-                                    <span className="text-xs text-blue-500 dark:text-blue-400">({t('optional')} - {t('sections.contact.importantIfProvided')})</span>
+                                    <span className="text-sm font-medium text-blue-700 dark:text-blue-300">{t('sections.contact.yourDetails')}</span>
                                 </div>
+
+                                {/* Name Fields */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     {/* Reporter First Name */}
                                     <div>
                                         <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">
                                             {t('fields.reporterFirstName')} <span className="text-blue-500">★</span>
+                                            <span className="text-xs font-normal text-blue-500 normal-case tracking-normal ms-1">({t('sections.contact.importantIfProvided')})</span>
                                         </label>
                                         <input
                                             type="text"
                                             name="reporterFirstName"
                                             value={formData.reporterFirstName}
                                             onChange={handleChange}
-                                            dir="auto"
-                                            className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
                                             placeholder={t('placeholders.reporterFirstName')}
                                         />
                                     </div>
@@ -604,53 +611,54 @@ export default function ReportSightingPage() {
                                     <div>
                                         <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">
                                             {t('fields.reporterLastName')} <span className="text-blue-500">★</span>
+                                            <span className="text-xs font-normal text-blue-500 normal-case tracking-normal ms-1">({t('sections.contact.importantIfProvided')})</span>
                                         </label>
                                         <input
                                             type="text"
                                             name="reporterLastName"
                                             value={formData.reporterLastName}
                                             onChange={handleChange}
-                                            dir="auto"
-                                            className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
                                             placeholder={t('placeholders.reporterLastName')}
                                         />
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Phone and Email */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                {/* Phone */}
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                                        {t('fields.phone')} <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="tel"
-                                        name="phone"
-                                        value={formData.phone}
-                                        onChange={handleChange}
-                                        dir="ltr"
-                                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all text-left"
-                                        placeholder={t('placeholders.phone')}
-                                    />
-                                </div>
+                                {/* Phone and Email */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {/* Phone */}
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                            {t('fields.phone')} <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            name="phone"
+                                            value={formData.phone}
+                                            onChange={handleChange}
+                                            dir="ltr"
+                                            className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-left"
+                                            placeholder={t('placeholders.phone')}
+                                        />
+                                    </div>
 
-                                {/* Email */}
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                                        {t('fields.email')}
-                                        <span className="text-xs font-normal text-gray-400 ml-2">({t('optional')})</span>
-                                    </label>
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                        dir="ltr"
-                                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all text-left"
-                                        placeholder={t('placeholders.email')}
-                                    />
+                                    {/* Email */}
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                            {t('fields.email')}
+                                            <span className="text-xs font-normal text-gray-400 ms-2">({t('optional')})</span>
+                                        </label>
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            dir="ltr"
+                                            className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-left"
+                                            placeholder={t('placeholders.email')}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -672,9 +680,9 @@ export default function ReportSightingPage() {
                                 name="additionalInfo"
                                 value={formData.additionalInfo}
                                 onChange={handleChange}
-                                dir="auto"
+                                dir={isRTL ? 'rtl' : 'ltr'}
                                 rows={5}
-                                className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all resize-none"
+                                className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all resize-none ${isRTL ? 'text-right' : 'text-left'}`}
                                 placeholder={t('placeholders.additionalInfo')}
                             />
                         </div>

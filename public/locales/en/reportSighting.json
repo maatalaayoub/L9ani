@@ -26,6 +26,7 @@
             "title": "Your Contact Information",
             "description": "So we can follow up with you about the sighting",
             "yourName": "Your Name",
+            "yourDetails": "Your Details",
             "importantIfProvided": "Important if provided"
         },
         "additionalInfo": {
