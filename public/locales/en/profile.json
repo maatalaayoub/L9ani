@@ -36,7 +36,12 @@
         "tooLong": "Username cannot exceed 20 characters",
         "startNumber": "Username cannot start with a number",
         "invalidChars": "Only letters, numbers, \"_\" and \".\" are allowed",
-        "verifyError": "Could not verify username"
+        "verifyError": "Could not verify username",
+        "available": "Username is available",
+        "taken": "Username is already taken"
+    },
+    "success": {
+        "profileUpdated": "Profile updated successfully!"
     },
     "verify": {
         "button": "Verify",

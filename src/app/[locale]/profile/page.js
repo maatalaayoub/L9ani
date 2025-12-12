@@ -150,7 +150,7 @@ export default function ProfilePage() {
                 }
             }
 
-            setMessage('Profile updated successfully!');
+            setMessage(t('success.profileUpdated'));
             setIsEditing(false); // Exit edit mode
 
             // Wait a bit then reload to refresh context
@@ -406,7 +406,7 @@ export default function ProfilePage() {
                 }
 
                 setUsernameAvailable(data.available);
-                setUsernameMessage(data.message);
+                setUsernameMessage(data.available ? t('username.available') : t('username.taken'));
 
             } catch (err) {
                 console.error('Error checking username:', err);
@@ -768,12 +768,12 @@ export default function ProfilePage() {
                 </div>
 
                 {message && (
-                    <div className="fixed bottom-6 right-6 p-4 bg-green-500 text-white rounded-lg shadow-2xl animate-in slide-in-from-bottom-5">
+                    <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] p-4 bg-green-500 text-white rounded-lg shadow-2xl animate-in slide-in-from-top-5">
                         {message}
                     </div>
                 )}
                 {error && (
-                    <div className="fixed bottom-6 right-6 p-4 bg-red-500 text-white rounded-lg shadow-2xl animate-in slide-in-from-bottom-5">
+                    <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] p-4 bg-red-500 text-white rounded-lg shadow-2xl animate-in slide-in-from-top-5">
                         {error}
                     </div>
                 )}
