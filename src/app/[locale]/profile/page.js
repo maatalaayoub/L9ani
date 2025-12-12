@@ -481,7 +481,7 @@ export default function ProfilePage() {
             <div className="max-w-3xl mx-auto space-y-6">
 
                 {/* 1. Header Card - Avatar & Summary */}
-                <div className="bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm">
+                <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
                     <div className="p-6 sm:p-8">
                         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
                             {/* Avatar */}
@@ -553,7 +553,7 @@ export default function ProfilePage() {
                         {isEditing && showAvatarSelector && (
                             <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
                                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">{t('chooseAvatar')}</p>
-                                <div className="flex gap-3 overflow-x-auto pb-2">
+                                <div className="flex gap-3 overflow-x-auto py-2 px-1">
                                     {PRESET_AVATARS.map((src, idx) => (
                                         <button
                                             key={idx}

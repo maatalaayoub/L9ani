@@ -4,6 +4,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import { LanguageProvider } from '@/context/LanguageContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import ScrollToTop from '@/components/ScrollToTop';
 import { ThemeProvider } from 'next-themes';
 import { Geist, Geist_Mono } from 'next/font/google';
 import localFont from 'next/font/local';
@@ -100,6 +101,7 @@ export default async function LocaleLayout({ children, params }) {
                     <NextIntlClientProvider messages={messages}>
                         <LanguageProvider>
                             <AuthProvider>
+                                <ScrollToTop />
                                 <Header />
                                 <main>{children}</main>
                                 <Footer />

@@ -1,21 +1,37 @@
 "use client";
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
-import { useTranslations } from "@/context/LanguageContext";
+import { useTranslations, useLanguage } from "@/context/LanguageContext";
+import dynamic from 'next/dynamic';
+
+// Dynamically import MapPicker to avoid SSR issues with Leaflet
+const MapPicker = dynamic(() => import('@/components/MapPicker'), {
+    ssr: false,
+    loading: () => (
+        <div className="w-full h-64 sm:h-80 rounded-lg bg-gray-100 dark:bg-gray-800 flex flex-col items-center justify-center border border-gray-200 dark:border-gray-700">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-3"></div>
+            <span className="text-sm text-gray-500 dark:text-gray-400">Loading map...</span>
+        </div>
+    )
+});
 
 export default function ReportMissingPage() {
     const { user, isAuthLoading } = useAuth();
     const router = useRouter();
     const t = useTranslations('reportMissing');
     const tCommon = useTranslations('common');
+    const { locale } = useLanguage();
+    const isRTL = locale === 'ar';
     const fileInputRef = useRef(null);
+    const genderDropdownRef = useRef(null);
 
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
+    const [isGenderDropdownOpen, setIsGenderDropdownOpen] = useState(false);
 
     const [formData, setFormData] = useState({
         firstName: '',
@@ -26,15 +42,41 @@ export default function ReportMissingPage() {
         healthDetails: '',
         city: '',
         lastKnownLocation: '',
+        coordinates: { lat: null, lng: null },
         additionalInfo: ''
     });
 
     const [photos, setPhotos] = useState([]);
     const [photoPreviews, setPhotoPreviews] = useState([]);
 
+    const genderOptions = [
+        { value: 'male', label: t('options.male') },
+        { value: 'female', label: t('options.female') }
+    ];
+
+    const selectedGender = genderOptions.find(g => g.value === formData.gender);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (genderDropdownRef.current && !genderDropdownRef.current.contains(event.target)) {
+                setIsGenderDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleLocationSelect = (coords) => {
+        setFormData(prev => ({
+            ...prev,
+            coordinates: coords
+        }));
     };
 
     const handlePhotoUpload = (e) => {
@@ -122,12 +164,12 @@ export default function ReportMissingPage() {
 
     if (!user) {
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-[#101828] flex items-center justify-center px-4 pt-16">
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-[#101828] dark:to-[#0a0f1e] flex items-center justify-center px-4 pt-16">
                 <div className="text-center">
                     <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
-                    <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">{tCommon('messages.loginRequired')}</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{tCommon('messages.loginRequired')}</h2>
                     <p className="text-gray-600 dark:text-gray-400">{tCommon('messages.pleaseLogin')}</p>
                 </div>
             </div>
@@ -185,7 +227,7 @@ export default function ReportMissingPage() {
                     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-gray-100 dark:border-gray-800">
                             <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
                                 {t('sections.photos.title')}
@@ -233,14 +275,14 @@ export default function ReportMissingPage() {
                                 <button
                                     type="button"
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="w-full py-8 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg hover:border-gray-400 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all"
+                                    className="w-full py-8 border-2 border-dashed border-blue-300 dark:border-blue-700 rounded-lg hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all"
                                 >
                                     <div className="flex flex-col items-center">
-                                        <svg className="w-10 h-10 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-10 h-10 text-blue-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                         </svg>
                                         <span className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('sections.photos.uploadButton')}</span>
-                                        <span className="text-xs text-gray-400 mt-1">{t('sections.photos.hint')} ({photos.length}/5)</span>
+                                        <span className={`text-xs text-gray-400 mt-1 ${isRTL ? 'text-right' : 'text-left'}`}>{t('sections.photos.hint')} ({photos.length}/5)</span>
                                     </div>
                                 </button>
                             )}
@@ -248,10 +290,10 @@ export default function ReportMissingPage() {
                     </div>
 
                     {/* Section 2: Personal Information */}
-                    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
                         <div className="p-6 border-b border-gray-100 dark:border-gray-800">
                             <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
                                 {t('sections.personalInfo.title')}
@@ -261,7 +303,7 @@ export default function ReportMissingPage() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                 {/* First Name */}
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                    <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
                                         {t('fields.firstName')} <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -269,15 +311,15 @@ export default function ReportMissingPage() {
                                         name="firstName"
                                         value={formData.firstName}
                                         onChange={handleChange}
-                                        dir="auto"
-                                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                        dir={isRTL ? 'rtl' : 'ltr'}
+                                        className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
                                         placeholder={t('placeholders.firstName')}
                                     />
                                 </div>
 
                                 {/* Last Name */}
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                    <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
                                         {t('fields.lastName')} <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -285,15 +327,15 @@ export default function ReportMissingPage() {
                                         name="lastName"
                                         value={formData.lastName}
                                         onChange={handleChange}
-                                        dir="auto"
-                                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                        dir={isRTL ? 'rtl' : 'ltr'}
+                                        className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
                                         placeholder={t('placeholders.lastName')}
                                     />
                                 </div>
 
                                 {/* Date of Birth */}
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                    <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
                                         {t('fields.dateOfBirth')}
                                     </label>
                                     <input
@@ -301,25 +343,53 @@ export default function ReportMissingPage() {
                                         name="dateOfBirth"
                                         value={formData.dateOfBirth}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                        className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
                                     />
                                 </div>
 
                                 {/* Gender */}
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                    <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
                                         {t('fields.gender')}
                                     </label>
-                                    <select
-                                        name="gender"
-                                        value={formData.gender}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                                    >
-                                        <option value="">{t('options.selectGender')}</option>
-                                        <option value="male">{t('options.male')}</option>
-                                        <option value="female">{t('options.female')}</option>
-                                    </select>
+                                    <div className="relative" ref={genderDropdownRef}>
+                                        {/* Custom Dropdown Button */}
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsGenderDropdownOpen(!isGenderDropdownOpen)}
+                                            className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg border-2 ${isGenderDropdownOpen ? 'border-blue-500' : 'border-gray-200 dark:border-gray-700'} bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 outline-none transition-all cursor-pointer`}
+                                        >
+                                            <span className={`text-sm ${selectedGender ? 'font-medium' : 'text-gray-400 dark:text-gray-500'}`}>
+                                                {selectedGender ? selectedGender.label : t('options.selectGender')}
+                                            </span>
+                                            <svg className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${isGenderDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+
+                                        {/* Dropdown Menu */}
+                                        {isGenderDropdownOpen && (
+                                            <div className="absolute z-[100] w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg overflow-hidden">
+                                                {genderOptions.map((option) => (
+                                                    <button
+                                                        key={option.value}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setFormData(prev => ({ ...prev, gender: option.value }));
+                                                            setIsGenderDropdownOpen(false);
+                                                        }}
+                                                        className={`w-full flex items-center px-4 py-3 text-start text-sm font-medium transition-colors ${
+                                                            formData.gender === option.value
+                                                                ? 'bg-blue-500 text-white'
+                                                                : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
+                                                        }`}
+                                                    >
+                                                        {option.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -329,7 +399,7 @@ export default function ReportMissingPage() {
                     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-gray-100 dark:border-gray-800">
                             <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                 </svg>
                                 {t('sections.healthStatus.title')}
@@ -338,7 +408,7 @@ export default function ReportMissingPage() {
                         <div className="p-6 space-y-5">
                             {/* Health Status Radio */}
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+                                <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 ${isRTL ? 'text-right' : 'text-left'}`}>
                                     {t('fields.healthStatus')}
                                 </label>
                                 <div className="flex flex-wrap gap-3">
@@ -368,16 +438,16 @@ export default function ReportMissingPage() {
                             {/* Health Details (conditional) */}
                             {formData.healthStatus && formData.healthStatus !== 'healthy' && (
                                 <div className="animate-in slide-in-from-top-2">
-                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                    <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
                                         {t('fields.healthDetails')}
                                     </label>
                                     <textarea
                                         name="healthDetails"
                                         value={formData.healthDetails}
                                         onChange={handleChange}
-                                        dir="auto"
+                                        dir={isRTL ? 'rtl' : 'ltr'}
                                         rows={3}
-                                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
+                                        className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none ${isRTL ? 'text-right' : 'text-left'}`}
                                         placeholder={t('placeholders.healthDetails')}
                                     />
                                 </div>
@@ -389,18 +459,36 @@ export default function ReportMissingPage() {
                     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-gray-100 dark:border-gray-800">
                             <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
                                 {t('sections.location.title')}
                             </h2>
                         </div>
-                        <div className="p-6">
+                        <div className="p-6 space-y-5">
+                            {/* Interactive Map */}
+                            <div>
+                                <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                    {t('fields.mapLocation')}
+                                </label>
+                                <MapPicker 
+                                    onLocationSelect={handleLocationSelect}
+                                    initialCoordinates={formData.coordinates}
+                                    markerColor="blue"
+                                />
+                                {formData.coordinates.lat && (
+                                    <p className={`text-xs text-gray-500 dark:text-gray-400 mt-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                        📍 {t('fields.coordinates')}: {formData.coordinates.lat}, {formData.coordinates.lng}
+                                    </p>
+                                )}
+                                <p className={`text-xs text-gray-400 mt-1 ${isRTL ? 'text-right' : 'text-left'}`}>{t('fields.mapHint')}</p>
+                            </div>
+
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                 {/* City */}
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                    <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
                                         {t('fields.city')} <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -408,15 +496,15 @@ export default function ReportMissingPage() {
                                         name="city"
                                         value={formData.city}
                                         onChange={handleChange}
-                                        dir="auto"
-                                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                        dir={isRTL ? 'rtl' : 'ltr'}
+                                        className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
                                         placeholder={t('placeholders.city')}
                                     />
                                 </div>
 
                                 {/* Last Known Location */}
                                 <div className="sm:col-span-2">
-                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                    <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
                                         {t('fields.lastKnownLocation')} <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -424,8 +512,8 @@ export default function ReportMissingPage() {
                                         name="lastKnownLocation"
                                         value={formData.lastKnownLocation}
                                         onChange={handleChange}
-                                        dir="auto"
-                                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                        dir={isRTL ? 'rtl' : 'ltr'}
+                                        className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
                                         placeholder={t('placeholders.lastKnownLocation')}
                                     />
                                 </div>
@@ -437,7 +525,7 @@ export default function ReportMissingPage() {
                     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-gray-100 dark:border-gray-800">
                             <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 {t('sections.additionalInfo.title')}
@@ -449,9 +537,9 @@ export default function ReportMissingPage() {
                                 name="additionalInfo"
                                 value={formData.additionalInfo}
                                 onChange={handleChange}
-                                dir="auto"
+                                dir={isRTL ? 'rtl' : 'ltr'}
                                 rows={5}
-                                className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
+                                className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none ${isRTL ? 'text-right' : 'text-left'}`}
                                 placeholder={t('placeholders.additionalInfo')}
                             />
                         </div>

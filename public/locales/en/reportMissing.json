@@ -34,7 +34,10 @@
         "healthDetails": "Please describe the condition",
         "city": "City",
         "lastKnownLocation": "Last Known Location",
-        "additionalInfo": "Additional Details"
+        "additionalInfo": "Additional Details",
+        "mapLocation": "Mark Location on Map",
+        "coordinates": "Coordinates",
+        "mapHint": "Click on the map to mark the last known location"
     },
 
     "placeholders": {

@@ -2,6 +2,7 @@
 
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "@/context/LanguageContext";
+import Image from "next/image";
 
 export default function Footer() {
     const t = useTranslations('footer');
@@ -14,17 +15,14 @@ export default function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
                     {/* Brand Section */}
                     <div className="md:col-span-2">
-                        <Link href="/">
-                            <div className="flex items-center gap-3 mb-4 cursor-pointer hover:opacity-80 transition-opacity">
-                                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
-                                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                    </svg>
-                                </div>
-                                <span className="text-xl font-bold text-gray-900 dark:text-white">
-                                    Lqani.ma
-                                </span>
-                            </div>
+                        <Link href="/" className="inline-block mb-4 hover:opacity-80 transition-opacity">
+                            <Image
+                                src="/icons/logo.svg"
+                                alt="Lqani.ma"
+                                width={150}
+                                height={42}
+                                className="h-10 w-auto dark:brightness-0 dark:invert"
+                            />
                         </Link>
                         <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-6">
                             {t('tagline')}

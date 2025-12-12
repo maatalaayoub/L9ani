@@ -1,0 +1,24 @@
+<svg width="180" height="50" viewBox="0 0 180 50" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle for search icon -->
+  <circle cx="25" cy="25" r="20" fill="#4A3FF6" opacity="0.1"/>
+  
+  <!-- Search magnifying glass -->
+  <circle cx="22" cy="22" r="10" fill="none" stroke="#4A3FF6" stroke-width="2.5"/>
+  <line x1="29" y1="29" x2="36" y2="36" stroke="#4A3FF6" stroke-width="2.5" stroke-linecap="round"/>
+  
+  <!-- Person icon inside magnifying glass -->
+  <circle cx="22" cy="20" r="3" fill="#4A3FF6"/>
+  <path d="M 22 24 Q 18 24 17 27 L 27 27 Q 26 24 22 24 Z" fill="#4A3FF6"/>
+  
+  <!-- Text: Lqani.ma -->
+  <text x="48" y="32" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="#4A3FF6">
+    Lqani<tspan font-weight="400" opacity="0.7">.ma</tspan>
+  </text>
+  
+  <!-- Decorative dots suggesting connection/network -->
+  <circle cx="45" cy="40" r="1.5" fill="#4A3FF6" opacity="0.5"/>
+  <circle cx="55" cy="42" r="1.5" fill="#4A3FF6" opacity="0.5"/>
+  <circle cx="65" cy="40" r="1.5" fill="#4A3FF6" opacity="0.5"/>
+  <line x1="45" y1="40" x2="55" y2="42" stroke="#4A3FF6" stroke-width="0.5" opacity="0.3"/>
+  <line x1="55" y1="42" x2="65" y2="40" stroke="#4A3FF6" stroke-width="0.5" opacity="0.3"/>
+</svg>

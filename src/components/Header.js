@@ -6,6 +6,7 @@ import LoginDialog from "./LoginDialog";
 import { useAuth } from "../context/AuthContext";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useTranslations, useLanguage } from "../context/LanguageContext";
+import Image from "next/image";
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -55,16 +56,15 @@ export default function Header() {
                             </button>
 
                             {/* Logo */}
-                            <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
-                                <div className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-all duration-300 group-hover:scale-105">
-                                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                    </svg>
-                                    <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/20"></div>
-                                </div>
-                                <span className="text-base sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300">
-                                    Lqani.ma
-                                </span>
+                            <Link href="/" className="flex items-center group hover:opacity-90 transition-opacity">
+                                <Image
+                                    src="/icons/logo.svg"
+                                    alt="Lqani.ma"
+                                    width={140}
+                                    height={40}
+                                    className="h-8 sm:h-10 w-auto dark:brightness-0 dark:invert"
+                                    priority
+                                />
                             </Link>
 
                             {/* Desktop Navigation */}
@@ -96,7 +96,7 @@ export default function Header() {
                             </Link>
 
                             {/* Upload Photo Button - Report Missing Person - Hidden on mobile */}
-                            <Link href="/report-missing" onClick={closeDialogs} className="hidden md:inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold shadow-lg hover:shadow-blue-500/40 transition-shadow">
+                            <Link href="/report-missing" onClick={closeDialogs} className={`btn-gradient btn-ripple hidden md:inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold shadow-lg hover:shadow-blue-500/40 ${isActive('/report-missing') ? 'ring-2 ring-blue-300 ring-offset-2 dark:ring-offset-gray-900' : ''}`}>
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
@@ -104,7 +104,7 @@ export default function Header() {
                             </Link>
 
                             {/* Report Sighting Button - Hidden on mobile, visible on desktop */}
-                            <Link href="/report-sighting" onClick={closeDialogs} className="btn-gradient btn-ripple hidden md:flex items-center gap-2 px-3 py-2 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm font-semibold shadow-lg hover:shadow-orange-500/40">
+                            <Link href="/report-sighting" onClick={closeDialogs} className={`btn-gradient btn-ripple hidden md:flex items-center gap-2 px-3 py-2 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm font-semibold shadow-lg hover:shadow-orange-500/40 ${isActive('/report-sighting') ? 'ring-2 ring-orange-300 ring-offset-2 dark:ring-offset-gray-900' : ''}`}>
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -306,7 +306,7 @@ export default function Header() {
                                 <Link
                                     href="/report-sighting"
                                     onClick={closeDialogs}
-                                    className="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:translate-x-1"
+                                    className={`sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive('/report-sighting') ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:translate-x-1'}`}
                                 >
                                     <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -434,7 +434,7 @@ export default function Header() {
                         <span className="text-[10px] font-medium">{tCommon('navigation.home')}</span>
                     </Link>
 
-                    <Link href="/report-sighting" onClick={closeDialogs} className="group flex flex-col items-center justify-center w-full h-full space-y-1 text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 active:scale-95 transition-all duration-200">
+                    <Link href="/report-sighting" onClick={closeDialogs} className={`group flex flex-col items-center justify-center w-full h-full space-y-1 active:scale-95 transition-all duration-200 ${isActive('/report-sighting') ? 'text-orange-600 dark:text-orange-400' : 'text-gray-400 hover:text-orange-600 dark:hover:text-orange-400'}`}>
                         <svg className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -443,7 +443,7 @@ export default function Header() {
                     </Link>
 
                     <Link href="/report-missing" onClick={closeDialogs} className="group flex flex-col items-center justify-center w-full h-full space-y-1 text-white active:scale-95 transition-transform duration-200">
-                        <div className="w-12 h-12 -mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center shadow-lg group-hover:shadow-blue-500/50 group-hover:scale-110 group-active:scale-100 transition-all duration-200">
+                        <div className={`w-12 h-12 -mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center shadow-lg group-hover:shadow-blue-500/50 group-hover:scale-110 group-active:scale-100 transition-all duration-200 ${isActive('/report-missing') ? 'ring-2 ring-blue-300 ring-offset-2 dark:ring-offset-gray-900' : ''}`}>
                             <svg className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
                             </svg>

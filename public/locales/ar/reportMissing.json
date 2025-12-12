@@ -34,7 +34,10 @@
         "healthDetails": "يرجى وصف الحالة",
         "city": "المدينة",
         "lastKnownLocation": "آخر موقع معروف",
-        "additionalInfo": "تفاصيل إضافية"
+        "additionalInfo": "تفاصيل إضافية",
+        "mapLocation": "تحديد الموقع على الخريطة",
+        "coordinates": "الإحداثيات",
+        "mapHint": "انقر على الخريطة لتحديد آخر موقع معروف"
     },
 
     "placeholders": {

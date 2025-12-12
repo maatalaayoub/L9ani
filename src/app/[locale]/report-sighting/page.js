@@ -1,12 +1,23 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import Image from 'next/image';
-import 'ol/ol.css';
+import dynamic from 'next/dynamic';
+
+// Dynamically import MapPicker to avoid SSR issues with Leaflet
+const MapPicker = dynamic(() => import('@/components/MapPicker'), {
+    ssr: false,
+    loading: () => (
+        <div className="w-full h-64 sm:h-80 rounded-lg bg-gray-100 dark:bg-gray-800 flex flex-col items-center justify-center border border-gray-200 dark:border-gray-700">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mb-3"></div>
+            <span className="text-sm text-gray-500 dark:text-gray-400">Loading map...</span>
+        </div>
+    )
+});
 
 export default function ReportSightingPage() {
     const { user, isAuthLoading } = useAuth();
@@ -16,14 +27,10 @@ export default function ReportSightingPage() {
     const { locale } = useLanguage();
     const isRTL = locale === 'ar';
     const fileInputRef = useRef(null);
-    const mapRef = useRef(null);
-    const mapInstanceRef = useRef(null);
-    const markerRef = useRef(null);
 
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
-    const [mapLoaded, setMapLoaded] = useState(false);
 
     const [formData, setFormData] = useState({
         firstName: '',
@@ -41,158 +48,12 @@ export default function ReportSightingPage() {
     const [photos, setPhotos] = useState([]);
     const [photoPreviews, setPhotoPreviews] = useState([]);
 
-    // Initialize OpenLayers map
-    useEffect(() => {
-        let isMounted = true;
-        
-        const initMap = async () => {
-            if (typeof window === 'undefined' || !mapRef.current || mapInstanceRef.current) return;
-
-            try {
-                // Dynamic imports for OpenLayers
-                const { default: Map } = await import('ol/Map');
-                const { default: View } = await import('ol/View');
-                const { default: TileLayer } = await import('ol/layer/Tile');
-                const { default: VectorLayer } = await import('ol/layer/Vector');
-                const { default: XYZ } = await import('ol/source/XYZ');
-                const { default: VectorSource } = await import('ol/source/Vector');
-                const { default: Feature } = await import('ol/Feature');
-                const { default: Point } = await import('ol/geom/Point');
-                const { fromLonLat, toLonLat } = await import('ol/proj');
-                const { default: Style } = await import('ol/style/Style');
-                const { default: Icon } = await import('ol/style/Icon');
-
-                if (!isMounted || !mapRef.current) return;
-
-                // Beautiful SVG marker pin
-                const markerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="50" viewBox="0 0 40 50">
-                    <defs>
-                        <linearGradient id="pinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style="stop-color:#ff8c42;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#f97316;stop-opacity:1" />
-                        </linearGradient>
-                    </defs>
-                    <path fill="url(#pinGradient)" d="M20 0C9 0 0 9 0 20c0 11 20 30 20 30s20-19 20-30C40 9 31 0 20 0z"/>
-                    <circle cx="20" cy="18" r="8" fill="white"/>
-                    <circle cx="20" cy="18" r="4" fill="#f97316"/>
-                </svg>`;
-
-                // Create marker source and layer
-                const markerSource = new VectorSource();
-                const markerLayer = new VectorLayer({
-                    source: markerSource,
-                    zIndex: 100
-                });
-
-                // Create map with OpenStreetMap tiles (reliable and free)
-                const map = new Map({
-                    target: mapRef.current,
-                    layers: [
-                        new TileLayer({
-                            source: new XYZ({
-                                url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                attributions: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                            })
-                        }),
-                        markerLayer
-                    ],
-                    view: new View({
-                        center: fromLonLat([-7.0926, 31.7917]), // Morocco
-                        zoom: 6,
-                        maxZoom: 19,
-                        minZoom: 3
-                    })
-                });
-
-                // Store refs for later use
-                mapInstanceRef.current = map;
-                markerRef.current = { source: markerSource, feature: null, fromLonLat, toLonLat, Feature, Point, Style, Icon, markerSvg };
-
-                // Create marker style function
-                const createMarkerStyle = () => new Style({
-                    image: new Icon({
-                        src: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(markerSvg),
-                        scale: 1,
-                        anchor: [0.5, 1],
-                        anchorXUnits: 'fraction',
-                        anchorYUnits: 'fraction'
-                    })
-                });
-
-                // Handle map clicks to place marker
-                map.on('singleclick', (e) => {
-                    const coords = toLonLat(e.coordinate);
-                    const lng = coords[0];
-                    const lat = coords[1];
-
-                    // Clear existing markers
-                    markerSource.clear();
-
-                    // Add new marker with beautiful pin style
-                    const marker = new Feature({
-                        geometry: new Point(fromLonLat([lng, lat]))
-                    });
-                    marker.setStyle(createMarkerStyle());
-                    markerSource.addFeature(marker);
-                    markerRef.current.feature = marker;
-
-                    // Update form data
-                    setFormData(prev => ({
-                        ...prev,
-                        coordinates: { lat: lat.toFixed(6), lng: lng.toFixed(6) }
-                    }));
-                });
-
-                // Try to get user's location
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            const { latitude, longitude } = position.coords;
-                            map.getView().animate({
-                                center: fromLonLat([longitude, latitude]),
-                                zoom: 13,
-                                duration: 1000
-                            });
-                        },
-                        () => {
-                            // Geolocation denied or failed, keep default view
-                        },
-                        { timeout: 10000 }
-                    );
-                }
-
-                if (isMounted) {
-                    setMapLoaded(true);
-                }
-
-                // Fix map size after render
-                setTimeout(() => {
-                    map.updateSize();
-                }, 100);
-
-            } catch (err) {
-                console.error('Error initializing OpenLayers map:', err);
-                // Set mapLoaded anyway so user sees the error state
-                if (isMounted) setMapLoaded(true);
-            }
-        };
-
-        initMap();
-        
-        return () => {
-            isMounted = false;
-        };
-    }, []);
-
-    // Cleanup map on unmount
-    useEffect(() => {
-        return () => {
-            if (mapInstanceRef.current) {
-                mapInstanceRef.current.setTarget(null);
-                mapInstanceRef.current = null;
-            }
-        };
-    }, []);
+    const handleLocationSelect = (coords) => {
+        setFormData(prev => ({
+            ...prev,
+            coordinates: coords
+        }));
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -278,6 +139,20 @@ export default function ReportSightingPage() {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-[#101828] pt-24 px-4 flex justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+            </div>
+        );
+    }
+
+    if (!user) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-[#101828] dark:to-[#0a0f1e] flex items-center justify-center px-4 pt-16">
+                <div className="text-center">
+                    <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{tCommon('messages.loginRequired')}</h2>
+                    <p className="text-gray-600 dark:text-gray-400">{tCommon('messages.pleaseLogin')}</p>
+                </div>
             </div>
         );
     }
@@ -434,18 +309,10 @@ export default function ReportSightingPage() {
                                 <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                                     {t('fields.mapLocation')}
                                 </label>
-                                <div 
-                                    ref={mapRef} 
-                                    className="w-full h-64 sm:h-80 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-100 dark:bg-gray-800 relative z-0"
-                                    style={{ minHeight: '256px' }}
-                                >
-                                    {!mapLoaded && (
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800">
-                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mb-3"></div>
-                                            <span className="text-sm text-gray-500 dark:text-gray-400">Loading map...</span>
-                                        </div>
-                                    )}
-                                </div>
+                                <MapPicker 
+                                    onLocationSelect={handleLocationSelect}
+                                    initialCoordinates={formData.coordinates}
+                                />
                                 {formData.coordinates.lat && (
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                                         📍 {t('fields.coordinates')}: {formData.coordinates.lat}, {formData.coordinates.lng}

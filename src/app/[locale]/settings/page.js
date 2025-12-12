@@ -4,12 +4,16 @@ import { Link } from "@/i18n/navigation";
 import { useTheme } from "next-themes";
 import { useEffect, useState, useRef } from "react";
 import { useLanguage, useTranslations } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
+import LoginDialog from "@/components/LoginDialog";
 
 export default function Settings() {
     const { theme, setTheme } = useTheme();
     const { locale, changeLocale } = useLanguage();
+    const { user } = useAuth();
     const [mounted, setMounted] = useState(false);
     const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
+    const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
     const langDropdownRef = useRef(null);
     const t = useTranslations('settings');
 
@@ -138,7 +142,8 @@ export default function Settings() {
                         </div>
                     </div>
 
-                    {/* Notifications Section */}
+                    {/* Notifications Section - Only visible when logged in */}
+                    {user ? (
                     <div className="bg-white/80 dark:bg-[#1e293b]/50 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 p-8 shadow-xl shadow-gray-200/20 dark:shadow-black/20">
                         <div className="flex items-center gap-3 mb-6">
                             <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400">
@@ -182,8 +187,41 @@ export default function Settings() {
                             </div>
                         </div>
                     </div>
+                    ) : (
+                    /* Login Prompt Section - Only visible when not logged in */
+                    <div className="bg-white/80 dark:bg-[#1e293b]/50 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 p-8 shadow-xl shadow-gray-200/20 dark:shadow-black/20">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                            </div>
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                                {t('loginPrompt.title')}
+                            </h2>
+                        </div>
+                        <p className="text-gray-600 dark:text-gray-400 mb-6">
+                            {t('loginPrompt.description')}
+                        </p>
+                        <button
+                            onClick={() => setIsLoginDialogOpen(true)}
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/25 transition-all duration-200 hover:shadow-xl hover:shadow-blue-500/30"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                            </svg>
+                            {t('loginPrompt.button')}
+                        </button>
+                    </div>
+                    )}
                 </div>
             </main>
+
+            {/* Login Dialog */}
+            <LoginDialog
+                isOpen={isLoginDialogOpen}
+                onClose={() => setIsLoginDialogOpen(false)}
+            />
         </div>
     );
 }

@@ -21,5 +21,10 @@
             "title": "New Device Login",
             "description": "Security alerts for unrecognized devices"
         }
+    },
+    "loginPrompt": {
+        "title": "More Settings Available",
+        "description": "For more settings like notifications and alerts, please log in to your account.",
+        "button": "Log in"
     }
 }
