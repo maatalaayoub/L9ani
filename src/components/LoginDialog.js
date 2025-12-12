@@ -203,6 +203,13 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
         setSuccessMessage("");
         setIsLoading(true);
 
+        // Check if Supabase is initialized
+        if (!supabase) {
+            setPasswordError(t('errors.serviceUnavailable') || 'Service unavailable. Please try again later.');
+            setIsLoading(false);
+            return;
+        }
+
         try {
             if (activeTab === "signup") {
                 if (!firstName || !lastName || !phoneNumber || !email || !password || !confirmPassword) {
