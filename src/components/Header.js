@@ -3,7 +3,7 @@
 import { Link, usePathname } from "@/i18n/navigation";
 import { useState, useEffect } from "react";
 import LoginDialog from "./LoginDialog";
-import { useCrypto } from "../context/CryptoContext";
+import { useAuth } from "../context/AuthContext";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useTranslations, useLanguage } from "../context/LanguageContext";
 
@@ -12,7 +12,7 @@ export default function Header() {
     const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
     const [initialTab, setInitialTab] = useState("login");
     const pathname = usePathname();
-    const { isSearchFocused, user, profile, logout, isAuthLoading } = useCrypto();
+    const { isSearchFocused, user, profile, logout, isAuthLoading } = useAuth();
     const t = useTranslations('header');
     const { locale } = useLanguage();
     const tCommon = useTranslations('common');

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useCrypto } from '@/context/CryptoContext';
+import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
@@ -10,7 +10,7 @@ import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 
 export default function ProfilePage() {
-    const { user, profile, isAuthLoading, logout } = useCrypto();
+    const { user, profile, isAuthLoading, logout } = useAuth();
     const router = useRouter();
     const t = useTranslations('profile');
     const tCommon = useTranslations('common');
@@ -275,7 +275,7 @@ export default function ProfilePage() {
                 setEmailChangeError(
                     <span>
                         {errorMessage} <br />
-                        <a href="mailto:support@crypto.com" className="text-blue-500 underline hover:text-blue-600 mt-2 inline-block">
+                        <a href="mailto:support@lqani.ma" className="text-blue-500 underline hover:text-blue-600 mt-2 inline-block">
                             Contact Support
                         </a>
                     </span>

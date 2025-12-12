@@ -3,9 +3,9 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from '@/lib/supabase';
 
-const CryptoContext = createContext();
+const AuthContext = createContext();
 
-export function CryptoProvider({ children }) {
+export function AuthProvider({ children }) {
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const [user, setUser] = useState(null);
     const [profile, setProfile] = useState(null);
@@ -91,7 +91,7 @@ export function CryptoProvider({ children }) {
     };
 
     return (
-        <CryptoContext.Provider value={{
+        <AuthContext.Provider value={{
             isSearchFocused,
             setIsSearchFocused,
             user,
@@ -101,10 +101,10 @@ export function CryptoProvider({ children }) {
             isAuthLoading
         }}>
             {children}
-        </CryptoContext.Provider>
+        </AuthContext.Provider>
     );
 }
 
-export function useCrypto() {
-    return useContext(CryptoContext);
+export function useAuth() {
+    return useContext(AuthContext);
 }

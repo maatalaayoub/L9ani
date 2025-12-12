@@ -1,6 +1,6 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
-import { CryptoProvider } from '@/context/CryptoContext';
+import { AuthProvider } from '@/context/AuthContext';
 import { LanguageProvider } from '@/context/LanguageContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -99,11 +99,11 @@ export default async function LocaleLayout({ children, params }) {
                 <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
                     <NextIntlClientProvider messages={messages}>
                         <LanguageProvider>
-                            <CryptoProvider>
+                            <AuthProvider>
                                 <Header />
                                 <main>{children}</main>
                                 <Footer />
-                            </CryptoProvider>
+                            </AuthProvider>
                         </LanguageProvider>
                     </NextIntlClientProvider>
                 </ThemeProvider>

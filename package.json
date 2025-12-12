@@ -1,5 +1,5 @@
 {
-  "name": "crypto-dashboard",
+  "name": "lqani",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.87.1",
-    "cryptocurrency-icons": "^0.18.1",
     "libphonenumber-js": "^1.12.31",
     "next": "16.0.7",
     "next-intl": "^4.5.8",

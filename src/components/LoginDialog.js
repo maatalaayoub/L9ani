@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react";
-import { useCrypto } from "../context/CryptoContext";
+import { useAuth } from "../context/AuthContext";
 import { supabase } from "@/lib/supabase";
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
@@ -11,7 +11,7 @@ import { useTranslations } from "@/context/LanguageContext";
 export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
     const t = useTranslations('auth');
     const [activeTab, setActiveTab] = useState(initialTab);
-    const { login } = useCrypto();
+    const { login } = useAuth();
 
     useEffect(() => {
         if (isOpen) {

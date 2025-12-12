@@ -1,12 +1,12 @@
 "use client"
 
-import { useCrypto } from "@/context/CryptoContext";
+import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useTranslations } from "@/context/LanguageContext";
 
 export default function MyReport() {
-    const { user } = useCrypto();
+    const { user } = useAuth();
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(true);
     const t = useTranslations('myreport');
