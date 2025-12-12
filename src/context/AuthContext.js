@@ -14,13 +14,6 @@ export function AuthProvider({ children }) {
     // Check for existing session on mount
     useEffect(() => {
         const initializeSession = async () => {
-            // Skip if supabase is not initialized
-            if (!supabase) {
-                console.error('Supabase client not initialized');
-                setIsAuthLoading(false);
-                return;
-            }
-
             try {
                 const storedToken = localStorage.getItem('supabase_token');
                 const storedUser = localStorage.getItem('supabase_user');
@@ -59,7 +52,6 @@ export function AuthProvider({ children }) {
     }, []);
 
     const fetchProfile = async (userId) => {
-        if (!supabase) return;
         try {
             const { data, error } = await supabase
                 .from('profiles')
@@ -74,10 +66,6 @@ export function AuthProvider({ children }) {
     };
 
     const login = async (sessionData, userData) => {
-        if (!supabase) {
-            console.error('Supabase client not initialized');
-            return;
-        }
         localStorage.setItem('supabase_token', sessionData.access_token);
         localStorage.setItem('supabase_refresh_token', sessionData.refresh_token);
         localStorage.setItem('supabase_user', JSON.stringify(userData));
@@ -93,9 +81,7 @@ export function AuthProvider({ children }) {
     };
 
     const logout = async () => {
-        if (supabase) {
-            await supabase.auth.signOut();
-        }
+        await supabase.auth.signOut();
         localStorage.removeItem('supabase_token');
         localStorage.removeItem('supabase_refresh_token');
         localStorage.removeItem('supabase_user');

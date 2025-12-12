@@ -1,25 +1,20 @@
-
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-// Validate environment variables
-if (!supabaseUrl) {
-    console.error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable');
-}
-if (!supabaseAnonKey) {
-    console.error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable');
+// Validate required environment variables
+if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error("Supabase environment variables are missing. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY");
 }
 
-// Client for public operations - always create if we have the required vars
-export const supabase = (supabaseUrl && supabaseAnonKey)
-    ? createClient(supabaseUrl, supabaseAnonKey)
-    : null;
+// Client for public operations (client-side safe)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Admin client for privileged operations (server-side ONLY)
-export const supabaseAdmin = (supabaseUrl && serviceRoleKey)
+// Only create if service role key is available (won't be on client)
+export const supabaseAdmin = serviceRoleKey
     ? createClient(supabaseUrl, serviceRoleKey, {
         auth: {
             persistSession: false,
@@ -28,19 +23,3 @@ export const supabaseAdmin = (supabaseUrl && serviceRoleKey)
         }
     })
     : null;
-
-// Helper function to get supabase client with error handling
-export function getSupabase() {
-    if (!supabase) {
-        throw new Error('Supabase client not initialized. Check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
-    }
-    return supabase;
-}
-
-// Helper function to get supabase admin client with error handling
-export function getSupabaseAdmin() {
-    if (!supabaseAdmin) {
-        throw new Error('Supabase admin client not initialized. Check SUPABASE_SERVICE_ROLE_KEY environment variable.');
-    }
-    return supabaseAdmin;
-}

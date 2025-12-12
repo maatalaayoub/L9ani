@@ -3,9 +3,9 @@ import { supabase, supabaseAdmin } from '@/lib/supabase';
 
 export async function PUT(request) {
     try {
-        // Check if supabase clients are initialized
-        if (!supabase || !supabaseAdmin) {
-            console.error('Supabase clients not initialized');
+        // Check if supabaseAdmin is initialized (requires service role key)
+        if (!supabaseAdmin) {
+            console.error('Supabase admin client not initialized - missing SUPABASE_SERVICE_ROLE_KEY');
             return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
         }
 
