@@ -15,23 +15,23 @@ export async function POST(request) {
             return NextResponse.json({ available: false, message: 'Email is required' }, { status: 400 });
         }
 
-        console.log('[EMAIL-CHECK] Service Role Key exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
-        console.log('[EMAIL-CHECK] Service Role Key length:', process.env.SUPABASE_SERVICE_ROLE_KEY?.length);
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-        if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-            console.error('[EMAIL-CHECK] Server missing SUPABASE_SERVICE_ROLE_KEY');
+        console.log('[EMAIL-CHECK] Service Role Key exists:', !!serviceRoleKey);
+        console.log('[EMAIL-CHECK] Supabase URL exists:', !!supabaseUrl);
+
+        if (!supabaseUrl || !serviceRoleKey) {
+            console.error('[EMAIL-CHECK] Server missing Supabase environment variables');
             return NextResponse.json(
-                { available: false, message: 'Server Config Error: Missing SUPABASE_SERVICE_ROLE_KEY' },
+                { available: false, message: 'Server Configuration Error' },
                 { status: 500 }
             );
         }
 
         // Initialize Supabase with Service Role Key for admin privileges
         console.log('[EMAIL-CHECK] Creating Supabase admin client');
-        const supabaseAdmin = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL,
-            process.env.SUPABASE_SERVICE_ROLE_KEY
-        );
+        const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
         console.log('[EMAIL-CHECK] Querying profiles table for email:', email);
 

@@ -10,11 +10,16 @@ export async function DELETE(request) {
             return NextResponse.json({ message: 'User ID is required' }, { status: 400 });
         }
 
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+        if (!supabaseUrl || !serviceRoleKey) {
+            console.error('Missing Supabase environment variables');
+            return NextResponse.json({ message: 'Server configuration error' }, { status: 500 });
+        }
+
         // Initialize Supabase with Service Role Key for admin privileges
-        const supabaseAdmin = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL,
-            process.env.SUPABASE_SERVICE_ROLE_KEY
-        );
+        const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
         // Delete the user from authentication (This should cascade to profiles if set up, or we do it manually)
         const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);

@@ -119,6 +119,13 @@ export default function ProfilePage() {
         setMessage('');
         setError('');
 
+        // Check if supabase is initialized
+        if (!supabase) {
+            setError('Service unavailable. Please try again later.');
+            setLoading(false);
+            return;
+        }
+
         try {
             // Update the existing profile (don't use upsert, just update)
             const { error } = await supabase
@@ -177,6 +184,13 @@ export default function ProfilePage() {
         setError('');
         setVerifyError('');
 
+        // Check if supabase is initialized
+        if (!supabase) {
+            setVerifyError('Service unavailable. Please try again later.');
+            setVerifying(false);
+            return;
+        }
+
         try {
             // Use Supabase RPC for direct client-to-database verification
             // This bypasses local connectivity issues with the API route
@@ -212,6 +226,14 @@ export default function ProfilePage() {
     const handleResendCode = async () => {
         setResending(true);
         setVerifyError('');
+
+        // Check if supabase is initialized
+        if (!supabase) {
+            setVerifyError('Service unavailable. Please try again later.');
+            setResending(false);
+            return;
+        }
+
         try {
             const { data: newCode, error } = await supabase.rpc('resend_verification_code');
             if (error) throw error;
@@ -236,6 +258,14 @@ export default function ProfilePage() {
         }
         setIsChangingEmail(true);
         setEmailChangeError('');
+
+        // Check if supabase is initialized
+        if (!supabase) {
+            setEmailChangeError('Service unavailable. Please try again later.');
+            setIsChangingEmail(false);
+            return;
+        }
+
         try {
             // 1. Pre-check: Verify email is not taken by another user
             const checkResponse = await fetch('/api/email-check', {

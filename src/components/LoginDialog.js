@@ -236,6 +236,13 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
                     return;
                 }
 
+                // Check if supabase is initialized
+                if (!supabase) {
+                    setPasswordError('Service unavailable. Please try again later.');
+                    setIsLoading(false);
+                    return;
+                }
+
                 // Check if email already exists using our custom RPC
                 const { data: emailExists, error: checkError } = await supabase.rpc('check_email_exists', {
                     email_input: email
@@ -316,6 +323,13 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
                     }, 2000);
                 }
             } else {
+                // Check if supabase is initialized
+                if (!supabase) {
+                    setPasswordError('Service unavailable. Please try again later.');
+                    setIsLoading(false);
+                    return;
+                }
+
                 // Use Supabase Client-Side Auth directly
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email,
@@ -353,6 +367,13 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
         setPasswordError("");
         setSuccessMessage("");
         setIsLoading(true);
+
+        // Check if supabase is initialized
+        if (!supabase) {
+            setPasswordError('Service unavailable. Please try again later.');
+            setIsLoading(false);
+            return;
+        }
 
         try {
             if (forgotPasswordStep === 1) { // Request OTP

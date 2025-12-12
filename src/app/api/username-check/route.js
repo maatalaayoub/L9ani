@@ -10,12 +10,17 @@ export async function POST(request) {
             return NextResponse.json({ available: false, message: 'Username is required' }, { status: 400 });
         }
 
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+        if (!supabaseUrl || !serviceRoleKey) {
+            console.error('Missing Supabase environment variables');
+            return NextResponse.json({ available: false, message: 'Server configuration error' }, { status: 500 });
+        }
+
         // Initialize Supabase with Service Role Key for admin privileges (Bypass RLS)
         // CRITICAL: This key stays on the server.
-        const supabaseAdmin = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL,
-            process.env.SUPABASE_SERVICE_ROLE_KEY
-        );
+        const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
         // Check if username exists for ANY OTHER user (Case Insensitive)
         const { count, error } = await supabaseAdmin

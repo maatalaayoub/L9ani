@@ -1,9 +1,14 @@
-
 import { NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 
 export async function PUT(request) {
     try {
+        // Check if supabase clients are initialized
+        if (!supabase || !supabaseAdmin) {
+            console.error('Supabase clients not initialized');
+            return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+        }
+
         const authHeader = request.headers.get('Authorization');
         if (!authHeader) {
             return NextResponse.json({ error: 'Missing Authorization header' }, { status: 401 });
