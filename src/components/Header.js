@@ -27,6 +27,13 @@ export default function Header() {
         setIsMenuOpen(false);
     };
 
+    // Close login dialog when user logs in successfully
+    useEffect(() => {
+        if (user && isLoginDialogOpen) {
+            setIsLoginDialogOpen(false);
+        }
+    }, [user]);
+
     // Prevent body scroll when menu is open
     useEffect(() => {
         if (isMenuOpen) {
@@ -41,7 +48,7 @@ export default function Header() {
 
     return (
         <>
-            <nav className={`fixed top-0 w-full z-50 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50 ${isLoginDialogOpen ? 'hidden sm:block' : ''}`}>
+            <nav className="fixed top-0 w-full z-50 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <div className="flex items-center gap-4">
@@ -155,11 +162,11 @@ export default function Header() {
                                                 />
                                             ) : (
                                                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
-                                                    {profile?.first_name?.[0]?.toUpperCase() || profile?.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
+                                                    {profile?.first_name?.[0]?.toUpperCase() || profile?.username?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
                                                 </div>
                                             )}
                                             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                {profile?.first_name || 'User'}
+                                                {profile?.first_name || profile?.username || 'User'}
                                             </span>
                                         </Link>
                                         <button
@@ -239,14 +246,16 @@ export default function Header() {
                                         <img src={profile.avatar_url} alt="Profile" className="w-12 h-12 rounded-full object-cover border border-gray-300 dark:border-gray-600 ring-2 ring-white dark:ring-gray-800" />
                                     ) : (
                                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg">
-                                            {profile?.first_name?.[0] || user.email?.[0]}
+                                            {profile?.first_name?.[0] || profile?.username?.[0] || user?.email?.[0]}
                                         </div>
                                     )}
                                     <div className="overflow-hidden">
                                         <p className="font-semibold text-gray-900 dark:text-white truncate">
-                                            {profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}` : 'User'}
+                                            {profile?.first_name 
+                                                ? `${profile.first_name} ${profile.last_name || ''}`.trim()
+                                                : profile?.username || 'User'}
                                         </p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
                                     </div>
                                 </Link>
                             </div>

@@ -52,7 +52,7 @@ export async function POST(request) {
             );
         }
 
-        // 5. Create User using Service Role Key
+        // 5. Check if email already exists in profiles table
         if (!supabaseAdmin) {
             console.error('Supabase Service Role Key is missing on server');
             return NextResponse.json(
@@ -60,6 +60,42 @@ export async function POST(request) {
                 { status: 500 }
             );
         }
+
+        // Check if email is already registered
+        const { data: existingProfile, error: checkError } = await supabaseAdmin
+            .from('profiles')
+            .select('id')
+            .ilike('email', email)
+            .maybeSingle();
+
+        if (checkError) {
+            console.error('Error checking existing email:', checkError);
+            return NextResponse.json(
+                { error: 'Error checking email availability' },
+                { status: 500 }
+            );
+        }
+
+        if (existingProfile) {
+            return NextResponse.json(
+                { error: 'Email is already registered' },
+                { status: 400 }
+            );
+        }
+
+        // Also check auth.users table directly
+        const { data: authUsers, error: authCheckError } = await supabaseAdmin.auth.admin.listUsers();
+        if (!authCheckError && authUsers?.users) {
+            const emailExists = authUsers.users.some(u => u.email?.toLowerCase() === email.toLowerCase());
+            if (emailExists) {
+                return NextResponse.json(
+                    { error: 'Email is already registered' },
+                    { status: 400 }
+                );
+            }
+        }
+
+        // 6. Create User using Service Role Key
 
         const { data, error } = await supabaseAdmin.auth.admin.createUser({
             email: email,
@@ -108,7 +144,10 @@ export async function POST(request) {
                 phone: phoneNumber || "",
                 avatar_url: null,
                 email_verified: false,
-                email_verified_code: verificationCode
+                email_verified_code: verificationCode,
+                has_password: true,
+                terms_accepted: true,
+                terms_accepted_at: new Date().toISOString()
             }, { onConflict: 'auth_user_id' });
 
             // TODO: Send verificationCode to user's email via an email service (e.g. Resend, SendGrid)
@@ -121,6 +160,22 @@ export async function POST(request) {
                     { error: 'Profile creation failed: ' + profileError.message },
                     { status: 500 }
                 );
+            }
+
+            // Create default settings for the new user
+            const { error: settingsError } = await supabaseAdmin.from('user_settings').insert({
+                user_id: data.user.id,
+                theme: 'system',
+                language: 'en',
+                sighting_alerts: true,
+                new_device_login: true,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            });
+
+            if (settingsError) {
+                console.error('Error creating default settings:', settingsError);
+                // Don't fail signup if settings creation fails - it's not critical
             }
         }
 

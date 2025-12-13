@@ -6,10 +6,10 @@ import { SettingsProvider } from '@/context/SettingsContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ScrollToTop from '@/components/ScrollToTop';
+import TermsDialogWrapper from '@/components/TermsDialogWrapper';
 import { ThemeProvider } from 'next-themes';
 import { Geist, Geist_Mono } from 'next/font/google';
 import localFont from 'next/font/local';
-import '../globals.css';
 
 const geistSans = Geist({
     variable: '--font-geist-sans',
@@ -62,10 +62,13 @@ const tajawal = localFont({
     variable: '--font-tajawal',
 });
 
-export const metadata = {
-    title: 'Lqani.ma',
-    description: 'Help reunite families through community-powered photo matching',
-};
+export async function generateMetadata({ params }) {
+    const { locale } = await params;
+    return {
+        title: 'Lqani.ma',
+        description: 'Help reunite families through community-powered photo matching',
+    };
+}
 
 export default async function LocaleLayout({ children, params }) {
     const { locale } = await params;
@@ -76,43 +79,39 @@ export default async function LocaleLayout({ children, params }) {
         : `${geistSans.variable} ${geistMono.variable}`;
 
     return (
-        <html lang={locale} dir={dir} className={fontClass} suppressHydrationWarning>
-            <head>
-                {/* Inline script to set direction immediately to prevent flash */}
-                <script
-                    dangerouslySetInnerHTML={{
-                        __html: `
-                            (function() {
-                                var path = window.location.pathname;
-                                var locale = path.split('/')[1];
-                                if (locale === 'ar') {
-                                    document.documentElement.dir = 'rtl';
-                                    document.documentElement.lang = 'ar';
-                                } else {
-                                    document.documentElement.dir = 'ltr';
-                                    document.documentElement.lang = 'en';
-                                }
-                            })();
-                        `,
-                    }}
-                />
-            </head>
-            <body className="antialiased">
-                <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-                    <NextIntlClientProvider messages={messages}>
-                        <LanguageProvider>
-                            <AuthProvider>
-                                <SettingsProvider>
-                                    <ScrollToTop />
-                                    <Header />
-                                    <main>{children}</main>
-                                    <Footer />
-                                </SettingsProvider>
-                            </AuthProvider>
-                        </LanguageProvider>
-                    </NextIntlClientProvider>
-                </ThemeProvider>
-            </body>
-        </html>
+        <div lang={locale} dir={dir} className={fontClass}>
+            <script
+                dangerouslySetInnerHTML={{
+                    __html: `
+                        (function() {
+                            var path = window.location.pathname;
+                            var locale = path.split('/')[1];
+                            if (locale === 'ar') {
+                                document.documentElement.dir = 'rtl';
+                                document.documentElement.lang = 'ar';
+                            } else {
+                                document.documentElement.dir = 'ltr';
+                                document.documentElement.lang = 'en';
+                            }
+                        })();
+                    `,
+                }}
+            />
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+                <NextIntlClientProvider messages={messages}>
+                    <LanguageProvider>
+                        <AuthProvider>
+                            <SettingsProvider>
+                                <ScrollToTop />
+                                <Header />
+                                <main>{children}</main>
+                                <Footer />
+                                <TermsDialogWrapper />
+                            </SettingsProvider>
+                        </AuthProvider>
+                    </LanguageProvider>
+                </NextIntlClientProvider>
+            </ThemeProvider>
+        </div>
     );
 }

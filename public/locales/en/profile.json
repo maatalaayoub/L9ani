@@ -8,7 +8,8 @@
     "chooseAvatar": "Choose an Avatar",
     "sections": {
         "personalInfo": "Personal Information",
-        "accountStatus": "Account Status"
+        "accountStatus": "Account Status",
+        "security": "Security"
     },
     "labels": {
         "userId": "User ID",
@@ -17,6 +18,59 @@
         "freeTier": "Free Tier"
     },
     "notSet": "Not set",
+    "passwordSetup": {
+        "title": "Set Account Password",
+        "description": "You signed in with Google. Set a password to also log in with your email and password.",
+        "banner": "Secure your account by setting a password",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm Password",
+        "requirements": {
+            "title": "Password requirements:",
+            "minLength": "At least 8 characters",
+            "number": "At least one number",
+            "symbol": "At least one special character (!@#$%^&*)"
+        },
+        "button": "Set Password",
+        "setting": "Setting password...",
+        "success": "Password set successfully! You can now log in with your email and password.",
+        "errors": {
+            "mismatch": "Passwords do not match",
+            "tooShort": "Password must be at least 8 characters",
+            "noNumber": "Password must contain at least one number",
+            "noSymbol": "Password must contain at least one special character",
+            "failed": "Failed to set password. Please try again."
+        }
+    },
+    "passwordChange": {
+        "title": "Change Password",
+        "description": "Update your account password. You'll need to enter your current password for verification.",
+        "currentPassword": "Current Password",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm New Password",
+        "requirements": {
+            "title": "Password requirements:",
+            "minLength": "At least 8 characters",
+            "number": "At least one number",
+            "symbol": "At least one special character (!@#$%^&*)"
+        },
+        "button": "Change Password",
+        "changing": "Changing password...",
+        "success": "Password changed successfully!",
+        "forgotPassword": {
+            "link": "Forgot your password?",
+            "sending": "Sending reset link...",
+            "sent": "Password reset link sent to your email!",
+            "error": "Failed to send reset link. Please try again."
+        },
+        "errors": {
+            "mismatch": "New passwords do not match",
+            "tooShort": "Password must be at least 8 characters",
+            "noNumber": "Password must contain at least one number",
+            "noSymbol": "Password must contain at least one special character",
+            "incorrectCurrent": "Current password is incorrect",
+            "failed": "Failed to change password. Please try again."
+        }
+    },
     "errors": {
         "sessionInvalid": "Session invalid (User not found). Please Sign Out and Log In again.",
         "updateFailed": "Error updating profile: ",
