@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import dynamic from 'next/dynamic';
+import LoginDialog from '@/components/LoginDialog';
 
 // Dynamically import MapPicker to avoid SSR issues with Leaflet
 const MapPicker = dynamic(() => import('@/components/MapPicker'), {
@@ -32,6 +33,8 @@ export default function ReportMissingPage() {
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const [isGenderDropdownOpen, setIsGenderDropdownOpen] = useState(false);
+    const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
+    const [loginDialogTab, setLoginDialogTab] = useState('login');
 
     const [formData, setFormData] = useState({
         firstName: '',
@@ -48,6 +51,19 @@ export default function ReportMissingPage() {
 
     const [photos, setPhotos] = useState([]);
     const [photoPreviews, setPhotoPreviews] = useState([]);
+    const [agreedToLegal, setAgreedToLegal] = useState(false);
+    const [currentWarning, setCurrentWarning] = useState('');
+
+    // Get the first validation error (in order of priority)
+    const getFirstValidationError = () => {
+        if (photos.length === 0) return t('validation.photo');
+        if (!formData.firstName.trim()) return t('validation.firstName');
+        if (!formData.lastName.trim()) return t('validation.lastName');
+        if (!formData.city.trim()) return t('validation.city');
+        if (!formData.lastKnownLocation.trim()) return t('validation.lastKnownLocation');
+        if (!agreedToLegal) return t('validation.legalConfirmation');
+        return null;
+    };
 
     const genderOptions = [
         { value: 'male', label: t('options.male') },
@@ -107,28 +123,19 @@ export default function ReportMissingPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
+
         setMessage('');
-        setError('');
 
-        // Validation
-        if (!formData.firstName || !formData.lastName) {
-            setError(t('errors.nameRequired'));
-            setLoading(false);
+        // Check for validation errors one at a time
+        const firstError = getFirstValidationError();
+        if (firstError) {
+            setCurrentWarning(firstError);
             return;
         }
 
-        if (photos.length === 0) {
-            setError(t('errors.photoRequired'));
-            setLoading(false);
-            return;
-        }
-
-        if (!formData.city || !formData.lastKnownLocation) {
-            setError(t('errors.locationRequired'));
-            setLoading(false);
-            return;
-        }
+        // All validations passed, clear warning and proceed
+        setCurrentWarning('');
+        setLoading(true);
 
         try {
             // TODO: Implement actual submission logic
@@ -165,13 +172,46 @@ export default function ReportMissingPage() {
     if (!user) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-[#101828] dark:to-[#0a0f1e] flex items-center justify-center px-4 pt-16">
-                <div className="text-center">
-                    <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="text-center max-w-md">
+                    <svg className="w-16 h-16 mx-auto text-blue-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{tCommon('messages.loginRequired')}</h2>
-                    <p className="text-gray-600 dark:text-gray-400">{tCommon('messages.pleaseLogin')}</p>
+                    <p className="text-gray-600 dark:text-gray-400 mb-8">{tCommon('messages.pleaseLogin')}</p>
+                    
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button
+                            onClick={() => {
+                                setLoginDialogTab('login');
+                                setIsLoginDialogOpen(true);
+                            }}
+                            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                            </svg>
+                            {tCommon('buttons.login')}
+                        </button>
+                        <button
+                            onClick={() => {
+                                setLoginDialogTab('signup');
+                                setIsLoginDialogOpen(true);
+                            }}
+                            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-medium rounded-lg transition-colors"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                            </svg>
+                            {tCommon('buttons.createAccount')}
+                        </button>
+                    </div>
                 </div>
+                
+                <LoginDialog 
+                    isOpen={isLoginDialogOpen} 
+                    onClose={() => setIsLoginDialogOpen(false)}
+                    initialTab={loginDialogTab}
+                />
             </div>
         );
     }
@@ -208,16 +248,6 @@ export default function ReportMissingPage() {
                             </svg>
                         </div>
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{message}</span>
-                    </div>
-                )}
-                {error && (
-                    <div className="mb-6 flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 border border-red-200 dark:border-red-900/50 rounded-lg shadow-sm">
-                        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                            <svg className="w-3 h-3 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </div>
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{error}</span>
                     </div>
                 )}
 
@@ -544,6 +574,36 @@ export default function ReportMissingPage() {
                             />
                         </div>
                     </div>
+
+                    {/* Legal Confirmation Checkbox */}
+                    <div 
+                        dir={isRTL ? 'rtl' : 'ltr'}
+                        className="flex items-start mb-2"
+                    >
+                        <input
+                            type="checkbox"
+                            id="legal-confirmation"
+                            checked={agreedToLegal}
+                            onChange={e => setAgreedToLegal(e.target.checked)}
+                            className="mt-1 w-4 h-4 text-blue-600 bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded focus:ring-0 focus:ring-offset-0 cursor-pointer flex-shrink-0"
+                        />
+                        <label htmlFor="legal-confirmation" className={`${isRTL ? 'mr-3' : 'ml-3'} text-sm text-gray-700 dark:text-gray-300 cursor-pointer`}>
+                            {t('legalConfirmation')}
+                            <span className="text-red-500"> *</span>
+                        </label>
+                    </div>
+
+                    {/* Validation Warning */}
+                    {currentWarning && (
+                        <div className="flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-gray-800 border border-red-200 dark:border-red-900/50 rounded-lg shadow-sm">
+                            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                                <svg className="w-3 h-3 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </div>
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{currentWarning}</span>
+                        </div>
+                    )}
 
                     {/* Submit Button */}
                     <div className="flex flex-col sm:flex-row gap-3 pt-4">

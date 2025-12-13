@@ -2,6 +2,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { AuthProvider } from '@/context/AuthContext';
 import { LanguageProvider } from '@/context/LanguageContext';
+import { SettingsProvider } from '@/context/SettingsContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ScrollToTop from '@/components/ScrollToTop';
@@ -101,10 +102,12 @@ export default async function LocaleLayout({ children, params }) {
                     <NextIntlClientProvider messages={messages}>
                         <LanguageProvider>
                             <AuthProvider>
-                                <ScrollToTop />
-                                <Header />
-                                <main>{children}</main>
-                                <Footer />
+                                <SettingsProvider>
+                                    <ScrollToTop />
+                                    <Header />
+                                    <main>{children}</main>
+                                    <Footer />
+                                </SettingsProvider>
                             </AuthProvider>
                         </LanguageProvider>
                     </NextIntlClientProvider>

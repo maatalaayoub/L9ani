@@ -2,6 +2,7 @@
     "buttons": {
         "login": "Log in",
         "signup": "Sign up",
+        "createAccount": "Create Account",
         "logout": "Logout",
         "save": "Save",
         "cancel": "Cancel",

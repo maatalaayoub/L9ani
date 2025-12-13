@@ -67,6 +67,7 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
             setPhoneNumber("");
             setPasswordError("");
             setSuccessMessage("");
+            setAgreedToTerms(false);
         } else {
             // Reset the flag after one switch
             setFromSignupSuccess(false);
@@ -82,6 +83,7 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
     const [lastName, setLastName] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
     const [passwordError, setPasswordError] = useState("");
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
 
     // Forgot Password State
     const [forgotPasswordStep, setForgotPasswordStep] = useState(1); // 1: Email, 2: OTP, 3: New Password
@@ -239,6 +241,12 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
 
                 if (password !== confirmPassword) {
                     setPasswordError(t('errors.passwordMismatch'));
+                    setIsLoading(false);
+                    return;
+                }
+
+                if (!agreedToTerms) {
+                    setPasswordError(t('errors.termsRequired'));
                     setIsLoading(false);
                     return;
                 }
@@ -822,6 +830,26 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
                             </div>
                         )}
 
+                        {activeTab === "signup" && (
+                            <div className="mb-4">
+                                <label className="flex items-start gap-3 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={agreedToTerms}
+                                        onChange={(e) => setAgreedToTerms(e.target.checked)}
+                                        className="mt-1 w-4 h-4 text-blue-600 bg-gray-50 dark:bg-slate-800 border-gray-300 dark:border-slate-600 rounded focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                                    />
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                                        {t('signup.terms.text')}
+                                        <a href="/privacy" target="_blank" className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 hover:underline">{t('signup.terms.termsOfUse')}</a>
+                                        {t('signup.terms.and')}
+                                        <a href="/privacy" target="_blank" className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 hover:underline">{t('signup.terms.privacyPolicy')}</a>
+                                        <span className="text-red-500"> *</span>
+                                    </span>
+                                </label>
+                            </div>
+                        )}
+
                         <button
                             type="submit"
                             disabled={isLoading}
@@ -836,16 +864,6 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
                                 activeTab === "login" ? t('login.button') : t('signup.button')
                             )}
                         </button>
-
-                        {activeTab === "signup" && (
-                            <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-6">
-                                {t('signup.terms.text')}
-                                <a href="#" className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300">{t('signup.terms.termsOfUse')}</a>
-                                {t('signup.terms.and')}
-                                <a href="#" className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300">{t('signup.terms.privacyPolicy')}</a>.
-                                {t('signup.terms.suffix')}
-                            </p>
-                        )}
                     </form>)}
 
                 {activeTab !== 'forgot_password' && (

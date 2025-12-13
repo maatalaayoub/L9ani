@@ -2,6 +2,7 @@
     "buttons": {
         "login": "تسجيل الدخول",
         "signup": "إنشاء حساب",
+        "createAccount": "إنشاء حساب",
         "logout": "تسجيل الخروج",
         "save": "حفظ",
         "cancel": "إلغاء",

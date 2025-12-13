@@ -1,15 +1,19 @@
 "use client"
 
 import { Link } from "@/i18n/navigation";
-import { useTheme } from "next-themes";
 import { useEffect, useState, useRef } from "react";
-import { useLanguage, useTranslations } from "@/context/LanguageContext";
+import { useTranslations } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
+import { useSettings } from "@/context/SettingsContext";
 import LoginDialog from "@/components/LoginDialog";
 
 export default function Settings() {
-    const { theme, setTheme } = useTheme();
-    const { locale, changeLocale } = useLanguage();
+    const { 
+        theme, setTheme, 
+        language, setLanguage,
+        sightingAlerts, setSightingAlerts,
+        newDeviceLogin, setNewDeviceLogin 
+    } = useSettings();
     const { user } = useAuth();
     const [mounted, setMounted] = useState(false);
     const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
@@ -22,7 +26,7 @@ export default function Settings() {
         { code: 'ar', name: 'العربية (Arabic)' }
     ];
 
-    const currentLang = languages.find(l => l.code === locale) || languages[0];
+    const currentLang = languages.find(l => l.code === language) || languages[0];
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -123,11 +127,11 @@ export default function Settings() {
                                                 <button
                                                     key={lang.code}
                                                     onClick={() => {
-                                                        changeLocale(lang.code);
+                                                        setLanguage(lang.code);
                                                         setIsLangDropdownOpen(false);
                                                     }}
                                                     className={`w-full flex items-center px-4 py-3.5 text-start text-base font-medium transition-colors ${
-                                                        locale === lang.code
+                                                        language === lang.code
                                                             ? 'bg-blue-500 text-white'
                                                             : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800'
                                                     }`}
@@ -167,7 +171,12 @@ export default function Settings() {
                                     </p>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer group">
-                                    <input type="checkbox" defaultChecked className="sr-only peer" />
+                                    <input 
+                                        type="checkbox" 
+                                        checked={sightingAlerts} 
+                                        onChange={(e) => setSightingAlerts(e.target.checked)}
+                                        className="sr-only peer" 
+                                    />
                                     <div className="w-12 h-7 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-5 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-gradient-to-r peer-checked:from-blue-600 peer-checked:to-indigo-600 shadow-inner"></div>
                                 </label>
                             </div>
@@ -181,7 +190,12 @@ export default function Settings() {
                                     </p>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer group">
-                                    <input type="checkbox" defaultChecked className="sr-only peer" />
+                                    <input 
+                                        type="checkbox" 
+                                        checked={newDeviceLogin} 
+                                        onChange={(e) => setNewDeviceLogin(e.target.checked)}
+                                        className="sr-only peer" 
+                                    />
                                     <div className="w-12 h-7 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-5 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-gradient-to-r peer-checked:from-blue-600 peer-checked:to-indigo-600 shadow-inner"></div>
                                 </label>
                             </div>
