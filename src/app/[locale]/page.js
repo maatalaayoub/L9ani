@@ -350,25 +350,57 @@ function HomePageContent() {
                             className={`relative ${isRTL ? 'order-1' : ''}`}
                         >
                             <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-3xl blur-3xl opacity-20"></div>
-                            <div className="relative bg-gradient-to-br from-blue-600 to-purple-600 rounded-3xl p-8 sm:p-12">
+                            <div className="relative bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-3xl p-8 sm:p-10 shadow-2xl">
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-white/20 backdrop-blur rounded-2xl p-6 text-center" style={animations.scale(featuresIllustrationVisible)}>
-                                        <div className="text-4xl mb-2">🔍</div>
-                                        <div className="text-white font-semibold">{t('features.card1')}</div>
+                                    <div 
+                                        className="group bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg border border-white/10" 
+                                        style={animations.scale(featuresIllustrationVisible)}
+                                    >
+                                        <div className="w-14 h-14 mx-auto mb-3 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                            </svg>
+                                        </div>
+                                        <div className="text-white font-semibold text-sm">{t('features.card1')}</div>
                                     </div>
-                                    <div className="bg-white/20 backdrop-blur rounded-2xl p-6 text-center" style={{ ...animations.scale(featuresIllustrationVisible), transitionDelay: '0.1s' }}>
-                                        <div className="text-4xl mb-2">🤖</div>
-                                        <div className="text-white font-semibold">{t('features.card2')}</div>
+                                    <div 
+                                        className="group bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg border border-white/10" 
+                                        style={{ ...animations.scale(featuresIllustrationVisible), transitionDelay: '0.1s' }}
+                                    >
+                                        <div className="w-14 h-14 mx-auto mb-3 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <div className="text-white font-semibold text-sm">{t('features.card2')}</div>
                                     </div>
-                                    <div className="bg-white/20 backdrop-blur rounded-2xl p-6 text-center" style={{ ...animations.scale(featuresIllustrationVisible), transitionDelay: '0.2s' }}>
-                                        <div className="text-4xl mb-2">📍</div>
-                                        <div className="text-white font-semibold">{t('features.card3')}</div>
+                                    <div 
+                                        className="group bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg border border-white/10" 
+                                        style={{ ...animations.scale(featuresIllustrationVisible), transitionDelay: '0.2s' }}
+                                    >
+                                        <div className="w-14 h-14 mx-auto mb-3 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                        </div>
+                                        <div className="text-white font-semibold text-sm">{t('features.card3')}</div>
                                     </div>
-                                    <div className="bg-white/20 backdrop-blur rounded-2xl p-6 text-center" style={{ ...animations.scale(featuresIllustrationVisible), transitionDelay: '0.3s' }}>
-                                        <div className="text-4xl mb-2">💝</div>
-                                        <div className="text-white font-semibold">{t('features.card4')}</div>
+                                    <div 
+                                        className="group bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg border border-white/10" 
+                                        style={{ ...animations.scale(featuresIllustrationVisible), transitionDelay: '0.3s' }}
+                                    >
+                                        <div className="w-14 h-14 mx-auto mb-3 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                            </svg>
+                                        </div>
+                                        <div className="text-white font-semibold text-sm">{t('features.card4')}</div>
                                     </div>
                                 </div>
+                                {/* Decorative elements */}
+                                <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
+                                <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl"></div>
                             </div>
                         </div>
                     </div>
