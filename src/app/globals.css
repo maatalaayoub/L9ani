@@ -25,12 +25,27 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
-/* Arabic font for RTL */
-html[dir="rtl"] body {
-  font-family: var(--font-arabic), var(--font-sans), 'Segoe UI', Tahoma, Arial, sans-serif;
+/* Font classes for explicit font application */
+.font-sans {
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+.font-arabic {
+  font-family: var(--font-tajawal), 'Segoe UI', Tahoma, Arial, sans-serif;
+}
+
+/* Arabic font for RTL - also apply to all children */
+html[dir="rtl"] body,
+[dir="rtl"] {
+  font-family: var(--font-tajawal), 'Segoe UI', Tahoma, Arial, sans-serif;
+}
+
+/* Ensure all text elements in RTL inherit the Arabic font */
+[dir="rtl"] * {
+  font-family: inherit;
 }
 
 /* Smooth RTL/LTR transition */

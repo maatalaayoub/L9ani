@@ -74,12 +74,13 @@ export default async function LocaleLayout({ children, params }) {
     const { locale } = await params;
     const messages = await getMessages();
     const dir = locale === 'ar' ? 'rtl' : 'ltr';
-    const fontClass = locale === 'ar' 
-        ? `${tajawal.variable} ${geistSans.variable} ${geistMono.variable}` 
-        : `${geistSans.variable} ${geistMono.variable}`;
+    const fontClass = `${tajawal.variable} ${geistSans.variable} ${geistMono.variable}`;
+    
+    // Apply the appropriate font family class based on locale
+    const fontFamilyClass = locale === 'ar' ? 'font-arabic' : 'font-sans';
 
     return (
-        <div lang={locale} dir={dir} className={fontClass}>
+        <div lang={locale} dir={dir} className={`${fontClass} ${fontFamilyClass}`}>
             <script
                 dangerouslySetInnerHTML={{
                     __html: `
