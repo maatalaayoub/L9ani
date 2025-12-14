@@ -416,9 +416,10 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
             }
 
             // Send password reset email with link
-            // Use emailRedirectTo to avoid PKCE flow which causes 400 errors
+            // Redirect to API route which handles PKCE code exchange on server-side
+            // This avoids the code_verifier issue that causes 400 errors
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: `${window.location.origin}/reset-password`,
+                redirectTo: `${window.location.origin}/api/auth/reset-password`,
             });
 
             if (error) throw error;

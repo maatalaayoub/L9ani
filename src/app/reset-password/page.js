@@ -159,43 +159,15 @@ export default function ResetPasswordPage() {
                 const hasExistingSession = !!currentSessionData?.session;
                 console.log('[ResetPassword] Has existing session:', hasExistingSession);
 
-                // Check for PKCE code in query params (Supabase PKCE flow)
+                // Check for errors from API route or Supabase
                 if (searchParams) {
                     const urlParams = new URLSearchParams(searchParams);
-                    const code = urlParams.get('code');
                     const errorParam = urlParams.get('error');
-                    const errorDescription = urlParams.get('error_description');
 
-                    console.log('[ResetPassword] Query params - code:', !!code, 'error:', errorParam);
+                    console.log('[ResetPassword] Query params - error:', errorParam);
 
                     if (errorParam) {
-                        console.log('[ResetPassword] Error from Supabase:', errorDescription);
-                        setError('invalid');
-                        setCheckingSession(false);
-                        window.history.replaceState(null, '', window.location.pathname);
-                        return;
-                    }
-
-                    if (code) {
-                        // Always try to exchange the code for a recovery session
-                        // This works whether the user is logged in or not
-                        console.log('[ResetPassword] Found code, attempting to exchange for recovery session...');
-                        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-                        console.log('[ResetPassword] exchangeCodeForSession result:', { hasSession: !!data?.session, error: error?.message });
-
-                        if (!error && data.session && mounted) {
-                            console.log('[ResetPassword] Code exchange successful');
-                            recoveryValidatedRef.current = true;
-                            setIsValidSession(true);
-                            setCheckingSession(false);
-                            window.history.replaceState(null, '', window.location.pathname);
-                            return;
-                        }
-
-                        // Exchange failed - show error
-                        console.log('[ResetPassword] Code exchange failed');
-                        console.error('[ResetPassword] Error details:', error);
-                        console.error('[ResetPassword] Error message:', error?.message);
+                        console.log('[ResetPassword] Error from API/Supabase:', errorParam);
                         setError('invalid');
                         setCheckingSession(false);
                         window.history.replaceState(null, '', window.location.pathname);
