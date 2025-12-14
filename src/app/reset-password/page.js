@@ -68,6 +68,7 @@ export default function ResetPasswordPage() {
                 failed: "Failed to reset password. Please try again."
             },
             backToHome: "Back to Home",
+            cancel: "Cancel",
             loading: "Loading..."
         },
         ar: {
@@ -77,7 +78,7 @@ export default function ResetPasswordPage() {
             confirmPassword: "تأكيد كلمة المرور",
             requirements: {
                 title: "متطلبات كلمة المرور:",
-                minLength: "٨ أحرف على الأقل",
+                minLength: "8 أحرف على الأقل",
                 number: "رقم واحد على الأقل",
                 symbol: "رمز خاص واحد على الأقل (!@#$%^&*)"
             },
@@ -93,13 +94,14 @@ export default function ResetPasswordPage() {
             },
             errors: {
                 mismatch: "كلمات المرور غير متطابقة",
-                tooShort: "يجب أن تكون كلمة المرور ٨ أحرف على الأقل",
+                tooShort: "يجب أن تكون كلمة المرور 8",
                 noNumber: "يجب أن تحتوي كلمة المرور على رقم واحد على الأقل",
                 noSymbol: "يجب أن تحتوي كلمة المرور على رمز خاص واحد على الأقل",
                 samePassword: "يجب أن تكون كلمة المرور الجديدة مختلفة عن كلمة المرور القديمة.",
                 failed: "فشل إعادة تعيين كلمة المرور. يرجى المحاولة مرة أخرى."
             },
             backToHome: "العودة للرئيسية",
+            cancel: "إلغاء",
             loading: "جارٍ التحميل..."
         }
     };
@@ -534,6 +536,16 @@ export default function ResetPasswordPage() {
                         ) : (
                             text.button
                         )}
+                    </button>
+
+                    {/* Cancel Button */}
+                    <button
+                        type="button"
+                        onClick={() => router.push(`/${locale}`)}
+                        disabled={loading}
+                        className="w-full py-3 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-200 font-semibold rounded-lg transition-colors"
+                    >
+                        {text.cancel}
                     </button>
                 </form>
             </div>
