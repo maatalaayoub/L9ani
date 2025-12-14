@@ -616,8 +616,10 @@ export default function ProfilePage() {
         console.log('[ForgotPassword] Sending reset email to:', user.email);
         
         try {
+            // Redirect to API route which handles PKCE code exchange on server-side
+            // This avoids the code_verifier issue that causes 400 errors
             const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-                redirectTo: `${window.location.origin}/reset-password`,
+                redirectTo: `${window.location.origin}/api/auth/reset-password`,
             });
 
             if (error) {
