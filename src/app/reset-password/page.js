@@ -64,6 +64,7 @@ export default function ResetPasswordPage() {
                 tooShort: "Password must be at least 8 characters",
                 noNumber: "Password must contain at least one number",
                 noSymbol: "Password must contain at least one special character",
+                samePassword: "New password should be different from the old password.",
                 failed: "Failed to reset password. Please try again."
             },
             backToHome: "Back to Home",
@@ -95,6 +96,7 @@ export default function ResetPasswordPage() {
                 tooShort: "يجب أن تكون كلمة المرور ٨ أحرف على الأقل",
                 noNumber: "يجب أن تحتوي كلمة المرور على رقم واحد على الأقل",
                 noSymbol: "يجب أن تحتوي كلمة المرور على رمز خاص واحد على الأقل",
+                samePassword: "يجب أن تكون كلمة المرور الجديدة مختلفة عن كلمة المرور القديمة.",
                 failed: "فشل إعادة تعيين كلمة المرور. يرجى المحاولة مرة أخرى."
             },
             backToHome: "العودة للرئيسية",
@@ -326,7 +328,18 @@ export default function ResetPasswordPage() {
             console.error('[ResetPassword] Password reset error:', err);
             console.error('[ResetPassword] Error message:', err.message);
             console.error('[ResetPassword] Error details:', err);
-            setError(err.message || text.errors.failed);
+            
+            // Translate common Supabase errors
+            let errorMessage = text.errors.failed;
+            if (err.message) {
+                const msg = err.message.toLowerCase();
+                if (msg.includes('same password') || msg.includes('different from') || msg.includes('should be different')) {
+                    errorMessage = text.errors.samePassword;
+                } else if (msg.includes('no active session') || msg.includes('session')) {
+                    errorMessage = text.invalidLink.description;
+                }
+            }
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
