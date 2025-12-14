@@ -24,7 +24,7 @@ export const supabase = supabaseUrl && supabaseAnonKey
             autoRefreshToken: true,
             persistSession: true,
             detectSessionInUrl: true,  // Important for OAuth redirects
-            flowType: 'implicit',  // Use implicit flow for better email link compatibility
+            flowType: 'pkce',  // Required for OAuth providers like Google
         }
     })
     : null;

@@ -3,7 +3,7 @@
 import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import { Link } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import LoginDialog from "@/components/LoginDialog";
 
 // Custom hook for scroll animations using Intersection Observer
@@ -72,12 +72,12 @@ const animations = {
     }),
 };
 
-export default function HomePage() {
+function HomePageContent() {
     const t = useTranslations('home');
     const { locale } = useLanguage();
     const isRTL = locale === 'ar';
     const searchParams = useSearchParams();
-    
+
     const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
     const [initialTab, setInitialTab] = useState('login');
 
@@ -117,11 +117,11 @@ export default function HomePage() {
                 {/* Background Pattern */}
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-purple-600/5 to-pink-600/10 dark:from-blue-600/20 dark:via-purple-600/10 dark:to-pink-600/20"></div>
                 <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(99, 102, 241, 0.15) 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
-                
+
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
                     <div className="text-center max-w-4xl mx-auto" ref={heroRef}>
                         {/* Badge */}
-                        <div 
+                        <div
                             ref={badgeRef}
                             style={animations.fadeDown(badgeVisible)}
                             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full mb-8"
@@ -129,8 +129,8 @@ export default function HomePage() {
                             <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                             <span className="text-sm font-medium text-blue-700 dark:text-blue-300">{t('hero.badge')}</span>
                         </div>
-                        
-                        <h1 
+
+                        <h1
                             style={animations.fadeUp(heroVisible)}
                             className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6 leading-tight"
                         >
@@ -139,16 +139,16 @@ export default function HomePage() {
                                 {t('hero.titleHighlight')}
                             </span>
                         </h1>
-                        <p 
-                            style={{...animations.fadeUp(heroVisible), transitionDelay: '0.1s'}}
+                        <p
+                            style={{ ...animations.fadeUp(heroVisible), transitionDelay: '0.1s' }}
                             className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed"
                         >
                             {t('hero.subtitle')}
                         </p>
-                        
+
                         {/* CTA Buttons */}
-                        <div 
-                            style={{...animations.fadeUp(heroVisible), transitionDelay: '0.2s'}}
+                        <div
+                            style={{ ...animations.fadeUp(heroVisible), transitionDelay: '0.2s' }}
                             className="flex flex-col sm:flex-row gap-4 justify-center mb-12"
                         >
                             <Link href="/report-missing" className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold text-lg shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2">
@@ -167,7 +167,7 @@ export default function HomePage() {
                         </div>
 
                         {/* Stats */}
-                        <div 
+                        <div
                             ref={statsRef}
                             style={animations.fadeUp(statsVisible)}
                             className="grid grid-cols-3 gap-8 max-w-lg mx-auto"
@@ -192,7 +192,7 @@ export default function HomePage() {
             {/* How It Works Section */}
             <section className="py-20 bg-white dark:bg-gray-900/50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div 
+                    <div
                         ref={howItWorksHeaderRef}
                         style={animations.fadeUp(howItWorksHeaderVisible)}
                         className="text-center mb-16"
@@ -208,7 +208,7 @@ export default function HomePage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {/* Step 1 */}
-                        <div 
+                        <div
                             ref={step1Ref}
                             style={animations.staggerChild(step1Visible, 0)}
                             className="relative group"
@@ -228,7 +228,7 @@ export default function HomePage() {
                         </div>
 
                         {/* Step 2 */}
-                        <div 
+                        <div
                             ref={step2Ref}
                             style={animations.staggerChild(step2Visible, 0.15)}
                             className="relative group"
@@ -248,7 +248,7 @@ export default function HomePage() {
                         </div>
 
                         {/* Step 3 */}
-                        <div 
+                        <div
                             ref={step3Ref}
                             style={animations.staggerChild(step3Visible, 0.3)}
                             className="relative group"
@@ -275,7 +275,7 @@ export default function HomePage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                         {/* Left Content */}
-                        <div 
+                        <div
                             ref={featuresContentRef}
                             style={animations.fadeRight(featuresContentVisible, isRTL)}
                             className={isRTL ? 'order-2' : ''}
@@ -344,7 +344,7 @@ export default function HomePage() {
                         </div>
 
                         {/* Right - Illustration */}
-                        <div 
+                        <div
                             ref={featuresIllustrationRef}
                             style={animations.fadeLeft(featuresIllustrationVisible, isRTL)}
                             className={`relative ${isRTL ? 'order-1' : ''}`}
@@ -356,15 +356,15 @@ export default function HomePage() {
                                         <div className="text-4xl mb-2">🔍</div>
                                         <div className="text-white font-semibold">{t('features.card1')}</div>
                                     </div>
-                                    <div className="bg-white/20 backdrop-blur rounded-2xl p-6 text-center" style={{...animations.scale(featuresIllustrationVisible), transitionDelay: '0.1s'}}>
+                                    <div className="bg-white/20 backdrop-blur rounded-2xl p-6 text-center" style={{ ...animations.scale(featuresIllustrationVisible), transitionDelay: '0.1s' }}>
                                         <div className="text-4xl mb-2">🤖</div>
                                         <div className="text-white font-semibold">{t('features.card2')}</div>
                                     </div>
-                                    <div className="bg-white/20 backdrop-blur rounded-2xl p-6 text-center" style={{...animations.scale(featuresIllustrationVisible), transitionDelay: '0.2s'}}>
+                                    <div className="bg-white/20 backdrop-blur rounded-2xl p-6 text-center" style={{ ...animations.scale(featuresIllustrationVisible), transitionDelay: '0.2s' }}>
                                         <div className="text-4xl mb-2">📍</div>
                                         <div className="text-white font-semibold">{t('features.card3')}</div>
                                     </div>
-                                    <div className="bg-white/20 backdrop-blur rounded-2xl p-6 text-center" style={{...animations.scale(featuresIllustrationVisible), transitionDelay: '0.3s'}}>
+                                    <div className="bg-white/20 backdrop-blur rounded-2xl p-6 text-center" style={{ ...animations.scale(featuresIllustrationVisible), transitionDelay: '0.3s' }}>
                                         <div className="text-4xl mb-2">💝</div>
                                         <div className="text-white font-semibold">{t('features.card4')}</div>
                                     </div>
@@ -378,7 +378,7 @@ export default function HomePage() {
             {/* Testimonials / Impact Section */}
             <section className="py-20 bg-white dark:bg-gray-900/50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div 
+                    <div
                         ref={impactHeaderRef}
                         style={animations.fadeUp(impactHeaderVisible)}
                         className="text-center mb-16"
@@ -394,7 +394,7 @@ export default function HomePage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {/* Testimonial 1 */}
-                        <div 
+                        <div
                             ref={testimonial1Ref}
                             style={animations.staggerChild(testimonial1Visible, 0)}
                             className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8"
@@ -419,7 +419,7 @@ export default function HomePage() {
                         </div>
 
                         {/* Testimonial 2 */}
-                        <div 
+                        <div
                             ref={testimonial2Ref}
                             style={animations.staggerChild(testimonial2Visible, 0.15)}
                             className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8"
@@ -444,7 +444,7 @@ export default function HomePage() {
                         </div>
 
                         {/* Testimonial 3 */}
-                        <div 
+                        <div
                             ref={testimonial3Ref}
                             style={animations.staggerChild(testimonial3Visible, 0.3)}
                             className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8"
@@ -474,29 +474,29 @@ export default function HomePage() {
             {/* CTA Section */}
             <section className="py-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div 
+                    <div
                         ref={ctaRef}
                         style={animations.scale(ctaVisible)}
                         className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-3xl p-12 sm:p-16 text-center"
                     >
                         {/* Background Pattern */}
                         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
-                        
+
                         <div className="relative">
-                            <h2 
+                            <h2
                                 style={animations.fadeUp(ctaVisible)}
                                 className="text-3xl sm:text-4xl font-bold text-white mb-4"
                             >
                                 {t('cta.title')}
                             </h2>
-                            <p 
-                                style={{...animations.fadeUp(ctaVisible), transitionDelay: '0.1s'}}
+                            <p
+                                style={{ ...animations.fadeUp(ctaVisible), transitionDelay: '0.1s' }}
                                 className="text-lg text-white/90 mb-8 max-w-2xl mx-auto"
                             >
                                 {t('cta.description')}
                             </p>
-                            <div 
-                                style={{...animations.fadeUp(ctaVisible), transitionDelay: '0.2s'}}
+                            <div
+                                style={{ ...animations.fadeUp(ctaVisible), transitionDelay: '0.2s' }}
                                 className="flex flex-col sm:flex-row gap-4 justify-center"
                             >
                                 <Link href="/report-missing" className="px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-all hover:-translate-y-0.5 shadow-lg flex items-center justify-center gap-2">
@@ -521,7 +521,7 @@ export default function HomePage() {
             {/* Trust Badges */}
             <section className="py-12 border-t border-gray-200 dark:border-gray-800">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div 
+                    <div
                         ref={trustRef}
                         style={animations.fadeUp(trustVisible)}
                         className="flex flex-wrap items-center justify-center gap-8 sm:gap-16 text-gray-400 dark:text-gray-500"
@@ -555,11 +555,19 @@ export default function HomePage() {
             </section>
 
             {/* Login Dialog */}
-            <LoginDialog 
-                isOpen={isLoginDialogOpen} 
+            <LoginDialog
+                isOpen={isLoginDialogOpen}
                 onClose={() => setIsLoginDialogOpen(false)}
                 initialTab={initialTab}
             />
         </div>
+    );
+}
+
+export default function HomePage() {
+    return (
+        <Suspense fallback={null}>
+            <HomePageContent />
+        </Suspense>
     );
 }
