@@ -1,14 +1,25 @@
 "use client"
 
 import { useLanguage } from '@/context/LanguageContext';
+import { useSettings } from '@/context/SettingsContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function LanguageSwitcher() {
     const { locale, changeLocale, isChanging } = useLanguage();
+    const { setLanguage } = useSettings();
+    const { user } = useAuth();
 
-    const handleLanguageChange = () => {
+    const handleLanguageChange = async () => {
         if (isChanging) return;
         const newLocale = locale === 'en' ? 'ar' : 'en';
-        changeLocale(newLocale);
+        
+        // If user is logged in, use setLanguage to save to database
+        // Otherwise, just change the locale locally
+        if (user) {
+            await setLanguage(newLocale);
+        } else {
+            changeLocale(newLocale);
+        }
     };
 
     return (
