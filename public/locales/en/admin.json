@@ -1,0 +1,106 @@
+{
+    "title": "Admin Dashboard",
+    "subtitle": "Manage missing person reports and sightings",
+    "unauthorized": "Access Denied",
+    "unauthorizedMessage": "You do not have permission to access this page. Admin privileges are required.",
+    "loginRequired": "Please log in to access the admin dashboard.",
+    "loading": "Loading...",
+    "checkingAccess": "Verifying admin access...",
+    
+    "tabs": {
+        "missing": "Missing Persons",
+        "sightings": "Sightings"
+    },
+    
+    "filters": {
+        "all": "All",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "status": "Status"
+    },
+    
+    "table": {
+        "id": "ID",
+        "name": "Name",
+        "location": "Location",
+        "submittedBy": "Submitted By",
+        "submittedAt": "Submitted At",
+        "status": "Status",
+        "actions": "Actions",
+        "photo": "Photo",
+        "city": "City",
+        "phone": "Phone",
+        "email": "Email",
+        "noReports": "No reports found",
+        "noPhoto": "No photo"
+    },
+    
+    "status": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
+    },
+    
+    "actions": {
+        "approve": "Approve",
+        "reject": "Reject",
+        "view": "View Details",
+        "approving": "Approving...",
+        "rejecting": "Rejecting..."
+    },
+    
+    "modal": {
+        "reportDetails": "Report Details",
+        "personInfo": "Person Information",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "dateOfBirth": "Date of Birth",
+        "gender": "Gender",
+        "healthStatus": "Health Status",
+        "healthDetails": "Health Details",
+        "locationInfo": "Location Information",
+        "city": "City",
+        "lastKnownLocation": "Last Known Location",
+        "coordinates": "Coordinates",
+        "additionalInfo": "Additional Information",
+        "photos": "Photos",
+        "contactInfo": "Contact Information",
+        "reporterName": "Reporter Name",
+        "reporterPhone": "Phone",
+        "reporterEmail": "Email",
+        "rejectionReason": "Rejection Reason",
+        "rejectionReasonPlaceholder": "Please provide a reason for rejection...",
+        "close": "Close",
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "confirmApproval": "Confirm Approval",
+        "confirmApprovalMessage": "Are you sure you want to approve this report? Once approved, it will be visible to the public.",
+        "confirmRejection": "Confirm Rejection",
+        "confirmRejectionMessage": "Are you sure you want to reject this report?"
+    },
+    
+    "pagination": {
+        "previous": "Previous",
+        "next": "Next",
+        "page": "Page",
+        "of": "of",
+        "showing": "Showing",
+        "to": "to",
+        "results": "results"
+    },
+    
+    "messages": {
+        "approveSuccess": "Report approved successfully",
+        "rejectSuccess": "Report rejected successfully",
+        "error": "An error occurred. Please try again.",
+        "fetchError": "Failed to load reports. Please try again."
+    },
+
+    "stats": {
+        "totalReports": "Total Reports",
+        "pendingReview": "Pending Review",
+        "approvedToday": "Approved Today",
+        "rejectedToday": "Rejected Today"
+    }
+}

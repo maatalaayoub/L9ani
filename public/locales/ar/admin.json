@@ -1,0 +1,106 @@
+{
+    "title": "لوحة تحكم المسؤول",
+    "subtitle": "إدارة بلاغات الأشخاص المفقودين والمشاهدات",
+    "unauthorized": "تم رفض الوصول",
+    "unauthorizedMessage": "ليس لديك صلاحية للوصول إلى هذه الصفحة. مطلوب امتيازات المسؤول.",
+    "loginRequired": "يرجى تسجيل الدخول للوصول إلى لوحة تحكم المسؤول.",
+    "loading": "جاري التحميل...",
+    "checkingAccess": "جاري التحقق من صلاحيات الوصول...",
+    
+    "tabs": {
+        "missing": "الأشخاص المفقودون",
+        "sightings": "المشاهدات"
+    },
+    
+    "filters": {
+        "all": "الكل",
+        "pending": "قيد الانتظار",
+        "approved": "تمت الموافقة",
+        "rejected": "مرفوض",
+        "status": "الحالة"
+    },
+    
+    "table": {
+        "id": "المعرف",
+        "name": "الاسم",
+        "location": "الموقع",
+        "submittedBy": "مقدم من",
+        "submittedAt": "تاريخ التقديم",
+        "status": "الحالة",
+        "actions": "الإجراءات",
+        "photo": "الصورة",
+        "city": "المدينة",
+        "phone": "الهاتف",
+        "email": "البريد الإلكتروني",
+        "noReports": "لم يتم العثور على بلاغات",
+        "noPhoto": "لا توجد صورة"
+    },
+    
+    "status": {
+        "pending": "قيد الانتظار",
+        "approved": "تمت الموافقة",
+        "rejected": "مرفوض"
+    },
+    
+    "actions": {
+        "approve": "موافقة",
+        "reject": "رفض",
+        "view": "عرض التفاصيل",
+        "approving": "جاري الموافقة...",
+        "rejecting": "جاري الرفض..."
+    },
+    
+    "modal": {
+        "reportDetails": "تفاصيل البلاغ",
+        "personInfo": "معلومات الشخص",
+        "firstName": "الاسم الأول",
+        "lastName": "اسم العائلة",
+        "dateOfBirth": "تاريخ الميلاد",
+        "gender": "الجنس",
+        "healthStatus": "الحالة الصحية",
+        "healthDetails": "تفاصيل الحالة الصحية",
+        "locationInfo": "معلومات الموقع",
+        "city": "المدينة",
+        "lastKnownLocation": "آخر موقع معروف",
+        "coordinates": "الإحداثيات",
+        "additionalInfo": "معلومات إضافية",
+        "photos": "الصور",
+        "contactInfo": "معلومات الاتصال",
+        "reporterName": "اسم المُبلغ",
+        "reporterPhone": "الهاتف",
+        "reporterEmail": "البريد الإلكتروني",
+        "rejectionReason": "سبب الرفض",
+        "rejectionReasonPlaceholder": "يرجى تقديم سبب للرفض...",
+        "close": "إغلاق",
+        "confirm": "تأكيد",
+        "cancel": "إلغاء",
+        "confirmApproval": "تأكيد الموافقة",
+        "confirmApprovalMessage": "هل أنت متأكد من الموافقة على هذا البلاغ؟ بمجرد الموافقة، سيكون مرئياً للعامة.",
+        "confirmRejection": "تأكيد الرفض",
+        "confirmRejectionMessage": "هل أنت متأكد من رفض هذا البلاغ؟"
+    },
+    
+    "pagination": {
+        "previous": "السابق",
+        "next": "التالي",
+        "page": "صفحة",
+        "of": "من",
+        "showing": "عرض",
+        "to": "إلى",
+        "results": "نتائج"
+    },
+    
+    "messages": {
+        "approveSuccess": "تمت الموافقة على البلاغ بنجاح",
+        "rejectSuccess": "تم رفض البلاغ بنجاح",
+        "error": "حدث خطأ. يرجى المحاولة مرة أخرى.",
+        "fetchError": "فشل في تحميل البلاغات. يرجى المحاولة مرة أخرى."
+    },
+
+    "stats": {
+        "totalReports": "إجمالي البلاغات",
+        "pendingReview": "قيد المراجعة",
+        "approvedToday": "تمت الموافقة اليوم",
+        "rejectedToday": "تم الرفض اليوم"
+    }
+}
