@@ -459,7 +459,7 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
     return (
         <div className="fixed inset-0 top-16 bottom-16 sm:top-0 sm:bottom-0 z-[55] sm:z-[60] flex items-center justify-center sm:py-6 sm:px-6">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose}></div>
-            <div className="bg-white dark:bg-slate-900 w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-md p-6 pb-8 sm:p-8 relative z-10 shadow-none sm:shadow-2xl rounded-none sm:rounded-2xl animate-in fade-in zoom-in duration-200 overflow-y-auto scrollbar-hide">
+            <div className="bg-white dark:bg-slate-900 w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-md px-4 py-6 pb-8 sm:p-8 relative z-10 shadow-none sm:shadow-2xl rounded-none sm:rounded-2xl animate-in fade-in zoom-in duration-200 overflow-y-auto overflow-x-hidden scrollbar-hide">
                 <button
                     onClick={() => {
                         if (activeTab === 'forgot_password') {
@@ -531,7 +531,7 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         placeholder={t('forgotPassword.emailPlaceholder')}
-                                        className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
                                         required
                                     />
                                 </div>
@@ -674,7 +674,7 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
                                                 value={firstName}
                                                 onChange={(e) => setFirstName(e.target.value)}
                                                 placeholder={t('signup.placeholderFirstName')}
-                                                className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-start"
+                                                className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 focus:border-transparent text-start"
                                             />
                                         </div>
                                         <div>
@@ -686,7 +686,7 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
                                                 value={lastName}
                                                 onChange={(e) => setLastName(e.target.value)}
                                                 placeholder={t('signup.placeholderLastName')}
-                                                className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-start"
+                                                className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 focus:border-transparent text-start"
                                             />
                                         </div>
                                     </div>
@@ -702,7 +702,7 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
                                                 country={'ma'}
                                                 value={phoneNumber}
                                                 onChange={handlePhoneChange}
-                                                inputClass="!w-full !py-3 !h-[46px] !bg-gray-50 dark:!bg-slate-800 !border !border-gray-200 dark:!border-slate-700 !rounded-lg !text-gray-900 dark:!text-white placeholder-gray-400 dark:placeholder-gray-500 !text-sm focus:!outline-none focus:!ring-2 focus:!ring-blue-500 focus:!border-transparent"
+                                                inputClass="!w-full !py-3 !h-[46px] !bg-gray-50 dark:!bg-slate-800 !border !border-gray-200 dark:!border-slate-700 !rounded-lg !text-gray-900 dark:!text-white placeholder-gray-400 dark:placeholder-gray-500 !text-sm focus:!outline-none focus:!ring-2 focus:!ring-inset focus:!ring-blue-500 focus:!border-transparent"
                                                 buttonClass="!bg-gray-50 dark:!bg-slate-800 !border-gray-200 dark:!border-slate-700 !rounded-l-lg hover:!bg-gray-100 dark:hover:!bg-slate-700"
                                                 dropdownClass="!bg-white dark:!bg-slate-900 !text-gray-900 dark:!text-white !border-gray-200 dark:!border-slate-700 !shadow-xl"
                                                 containerClass="!w-full"
@@ -722,7 +722,7 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder={t('forgotPassword.emailPlaceholder')}
                                 required
-                                className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 focus:border-transparent"
                             />
                         </div>
 
@@ -740,7 +740,7 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
                                     }}
                                     placeholder={t('login.placeholder')}
                                     required
-                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 focus:border-transparent"
                                 />
                                 <button
                                     type="button"
@@ -794,7 +794,7 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
                                             }}
                                             placeholder={t('signup.confirmPasswordPlaceholder')}
                                             required
-                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 focus:border-transparent"
                                         />
                                         <button
                                             type="button"
