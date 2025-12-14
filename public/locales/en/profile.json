@@ -1,5 +1,6 @@
 {
     "defaultUsername": "username",
+    "adminRoleDescription": "Full access to admin dashboard & report management",
     "buttons": {
         "editProfile": "Edit Profile",
         "saving": "Saving...",

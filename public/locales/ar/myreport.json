@@ -8,5 +8,38 @@
     },
     "reportedOn": "تم البلاغ في",
     "viewDetails": "عرض التفاصيل",
-    "edit": "تعديل"
+    "edit": "تعديل",
+    "status": {
+        "pending": "قيد المراجعة",
+        "approved": "تمت الموافقة",
+        "rejected": "مرفوض"
+    },
+    "rejectionReason": "السبب",
+    "modal": {
+        "title": "تفاصيل البلاغ",
+        "reportId": "معرف البلاغ",
+        "missingPersonInfo": "معلومات الشخص المفقود",
+        "fullName": "الاسم الكامل",
+        "dateOfBirth": "تاريخ الميلاد",
+        "gender": "الجنس",
+        "healthStatus": "الحالة الصحية",
+        "healthDetails": "تفاصيل الحالة الصحية",
+        "locationInfo": "معلومات الموقع",
+        "city": "المدينة",
+        "lastKnownLocation": "آخر موقع معروف",
+        "additionalInfo": "معلومات إضافية",
+        "photos": "الصور",
+        "noPhotos": "لا توجد صور متاحة",
+        "reportInfo": "معلومات البلاغ",
+        "submittedAt": "تاريخ التقديم",
+        "currentStatus": "الحالة الحالية",
+        "rejectionReason": "سبب الرفض",
+        "close": "إغلاق"
+    },
+    "card": {
+        "name": "الاسم",
+        "city": "المدينة",
+        "status": "الحالة",
+        "submitted": "تاريخ التقديم"
+    }
 }

@@ -318,7 +318,7 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
                 }
 
                 if (data.user) {
-                    // Create profile manually since database trigger is blocked by Supabase
+                    // Create profile via API route (bypasses RLS using service role)
                     try {
                         // Generate username
                         const baseUsername = firstName && lastName
@@ -327,24 +327,28 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
                                 ? firstName.toLowerCase().replace(/[^a-z0-9]/g, '')
                                 : email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
                         const username = baseUsername + Math.floor(Math.random() * 9000 + 1000);
-                        const verificationCode = Math.floor(Math.random() * 900000 + 100000).toString();
 
-                        // Insert profile
-                        const { error: profileError } = await supabase
-                            .from('profiles')
-                            .insert({
-                                auth_user_id: data.user.id,
-                                username: username,
+                        // Use API route to create profile (bypasses RLS)
+                        const profileResponse = await fetch('/api/user/profile', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                userId: data.user.id,
                                 email: email,
-                                first_name: firstName || '',
-                                last_name: lastName || '',
+                                firstName: firstName || '',
+                                lastName: lastName || '',
+                                username: username,
                                 phone: phoneNumber || '',
-                                email_verified: false,
-                                email_verified_code: verificationCode
-                            });
+                                hasPassword: true,
+                                termsAccepted: true,
+                                isEmailSignup: true  // Flag for email signup to generate verification code
+                            })
+                        });
 
-                        if (profileError) {
-                            console.error('Profile creation error:', profileError);
+                        const profileResult = await profileResponse.json();
+                        
+                        if (!profileResponse.ok) {
+                            console.error('Profile creation error:', profileResult.error);
                             // Don't throw - user is created, profile can be created later
                         }
                     } catch (profileErr) {

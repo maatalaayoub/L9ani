@@ -12,6 +12,7 @@ export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
     const [initialTab, setInitialTab] = useState("login");
+    const [isAdmin, setIsAdmin] = useState(false);
     const pathname = usePathname();
     const { isSearchFocused, user, profile, logout, isAuthLoading } = useAuth();
     const t = useTranslations('header');
@@ -32,6 +33,25 @@ export default function Header() {
         if (user && isLoginDialogOpen) {
             setIsLoginDialogOpen(false);
         }
+    }, [user]);
+
+    // Check if user is admin
+    useEffect(() => {
+        const checkAdminStatus = async () => {
+            if (!user) {
+                setIsAdmin(false);
+                return;
+            }
+            try {
+                const response = await fetch(`/api/admin/check?userId=${user.id}`);
+                const data = await response.json();
+                setIsAdmin(data.isAdmin);
+            } catch (err) {
+                console.error('Error checking admin status:', err);
+                setIsAdmin(false);
+            }
+        };
+        checkAdminStatus();
     }, [user]);
 
     // Prevent body scroll when menu is open
@@ -242,19 +262,40 @@ export default function Header() {
                         {user && (
                             <div className="mb-8 p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-200 dark:border-gray-700">
                                 <Link href="/profile" onClick={closeDialogs} className="flex items-center gap-4">
-                                    {profile?.avatar_url ? (
-                                        <img src={profile.avatar_url} alt="Profile" className="w-12 h-12 rounded-full object-cover border border-gray-300 dark:border-gray-600 ring-2 ring-white dark:ring-gray-800" />
-                                    ) : (
-                                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg">
-                                            {profile?.first_name?.[0] || profile?.username?.[0] || user?.email?.[0]}
+                                    <div className="relative">
+                                        {profile?.avatar_url ? (
+                                            <img src={profile.avatar_url} alt="Profile" className="w-12 h-12 rounded-full object-cover border border-gray-300 dark:border-gray-600 ring-2 ring-white dark:ring-gray-800" />
+                                        ) : (
+                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg">
+                                                {profile?.first_name?.[0] || profile?.username?.[0] || user?.email?.[0]}
+                                            </div>
+                                        )}
+                                        {/* Admin Badge on Avatar */}
+                                        {isAdmin && (
+                                            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800 shadow-lg">
+                                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                </svg>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="overflow-hidden flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-semibold text-gray-900 dark:text-white truncate">
+                                                {profile?.first_name 
+                                                    ? `${profile.first_name} ${profile.last_name || ''}`.trim()
+                                                    : profile?.username || 'User'}
+                                            </p>
+                                            {/* Admin Verified Badge */}
+                                            {isAdmin && (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-full shadow-sm">
+                                                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                    </svg>
+                                                    Admin
+                                                </span>
+                                            )}
                                         </div>
-                                    )}
-                                    <div className="overflow-hidden">
-                                        <p className="font-semibold text-gray-900 dark:text-white truncate">
-                                            {profile?.first_name 
-                                                ? `${profile.first_name} ${profile.last_name || ''}`.trim()
-                                                : profile?.username || 'User'}
-                                        </p>
                                         <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
                                     </div>
                                 </Link>
@@ -325,6 +366,25 @@ export default function Header() {
                                     </svg>
                                     <span className="whitespace-nowrap">{t('sighting')}</span>
                                 </Link>
+
+                                {/* Admin Dashboard - Only visible for admins */}
+                                {isAdmin && (
+                                    <Link
+                                        href="/admin"
+                                        onClick={closeDialogs}
+                                        className={`sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive('/admin') ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:translate-x-1'}`}
+                                    >
+                                        <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                        </svg>
+                                        <span className="whitespace-nowrap flex items-center gap-2">
+                                            {t('adminDashboard')}
+                                            <span className="px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-md">
+                                                ADMIN
+                                            </span>
+                                        </span>
+                                    </Link>
+                                )}
                             </div>
 
                             <Link

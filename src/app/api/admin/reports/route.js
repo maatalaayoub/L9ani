@@ -3,23 +3,48 @@ import { supabaseAdmin } from '@/lib/supabase';
 
 // Helper to verify admin status
 async function verifyAdmin(userId) {
-    if (!userId) return false;
+    if (!userId) {
+        console.log('[Admin Reports] verifyAdmin: No userId provided');
+        return false;
+    }
     
-    const { data } = await supabaseAdmin
-        .from('admin_users')
-        .select('id')
-        .eq('auth_user_id', userId)
-        .eq('is_active', true)
-        .single();
+    console.log('[Admin Reports] verifyAdmin: Checking userId:', userId);
+    console.log('[Admin Reports] verifyAdmin: supabaseAdmin exists:', !!supabaseAdmin);
     
-    return !!data;
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('admin_users')
+            .select('id, auth_user_id, is_active, role')
+            .eq('auth_user_id', userId)
+            .eq('is_active', true)
+            .maybeSingle();
+        
+        console.log('[Admin Reports] verifyAdmin query result:', { 
+            data: data, 
+            error: error?.message,
+            errorCode: error?.code
+        });
+        
+        if (error) {
+            console.error('[Admin Reports] verifyAdmin error:', error);
+            return false;
+        }
+        
+        const isAdmin = !!data;
+        console.log('[Admin Reports] verifyAdmin returning:', isAdmin);
+        
+        return isAdmin;
+    } catch (err) {
+        console.error('[Admin Reports] verifyAdmin exception:', err);
+        return false;
+    }
 }
 
 export async function GET(request) {
     try {
         if (!supabaseAdmin) {
             console.error('[API Admin Reports] supabaseAdmin is not configured');
-            return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+            return NextResponse.json({ error: 'Server configuration error - supabaseAdmin not configured' }, { status: 500 });
         }
 
         const { searchParams } = new URL(request.url);
@@ -29,14 +54,32 @@ export async function GET(request) {
         const page = parseInt(searchParams.get('page') || '1');
         const limit = parseInt(searchParams.get('limit') || '10');
 
+        console.log('[API Admin Reports] Request params:', { userId, type, status, page, limit });
+
         // Verify admin status
-        const isAdmin = await verifyAdmin(userId);
+        let isAdmin = false;
+        try {
+            isAdmin = await verifyAdmin(userId);
+        } catch (adminErr) {
+            console.error('[API Admin Reports] Error verifying admin:', adminErr);
+            // If admin_users table doesn't exist, return helpful error
+            if (adminErr.message?.includes('does not exist')) {
+                return NextResponse.json({ 
+                    error: 'Database tables not set up. Please run the migration SQL in Supabase.',
+                    details: 'admin_users table not found'
+                }, { status: 500 });
+            }
+            return NextResponse.json({ error: 'Failed to verify admin status' }, { status: 500 });
+        }
+
         if (!isAdmin) {
             return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
         }
 
         const offset = (page - 1) * limit;
         const tableName = type === 'sighting' ? 'sightings' : 'missing_persons';
+
+        console.log('[API Admin Reports] Querying table:', tableName);
 
         // Build query
         let query = supabaseAdmin
@@ -55,8 +98,17 @@ export async function GET(request) {
 
         if (error) {
             console.error('[API Admin Reports] Error fetching reports:', error);
+            // Check if table doesn't exist
+            if (error.message?.includes('does not exist') || error.code === '42P01') {
+                return NextResponse.json({ 
+                    error: `Database table "${tableName}" not found. Please run the migration SQL in Supabase.`,
+                    details: error.message
+                }, { status: 500 });
+            }
             return NextResponse.json({ error: error.message }, { status: 500 });
         }
+
+        console.log('[API Admin Reports] Found', count, 'reports');
 
         return NextResponse.json({
             reports: data || [],
@@ -69,7 +121,7 @@ export async function GET(request) {
         });
     } catch (err) {
         console.error('[API Admin Reports] Exception:', err);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ error: 'Internal Server Error: ' + err.message }, { status: 500 });
     }
 }
 

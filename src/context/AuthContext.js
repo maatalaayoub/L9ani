@@ -5,6 +5,28 @@ import { supabase } from '@/lib/supabase';
 
 const AuthContext = createContext();
 
+// Helper to get/set profile from localStorage
+const getStoredProfile = () => {
+    try {
+        const stored = localStorage.getItem('supabase_profile');
+        return stored ? JSON.parse(stored) : null;
+    } catch {
+        return null;
+    }
+};
+
+const storeProfile = (profile) => {
+    try {
+        if (profile) {
+            localStorage.setItem('supabase_profile', JSON.stringify(profile));
+        } else {
+            localStorage.removeItem('supabase_profile');
+        }
+    } catch (e) {
+        console.error('[Profile] Error storing profile:', e);
+    }
+};
+
 export function AuthProvider({ children }) {
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const [user, setUser] = useState(null);
@@ -14,10 +36,12 @@ export function AuthProvider({ children }) {
 
     // Track profile fetch to prevent duplicate requests
     const profileFetchRef = useRef(null);
+    const profileRetryCount = useRef(0);
+    const maxRetries = 3;
 
-    const fetchProfile = async (userId, userData = null) => {
+    const fetchProfile = async (userId, userData = null, forceRefresh = false) => {
         // Prevent duplicate simultaneous fetches for the same user
-        if (profileFetchRef.current === userId) {
+        if (profileFetchRef.current === userId && !forceRefresh) {
             console.log('[Profile] Already fetching profile for this user, skipping');
             return null;
         }
@@ -28,11 +52,18 @@ export function AuthProvider({ children }) {
             
             // Use API route to bypass RLS
             const response = await fetch(`/api/user/profile?userId=${userId}`);
+            
+            if (!response.ok) {
+                throw new Error(`API returned ${response.status}`);
+            }
+            
             const result = await response.json();
             
             if (result.profile) {
                 console.log('[Profile] Found existing profile:', result.profile.first_name);
                 setProfile(result.profile);
+                storeProfile(result.profile); // Persist to localStorage
+                profileRetryCount.current = 0; // Reset retry count on success
                 
                 // Check if user needs to accept terms (OAuth users who haven't accepted)
                 if (result.profile.terms_accepted === false) {
@@ -43,14 +74,30 @@ export function AuthProvider({ children }) {
                 return result.profile;
             }
             
-            // If no profile exists and we have user data (from OAuth), create one
+            // If no profile exists and we have user data, create one
             if (!result.profile && userData) {
-                console.log('[Profile] No profile found, creating new profile for OAuth user');
                 const metadata = userData.user_metadata || {};
-                const fullName = metadata.full_name || metadata.name || '';
-                const nameParts = fullName.split(' ');
-                const firstName = nameParts[0] || '';
-                const lastName = nameParts.slice(1).join(' ') || '';
+                
+                // Check if this is an OAuth user (has full_name or provider) or email signup user (has firstName directly)
+                const isOAuthUser = !!(metadata.full_name || metadata.name || metadata.provider_id || metadata.iss);
+                const hasPasswordSignup = !!(metadata.firstName || metadata.lastName);
+                
+                console.log('[Profile] No profile found, creating new profile. OAuth:', isOAuthUser, 'Email signup:', hasPasswordSignup);
+                
+                let firstName = '';
+                let lastName = '';
+                
+                if (hasPasswordSignup) {
+                    // Email/password signup - use firstName/lastName from metadata
+                    firstName = metadata.firstName || '';
+                    lastName = metadata.lastName || '';
+                } else if (isOAuthUser) {
+                    // OAuth user - parse full_name
+                    const fullName = metadata.full_name || metadata.name || '';
+                    const nameParts = fullName.split(' ');
+                    firstName = nameParts[0] || '';
+                    lastName = nameParts.slice(1).join(' ') || '';
+                }
                 
                 const createResponse = await fetch('/api/user/profile', {
                     method: 'POST',
@@ -61,6 +108,10 @@ export function AuthProvider({ children }) {
                         firstName: firstName,
                         lastName: lastName,
                         avatarUrl: metadata.avatar_url || metadata.picture || null,
+                        // Email signup users have already accepted terms during registration
+                        termsAccepted: hasPasswordSignup ? true : false,
+                        hasPassword: hasPasswordSignup,
+                        phone: metadata.phoneNumber || null
                     }),
                 });
                 
@@ -69,6 +120,8 @@ export function AuthProvider({ children }) {
                 if (createResult.profile) {
                     console.log('[Profile] Created new profile:', createResult.profile.first_name);
                     setProfile(createResult.profile);
+                    storeProfile(createResult.profile); // Persist to localStorage
+                    profileRetryCount.current = 0;
                     
                     // New OAuth users need to accept terms
                     if (createResult.profile.terms_accepted === false) {
@@ -85,14 +138,32 @@ export function AuthProvider({ children }) {
             return null;
         } catch (error) {
             console.error('[Profile] Exception:', error);
+            
+            // On error, try to use cached profile
+            const cachedProfile = getStoredProfile();
+            if (cachedProfile && cachedProfile.auth_user_id === userId) {
+                console.log('[Profile] Using cached profile due to fetch error');
+                setProfile(cachedProfile);
+                return cachedProfile;
+            }
+            
+            // Retry logic for transient failures
+            if (profileRetryCount.current < maxRetries) {
+                profileRetryCount.current++;
+                console.log(`[Profile] Retrying fetch (${profileRetryCount.current}/${maxRetries})...`);
+                profileFetchRef.current = null; // Clear lock for retry
+                await new Promise(resolve => setTimeout(resolve, 1000 * profileRetryCount.current));
+                return fetchProfile(userId, userData, true);
+            }
+            
             return null;
         } finally {
-            // Clear the fetch lock after a short delay to allow for retries
+            // Clear the fetch lock after completion
             setTimeout(() => {
                 if (profileFetchRef.current === userId) {
                     profileFetchRef.current = null;
                 }
-            }, 1000);
+            }, 500);
         }
     };
 
@@ -105,6 +176,7 @@ export function AuthProvider({ children }) {
         localStorage.removeItem('supabase_token');
         localStorage.removeItem('supabase_refresh_token');
         localStorage.removeItem('supabase_user');
+        localStorage.removeItem('supabase_profile'); // Also clear cached profile
         
         // Clear Supabase's own localStorage items
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -142,6 +214,13 @@ export function AuthProvider({ children }) {
 
         const initializeSession = async () => {
             try {
+                // Load cached profile immediately for faster UI
+                const cachedProfile = getStoredProfile();
+                if (cachedProfile) {
+                    console.log('[Auth] Loading cached profile for faster initial render');
+                    setProfile(cachedProfile);
+                }
+                
                 const urlParams = new URLSearchParams(window.location.search);
                 const authSuccess = urlParams.get('auth');
                 

@@ -1,5 +1,6 @@
 {
     "defaultUsername": "اسم المستخدم",
+    "adminRoleDescription": "صلاحيات كاملة للوحة التحكم وإدارة البلاغات",
     "buttons": {
         "editProfile": "تعديل الملف الشخصي",
         "saving": "جارٍ الحفظ...",

@@ -52,9 +52,11 @@
     
     "modal": {
         "reportDetails": "Report Details",
+        "missingPersonInfo": "Missing Person Information",
         "personInfo": "Person Information",
         "firstName": "First Name",
         "lastName": "Last Name",
+        "fullName": "Full Name",
         "dateOfBirth": "Date of Birth",
         "gender": "Gender",
         "healthStatus": "Health Status",
@@ -65,10 +67,17 @@
         "coordinates": "Coordinates",
         "additionalInfo": "Additional Information",
         "photos": "Photos",
-        "contactInfo": "Contact Information",
+        "reporterInfo": "Reporter Information",
+        "reporterId": "Reporter ID",
         "reporterName": "Reporter Name",
-        "reporterPhone": "Phone",
-        "reporterEmail": "Email",
+        "reporterPhone": "Phone Number",
+        "reporterEmail": "Email Address",
+        "contactInfo": "Contact Information",
+        "reportInfo": "Report Information",
+        "reportId": "Report ID",
+        "submittedAt": "Submitted At",
+        "updatedAt": "Last Updated",
+        "currentStatus": "Current Status",
         "rejectionReason": "Rejection Reason",
         "rejectionReasonPlaceholder": "Please provide a reason for rejection...",
         "close": "Close",
@@ -77,7 +86,8 @@
         "confirmApproval": "Confirm Approval",
         "confirmApprovalMessage": "Are you sure you want to approve this report? Once approved, it will be visible to the public.",
         "confirmRejection": "Confirm Rejection",
-        "confirmRejectionMessage": "Are you sure you want to reject this report?"
+        "confirmRejectionMessage": "Are you sure you want to reject this report?",
+        "noPhotosAvailable": "No photos available"
     },
     
     "pagination": {
@@ -100,7 +110,8 @@
     "stats": {
         "totalReports": "Total Reports",
         "pendingReview": "Pending Review",
-        "approvedToday": "Approved Today",
-        "rejectedToday": "Rejected Today"
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "overview": "Reports Overview"
     }
 }

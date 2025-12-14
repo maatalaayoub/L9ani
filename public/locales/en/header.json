@@ -11,5 +11,6 @@
     "quickActions": "Quick Actions",
     "reportMissingPerson": "Report Missing Person",
     "menu": "Menu",
-    "profile": "Profile"
+    "profile": "Profile",
+    "adminDashboard": "Admin Dashboard"
 }

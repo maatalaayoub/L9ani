@@ -8,5 +8,38 @@
     },
     "reportedOn": "Reported on",
     "viewDetails": "View Details",
-    "edit": "Edit"
+    "edit": "Edit",
+    "status": {
+        "pending": "Pending Review",
+        "approved": "Approved",
+        "rejected": "Rejected"
+    },
+    "rejectionReason": "Reason",
+    "modal": {
+        "title": "Report Details",
+        "reportId": "Report ID",
+        "missingPersonInfo": "Missing Person Information",
+        "fullName": "Full Name",
+        "dateOfBirth": "Date of Birth",
+        "gender": "Gender",
+        "healthStatus": "Health Status",
+        "healthDetails": "Health Details",
+        "locationInfo": "Location Information",
+        "city": "City",
+        "lastKnownLocation": "Last Known Location",
+        "additionalInfo": "Additional Information",
+        "photos": "Photos",
+        "noPhotos": "No photos available",
+        "reportInfo": "Report Information",
+        "submittedAt": "Submitted At",
+        "currentStatus": "Current Status",
+        "rejectionReason": "Rejection Reason",
+        "close": "Close"
+    },
+    "card": {
+        "name": "Name",
+        "city": "City",
+        "status": "Status",
+        "submitted": "Submitted"
+    }
 }

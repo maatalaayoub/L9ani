@@ -14,6 +14,9 @@ if (typeof window !== 'undefined') {
         console.error('[Supabase] URL:', supabaseUrl ? 'SET' : 'MISSING');
         console.error('[Supabase] ANON_KEY:', supabaseAnonKey ? 'SET' : 'MISSING');
     }
+} else {
+    // Server-side logging
+    console.log('[Supabase Server] URL exists:', !!supabaseUrl, 'Service Key exists:', !!serviceRoleKey);
 }
 
 // Always create the client - required for Next.js static optimization

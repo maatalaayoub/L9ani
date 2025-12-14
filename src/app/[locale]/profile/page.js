@@ -71,6 +71,9 @@ export default function ProfilePage() {
     const [resetEmailSent, setResetEmailSent] = useState(false);
     const [resetEmailError, setResetEmailError] = useState('');
 
+    // Admin Status State
+    const [isAdmin, setIsAdmin] = useState(false);
+
     // Check if user is OAuth-only (no password set)
     const isOAuthUser = user?.app_metadata?.provider === 'google' || 
                         user?.app_metadata?.providers?.includes('google');
@@ -119,6 +122,25 @@ export default function ProfilePage() {
         }
     }, [user, isAuthLoading, router]);
 
+    // Check admin status
+    useEffect(() => {
+        const checkAdminStatus = async () => {
+            if (!user) {
+                setIsAdmin(false);
+                return;
+            }
+            try {
+                const response = await fetch(`/api/admin/check?userId=${user.id}`);
+                const data = await response.json();
+                setIsAdmin(data.isAdmin);
+            } catch (err) {
+                console.error('Error checking admin status:', err);
+                setIsAdmin(false);
+            }
+        };
+        checkAdminStatus();
+    }, [user]);
+
     useEffect(() => {
         if (profile) {
             setFormData({
@@ -155,7 +177,7 @@ export default function ProfilePage() {
 
         try {
             // Update the existing profile (don't use upsert, just update)
-            const { error } = await supabase
+            const { data: updatedProfile, error } = await supabase
                 .from('profiles')
                 .update({
                     username: formData.username,
@@ -164,9 +186,20 @@ export default function ProfilePage() {
                     phone: formData.phone,
                     avatar_url: formData.avatar_url
                 })
-                .eq('auth_user_id', user.id);
+                .eq('auth_user_id', user.id)
+                .select()
+                .single();
 
             if (error) throw error;
+
+            // Update localStorage cache with new profile data
+            if (updatedProfile) {
+                try {
+                    localStorage.setItem('supabase_profile', JSON.stringify(updatedProfile));
+                } catch (e) {
+                    console.error('Error caching profile:', e);
+                }
+            }
 
             // Update auth user metadata if first_name or last_name changed
             if (formData.first_name !== profile?.first_name || formData.last_name !== profile?.last_name) {
@@ -720,12 +753,30 @@ export default function ProfilePage() {
             <div className="max-w-3xl mx-auto space-y-6">
 
                 {/* 1. Header Card - Avatar & Summary */}
-                <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
-                    <div className="p-6 sm:p-8">
+                <div className={`relative rounded-xl border shadow-sm overflow-hidden ${
+                    isAdmin 
+                        ? 'bg-gradient-to-br from-amber-50 via-white to-orange-50 dark:from-amber-950/30 dark:via-gray-900 dark:to-orange-950/30 border-amber-200 dark:border-amber-800/50' 
+                        : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800'
+                }`}>
+                    {/* Admin Background Pattern */}
+                    {isAdmin && (
+                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-amber-400/20 to-orange-500/20 rounded-full blur-3xl"></div>
+                            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-to-tr from-amber-400/10 to-orange-500/10 rounded-full blur-2xl"></div>
+                            {/* Subtle grid pattern */}
+                            <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width="20" height="20" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M0 0h20v20H0z" fill="none"/%3E%3Cpath d="M0 0h1v20H0zM19 0h1v20h-1zM0 0h20v1H0zM0 19h20v1H0z" fill="%23d97706"/%3E%3C/svg%3E")' }}></div>
+                        </div>
+                    )}
+                    
+                    <div className="relative p-6 sm:p-8">
                         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
                             {/* Avatar */}
                             <div className="relative group flex-shrink-0">
-                                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden ring-2 ring-gray-200 dark:ring-gray-700">
+                                <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center overflow-hidden ring-2 ${
+                                    isAdmin 
+                                        ? 'bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/50 dark:to-orange-900/50 ring-amber-300 dark:ring-amber-600' 
+                                        : 'bg-gray-100 dark:bg-gray-800 ring-gray-200 dark:ring-gray-700'
+                                }`}>
                                     {formData.avatar_url ? (
                                         <img src={formData.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                                     ) : (
@@ -734,6 +785,14 @@ export default function ProfilePage() {
                                         </span>
                                     )}
                                 </div>
+                                {/* Admin Crown Badge */}
+                                {isAdmin && (
+                                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg border-2 border-white dark:border-gray-900 animate-pulse">
+                                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                    </div>
+                                )}
                                 {isEditing && (
                                     <button
                                         onClick={() => setShowAvatarSelector(!showAvatarSelector)}
@@ -749,10 +808,27 @@ export default function ProfilePage() {
 
                             {/* Name & Username */}
                             <div className="flex-1 text-center sm:text-start sm:rtl:text-right sm:ltr:text-left min-w-0">
-                                <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white truncate">
-                                    {formData.first_name} {formData.last_name}
-                                </h1>
+                                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2">
+                                    <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white truncate">
+                                        {formData.first_name} {formData.last_name}
+                                    </h1>
+                                    {/* Admin Badge */}
+                                    {isAdmin && (
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full shadow-lg shadow-amber-500/30">
+                                            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                            </svg>
+                                            Administrator
+                                        </span>
+                                    )}
+                                </div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5" dir="ltr">@{formData.username || t('defaultUsername')}</p>
+                                {/* Admin Role Description */}
+                                {isAdmin && (
+                                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium">
+                                        ✨ {t('adminRoleDescription') || 'Full access to admin dashboard'}
+                                    </p>
+                                )}
                             </div>
 
                             {/* Edit Toggle */}

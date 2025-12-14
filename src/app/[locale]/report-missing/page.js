@@ -2,8 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
-import { Link } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import dynamic from 'next/dynamic';
 import LoginDialog from '@/components/LoginDialog';
@@ -125,6 +124,7 @@ export default function ReportMissingPage() {
         e.preventDefault();
 
         setMessage('');
+        setError('');
 
         // Check for validation errors one at a time
         const firstError = getFirstValidationError();
@@ -138,13 +138,59 @@ export default function ReportMissingPage() {
         setLoading(true);
 
         try {
-            // TODO: Implement actual submission logic
-            // 1. Upload photos to storage
-            // 2. Save report to database
-            // 3. Trigger AI matching
+            // Get auth token
+            const token = localStorage.getItem('supabase_token');
+            if (!token) {
+                setError(t('errors.notLoggedIn') || 'You must be logged in to submit a report');
+                setLoading(false);
+                return;
+            }
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Create FormData for multipart upload
+            const submitData = new FormData();
+            submitData.append('firstName', formData.firstName);
+            submitData.append('lastName', formData.lastName);
+            submitData.append('city', formData.city);
+            submitData.append('lastKnownLocation', formData.lastKnownLocation);
+            
+            if (formData.dateOfBirth) {
+                submitData.append('dateOfBirth', formData.dateOfBirth);
+            }
+            if (formData.gender) {
+                submitData.append('gender', formData.gender);
+            }
+            if (formData.healthStatus) {
+                submitData.append('healthStatus', formData.healthStatus);
+            }
+            if (formData.healthDetails) {
+                submitData.append('healthDetails', formData.healthDetails);
+            }
+            if (formData.additionalInfo) {
+                submitData.append('additionalInfo', formData.additionalInfo);
+            }
+            if (formData.coordinates?.lat && formData.coordinates?.lng) {
+                submitData.append('coordinates', JSON.stringify(formData.coordinates));
+            }
+
+            // Add photos
+            photos.forEach((photo) => {
+                submitData.append('photos', photo);
+            });
+
+            // Submit to API
+            const response = await fetch('/api/reports/missing', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: submitData
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to submit report');
+            }
 
             setMessage(t('success.reportSubmitted'));
             
