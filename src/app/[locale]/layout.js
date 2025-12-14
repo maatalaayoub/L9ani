@@ -60,6 +60,7 @@ const tajawal = localFont({
         },
     ],
     variable: '--font-tajawal',
+    display: 'swap',
 });
 
 export async function generateMetadata({ params }) {
@@ -74,13 +75,14 @@ export default async function LocaleLayout({ children, params }) {
     const { locale } = await params;
     const messages = await getMessages();
     const dir = locale === 'ar' ? 'rtl' : 'ltr';
-    const fontClass = `${tajawal.variable} ${geistSans.variable} ${geistMono.variable}`;
     
-    // Apply the appropriate font family class based on locale
-    const fontFamilyClass = locale === 'ar' ? 'font-arabic' : 'font-sans';
+    // For Arabic, use Tajawal font class; for English, use Geist font class
+    // We include all font variables but apply the appropriate className
+    const fontVariables = `${tajawal.variable} ${geistSans.variable} ${geistMono.variable}`;
+    const fontClassName = locale === 'ar' ? tajawal.className : geistSans.className;
 
     return (
-        <div lang={locale} dir={dir} className={`${fontClass} ${fontFamilyClass}`}>
+        <div lang={locale} dir={dir} className={`${fontVariables} ${fontClassName}`}>
             <script
                 dangerouslySetInnerHTML={{
                     __html: `

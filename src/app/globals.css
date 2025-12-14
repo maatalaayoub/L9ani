@@ -16,36 +16,12 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-arabic: var(--font-tajawal);
 }
 
-/* Explicitly set body styles to use variables */
+/* Explicitly set body styles */
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-}
-
-/* Font classes for explicit font application */
-.font-sans {
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-}
-
-.font-arabic {
-  font-family: var(--font-tajawal), 'Segoe UI', Tahoma, Arial, sans-serif;
-}
-
-/* Arabic font for RTL - also apply to all children */
-html[dir="rtl"] body,
-[dir="rtl"] {
-  font-family: var(--font-tajawal), 'Segoe UI', Tahoma, Arial, sans-serif;
-}
-
-/* Ensure all text elements in RTL inherit the Arabic font */
-[dir="rtl"] * {
-  font-family: inherit;
 }
 
 /* Smooth RTL/LTR transition */
