@@ -702,6 +702,7 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
                                                 country={'ma'}
                                                 value={phoneNumber}
                                                 onChange={handlePhoneChange}
+                                                placeholder="+212 6XX XXX XXX"
                                                 inputClass="!w-full !py-3 !h-[46px] !bg-gray-50 dark:!bg-slate-800 !border !border-gray-200 dark:!border-slate-700 !rounded-lg !text-gray-900 dark:!text-white placeholder-gray-400 dark:placeholder-gray-500 !text-sm focus:!outline-none focus:!ring-2 focus:!ring-inset focus:!ring-blue-500 focus:!border-transparent"
                                                 buttonClass="!bg-gray-50 dark:!bg-slate-800 !border-gray-200 dark:!border-slate-700 !rounded-l-lg hover:!bg-gray-100 dark:hover:!bg-slate-700"
                                                 dropdownClass="!bg-white dark:!bg-slate-900 !text-gray-900 dark:!text-white !border-gray-200 dark:!border-slate-700 !shadow-xl"
