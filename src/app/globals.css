@@ -52,6 +52,23 @@ html[data-changing-locale="true"] * {
   /* Firefox */
 }
 
+/* Animated collapse/expand for email login form */
+.email-form-container {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 0.4s ease-out, opacity 0.3s ease-out;
+}
+
+.email-form-container.expanded {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.email-form-container > .email-form-inner {
+  overflow: hidden;
+}
+
 /* Override react-phone-input-2 hover styles */
 .react-tel-input .country-list .country:hover,
 .react-tel-input .country-list .country.highlight {
