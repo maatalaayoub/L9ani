@@ -52,9 +52,11 @@
     
     "modal": {
         "reportDetails": "تفاصيل البلاغ",
+        "missingPersonInfo": "معلومات الشخص المفقود",
         "personInfo": "معلومات الشخص",
         "firstName": "الاسم الأول",
         "lastName": "اسم العائلة",
+        "fullName": "الاسم الكامل",
         "dateOfBirth": "تاريخ الميلاد",
         "gender": "الجنس",
         "healthStatus": "الحالة الصحية",
@@ -65,10 +67,17 @@
         "coordinates": "الإحداثيات",
         "additionalInfo": "معلومات إضافية",
         "photos": "الصور",
-        "contactInfo": "معلومات الاتصال",
-        "reporterName": "اسم المُبلغ",
-        "reporterPhone": "الهاتف",
+        "reporterInfo": "معلومات المُبلِّغ",
+        "reporterId": "معرف المُبلِّغ",
+        "reporterName": "اسم المُبلِّغ",
+        "reporterPhone": "رقم الهاتف",
         "reporterEmail": "البريد الإلكتروني",
+        "contactInfo": "معلومات الاتصال",
+        "reportInfo": "معلومات البلاغ",
+        "reportId": "معرف البلاغ",
+        "submittedAt": "تاريخ التقديم",
+        "updatedAt": "آخر تحديث",
+        "currentStatus": "الحالة الحالية",
         "rejectionReason": "سبب الرفض",
         "rejectionReasonPlaceholder": "يرجى تقديم سبب للرفض...",
         "close": "إغلاق",
@@ -77,7 +86,8 @@
         "confirmApproval": "تأكيد الموافقة",
         "confirmApprovalMessage": "هل أنت متأكد من الموافقة على هذا البلاغ؟ بمجرد الموافقة، سيكون مرئياً للعامة.",
         "confirmRejection": "تأكيد الرفض",
-        "confirmRejectionMessage": "هل أنت متأكد من رفض هذا البلاغ؟"
+        "confirmRejectionMessage": "هل أنت متأكد من رفض هذا البلاغ؟",
+        "noPhotosAvailable": "لا توجد صور متاحة"
     },
     
     "pagination": {
@@ -100,7 +110,8 @@
     "stats": {
         "totalReports": "إجمالي البلاغات",
         "pendingReview": "قيد المراجعة",
-        "approvedToday": "تمت الموافقة اليوم",
-        "rejectedToday": "تم الرفض اليوم"
+        "approved": "تمت الموافقة",
+        "rejected": "مرفوض",
+        "overview": "نظرة عامة على البلاغات"
     }
 }
