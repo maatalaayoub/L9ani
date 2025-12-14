@@ -46,8 +46,12 @@
         "approve": "موافقة",
         "reject": "رفض",
         "view": "عرض التفاصيل",
+        "delete": "حذف",
+        "changeStatus": "تغيير الحالة",
         "approving": "جاري الموافقة...",
-        "rejecting": "جاري الرفض..."
+        "rejecting": "جاري الرفض...",
+        "deleting": "جاري الحذف...",
+        "changingStatus": "جاري التغيير..."
     },
     
     "modal": {
@@ -87,6 +91,11 @@
         "confirmApprovalMessage": "هل أنت متأكد من الموافقة على هذا البلاغ؟ بمجرد الموافقة، سيكون مرئياً للعامة.",
         "confirmRejection": "تأكيد الرفض",
         "confirmRejectionMessage": "هل أنت متأكد من رفض هذا البلاغ؟",
+        "confirmDelete": "تأكيد الحذف",
+        "confirmDeleteMessage": "هل أنت متأكد من حذف هذا البلاغ؟ سيؤدي هذا إلى إزالة جميع البيانات المرتبطة نهائياً.",
+        "deleteWarning": "لا يمكن التراجع عن هذا الإجراء!",
+        "confirmStatusChange": "تغيير حالة البلاغ",
+        "confirmStatusChangeMessage": "هل أنت متأكد من تغيير حالة هذا البلاغ من {from} إلى {to}؟",
         "noPhotosAvailable": "لا توجد صور متاحة"
     },
     
@@ -103,6 +112,8 @@
     "messages": {
         "approveSuccess": "تمت الموافقة على البلاغ بنجاح",
         "rejectSuccess": "تم رفض البلاغ بنجاح",
+        "deleteSuccess": "تم حذف البلاغ بنجاح",
+        "statusChangeSuccess": "تم تغيير حالة البلاغ بنجاح",
         "error": "حدث خطأ. يرجى المحاولة مرة أخرى.",
         "fetchError": "فشل في تحميل البلاغات. يرجى المحاولة مرة أخرى."
     },

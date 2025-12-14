@@ -44,37 +44,48 @@ export default function MyReport() {
             let token = null;
             
             if (supabase) {
-                // First try to get current session
-                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-                
-                if (sessionError) {
-                    console.log('[MyReport] Session error:', sessionError.message);
-                }
-                
-                if (session?.access_token) {
-                    token = session.access_token;
-                    localStorage.setItem('supabase_token', token);
-                    console.log('[MyReport] Using session token, expires:', new Date(session.expires_at * 1000).toISOString());
-                } else {
-                    // No session - try to refresh
-                    console.log('[MyReport] No active session, trying refresh...');
-                    const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+                try {
+                    // First try to get current session
+                    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
                     
-                    if (refreshError) {
-                        console.log('[MyReport] Refresh error:', refreshError.message);
+                    if (sessionError) {
+                        console.log('[MyReport] Session error:', sessionError.message);
                     }
                     
-                    if (refreshData?.session?.access_token) {
-                        token = refreshData.session.access_token;
+                    if (session?.access_token) {
+                        token = session.access_token;
                         localStorage.setItem('supabase_token', token);
-                        localStorage.setItem('supabase_refresh_token', refreshData.session.refresh_token);
-                        console.log('[MyReport] Got refreshed token');
+                        console.log('[MyReport] Using session token');
                     } else {
-                        // Last resort - try stored token
-                        token = localStorage.getItem('supabase_token');
-                        console.log('[MyReport] Fallback to stored token:', !!token);
+                        // No session - try to refresh
+                        console.log('[MyReport] No active session, trying refresh...');
+                        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+                        
+                        if (refreshError) {
+                            console.log('[MyReport] Refresh error:', refreshError.message);
+                        }
+                        
+                        if (refreshData?.session?.access_token) {
+                            token = refreshData.session.access_token;
+                            localStorage.setItem('supabase_token', token);
+                            if (refreshData.session.refresh_token) {
+                                localStorage.setItem('supabase_refresh_token', refreshData.session.refresh_token);
+                            }
+                            console.log('[MyReport] Got refreshed token');
+                        } else {
+                            // Last resort - try stored token
+                            token = localStorage.getItem('supabase_token');
+                            console.log('[MyReport] Fallback to stored token:', !!token);
+                        }
                     }
+                } catch (supabaseErr) {
+                    console.error('[MyReport] Supabase error:', supabaseErr);
+                    token = localStorage.getItem('supabase_token');
                 }
+            } else {
+                // Supabase not available, use stored token
+                token = localStorage.getItem('supabase_token');
+                console.log('[MyReport] Supabase not available, using stored token');
             }
 
             if (!token) {
@@ -174,15 +185,15 @@ export default function MyReport() {
     const openEditModal = (report) => {
         setEditingReport(report);
         setEditFormData({
-            firstName: report.first_name || '',
-            lastName: report.last_name || '',
-            dateOfBirth: report.date_of_birth || '',
-            gender: report.gender || '',
-            healthStatus: report.health_status || '',
-            healthDetails: report.health_details || '',
-            city: report.city || '',
-            lastKnownLocation: report.last_known_location || '',
-            additionalInfo: report.additional_info || ''
+            firstName: report.first_name ?? '',
+            lastName: report.last_name ?? '',
+            dateOfBirth: report.date_of_birth ?? '',
+            gender: report.gender ?? '',
+            healthStatus: report.health_status ?? '',
+            healthDetails: report.health_details ?? '',
+            city: report.city ?? '',
+            lastKnownLocation: report.last_known_location ?? '',
+            additionalInfo: report.additional_info ?? ''
         });
         setEditError('');
         setEditSuccess('');
@@ -202,8 +213,12 @@ export default function MyReport() {
             // Get fresh token
             let token = null;
             if (supabase) {
-                const { data: { session } } = await supabase.auth.getSession();
-                token = session?.access_token;
+                try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    token = session?.access_token;
+                } catch (e) {
+                    console.log('[MyReport] Error getting session:', e);
+                }
             }
             if (!token) {
                 token = localStorage.getItem('supabase_token');
@@ -757,7 +772,7 @@ export default function MyReport() {
                                         </label>
                                         <input
                                             type="text"
-                                            value={editFormData.firstName}
+                                            value={editFormData.firstName || ''}
                                             onChange={(e) => handleEditFormChange('firstName', e.target.value)}
                                             className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                                             required
@@ -769,7 +784,7 @@ export default function MyReport() {
                                         </label>
                                         <input
                                             type="text"
-                                            value={editFormData.lastName}
+                                            value={editFormData.lastName || ''}
                                             onChange={(e) => handleEditFormChange('lastName', e.target.value)}
                                             className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                                             required
@@ -785,7 +800,7 @@ export default function MyReport() {
                                         </label>
                                         <input
                                             type="date"
-                                            value={editFormData.dateOfBirth}
+                                            value={editFormData.dateOfBirth || ''}
                                             onChange={(e) => handleEditFormChange('dateOfBirth', e.target.value)}
                                             className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                                         />
@@ -795,7 +810,7 @@ export default function MyReport() {
                                             {t('edit.gender') || 'Gender'}
                                         </label>
                                         <select
-                                            value={editFormData.gender}
+                                            value={editFormData.gender || ''}
                                             onChange={(e) => handleEditFormChange('gender', e.target.value)}
                                             className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                                         >
@@ -813,7 +828,7 @@ export default function MyReport() {
                                             {t('edit.healthStatus') || 'Health Status'}
                                         </label>
                                         <select
-                                            value={editFormData.healthStatus}
+                                            value={editFormData.healthStatus || ''}
                                             onChange={(e) => handleEditFormChange('healthStatus', e.target.value)}
                                             className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                                         >
@@ -829,7 +844,7 @@ export default function MyReport() {
                                         </label>
                                         <input
                                             type="text"
-                                            value={editFormData.healthDetails}
+                                            value={editFormData.healthDetails || ''}
                                             onChange={(e) => handleEditFormChange('healthDetails', e.target.value)}
                                             placeholder={t('edit.healthDetailsPlaceholder') || 'Any medical conditions...'}
                                             className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
@@ -844,7 +859,7 @@ export default function MyReport() {
                                     </label>
                                     <input
                                         type="text"
-                                        value={editFormData.city}
+                                        value={editFormData.city || ''}
                                         onChange={(e) => handleEditFormChange('city', e.target.value)}
                                         className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                                         required
@@ -856,7 +871,7 @@ export default function MyReport() {
                                         {t('edit.lastKnownLocation') || 'Last Known Location'} <span className="text-red-500">*</span>
                                     </label>
                                     <textarea
-                                        value={editFormData.lastKnownLocation}
+                                        value={editFormData.lastKnownLocation || ''}
                                         onChange={(e) => handleEditFormChange('lastKnownLocation', e.target.value)}
                                         rows={2}
                                         className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-none"
@@ -870,7 +885,7 @@ export default function MyReport() {
                                         {t('edit.additionalInfo') || 'Additional Information'}
                                     </label>
                                     <textarea
-                                        value={editFormData.additionalInfo}
+                                        value={editFormData.additionalInfo || ''}
                                         onChange={(e) => handleEditFormChange('additionalInfo', e.target.value)}
                                         rows={3}
                                         placeholder={t('edit.additionalInfoPlaceholder') || 'Any other relevant details...'}
@@ -879,7 +894,7 @@ export default function MyReport() {
                                 </div>
 
                                 {/* Photos Note */}
-                                {editingReport.photos && editingReport.photos.length > 0 && (
+                                {editingReport?.photos && editingReport.photos.length > 0 && (
                                     <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
                                         <p className="text-sm text-blue-700 dark:text-blue-400 flex items-center gap-2">
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -901,10 +916,10 @@ export default function MyReport() {
                                     {t('edit.cancel') || 'Cancel'}
                                 </button>
                                 <button
-                                    onClick={() => handleEditSubmit(editingReport.status === 'rejected')}
+                                    onClick={() => handleEditSubmit(editingReport?.status === 'rejected')}
                                     disabled={editLoading || !editFormData.firstName || !editFormData.lastName || !editFormData.city || !editFormData.lastKnownLocation}
                                     className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
-                                        editingReport.status === 'rejected'
+                                        editingReport?.status === 'rejected'
                                             ? 'bg-orange-600 hover:bg-orange-700 text-white'
                                             : 'bg-blue-600 hover:bg-blue-700 text-white'
                                     }`}
@@ -917,7 +932,7 @@ export default function MyReport() {
                                             </svg>
                                             {t('edit.saving') || 'Saving...'}
                                         </>
-                                    ) : editingReport.status === 'rejected' ? (
+                                    ) : editingReport?.status === 'rejected' ? (
                                         t('edit.resubmit') || 'Save & Resubmit'
                                     ) : (
                                         t('edit.save') || 'Save Changes'

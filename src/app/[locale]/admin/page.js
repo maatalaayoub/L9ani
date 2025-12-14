@@ -50,6 +50,15 @@ export default function AdminPage() {
     const [rejectionReason, setRejectionReason] = useState('');
     const [actionLoading, setActionLoading] = useState(false);
 
+    // Delete modal state
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+
+    // Change status modal state
+    const [showChangeStatusModal, setShowChangeStatusModal] = useState(false);
+    const [newStatus, setNewStatus] = useState('');
+    const [changeStatusLoading, setChangeStatusLoading] = useState(false);
+
     // Login dialog
     const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
 
@@ -206,6 +215,92 @@ export default function AdminPage() {
             setError(t('messages.error'));
         } finally {
             setActionLoading(false);
+        }
+    };
+
+    // Handle delete report
+    const handleDelete = async () => {
+        if (!selectedReport || !user) return;
+
+        setDeleteLoading(true);
+        setError('');
+
+        try {
+            const response = await fetch(
+                `/api/admin/reports?userId=${user.id}&reportId=${selectedReport.id}&type=${activeTab}`,
+                { method: 'DELETE' }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to delete report');
+            }
+
+            setSuccessMessage(t('messages.deleteSuccess'));
+            setShowDeleteModal(false);
+            setSelectedReport(null);
+            
+            // Refresh the reports list and stats
+            fetchReports();
+            fetchStats();
+
+            // Clear success message after 3 seconds
+            setTimeout(() => setSuccessMessage(''), 3000);
+        } catch (err) {
+            console.error('Error deleting report:', err);
+            setError(t('messages.error'));
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
+
+    // Handle change status
+    const handleChangeStatus = async () => {
+        if (!selectedReport || !user || !newStatus) return;
+
+        setChangeStatusLoading(true);
+        setError('');
+
+        try {
+            const action = newStatus === 'approved' ? 'approve' : 'reject';
+            const response = await fetch('/api/admin/reports', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: user.id,
+                    reportId: selectedReport.id,
+                    type: activeTab,
+                    action: action,
+                    rejectionReason: newStatus === 'rejected' ? rejectionReason : undefined
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to change status');
+            }
+
+            setSuccessMessage(t('messages.statusChangeSuccess'));
+            setShowChangeStatusModal(false);
+            setSelectedReport(null);
+            setNewStatus('');
+            setRejectionReason('');
+            
+            // Refresh the reports list and stats
+            fetchReports();
+            fetchStats();
+
+            // Clear success message after 3 seconds
+            setTimeout(() => setSuccessMessage(''), 3000);
+        } catch (err) {
+            console.error('Error changing status:', err);
+            setError(t('messages.error'));
+        } finally {
+            setChangeStatusLoading(false);
         }
     };
 
@@ -710,6 +805,38 @@ export default function AdminPage() {
                                                                 </button>
                                                             </>
                                                         )}
+
+                                                        {/* Change Status button - only for approved/rejected reports */}
+                                                        {(report.status === 'approved' || report.status === 'rejected') && (
+                                                            <button
+                                                                onClick={() => {
+                                                                    setSelectedReport(report);
+                                                                    setNewStatus(report.status === 'approved' ? 'rejected' : 'approved');
+                                                                    setRejectionReason('');
+                                                                    setShowChangeStatusModal(true);
+                                                                }}
+                                                                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors border border-amber-200 dark:border-amber-800"
+                                                            >
+                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                                </svg>
+                                                                {t('actions.changeStatus')}
+                                                            </button>
+                                                        )}
+
+                                                        {/* Delete button - for all reports */}
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedReport(report);
+                                                                setShowDeleteModal(true);
+                                                            }}
+                                                            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-red-600 dark:hover:text-red-400 transition-colors border border-gray-200 dark:border-gray-600"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                            {t('actions.delete')}
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1093,6 +1220,120 @@ export default function AdminPage() {
                                     disabled={actionLoading}
                                 >
                                     {actionLoading ? t('actions.rejecting') : t('modal.confirm')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Modal */}
+            {showDeleteModal && selectedReport && (
+                <div className="fixed inset-0 z-50 overflow-y-auto">
+                    <div className="flex items-center justify-center min-h-screen px-4">
+                        <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => setShowDeleteModal(false)} />
+                        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-auto z-10 p-6">
+                            <div className="text-center mb-4">
+                                <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
+                                    <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('modal.confirmDelete')}</h3>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{t('modal.confirmDeleteMessage')}</p>
+                                <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
+                                    <p className="text-sm text-red-700 dark:text-red-300 font-medium flex items-center justify-center gap-2">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                        {t('modal.deleteWarning')}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex gap-2 justify-center">
+                                <button
+                                    onClick={() => {
+                                        setShowDeleteModal(false);
+                                        setSelectedReport(null);
+                                    }}
+                                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                                    disabled={deleteLoading}
+                                >
+                                    {t('modal.cancel')}
+                                </button>
+                                <button
+                                    onClick={handleDelete}
+                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                                    disabled={deleteLoading}
+                                >
+                                    {deleteLoading ? t('actions.deleting') : t('actions.delete')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Change Status Modal */}
+            {showChangeStatusModal && selectedReport && (
+                <div className="fixed inset-0 z-50 overflow-y-auto">
+                    <div className="flex items-center justify-center min-h-screen px-4">
+                        <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => setShowChangeStatusModal(false)} />
+                        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-auto z-10 p-6">
+                            <div className="text-center mb-4">
+                                <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-amber-100 dark:bg-amber-900 flex items-center justify-center">
+                                    <svg className="w-6 h-6 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('modal.confirmStatusChange')}</h3>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                                    {t('modal.confirmStatusChangeMessage', { 
+                                        from: t(`status.${selectedReport.status}`), 
+                                        to: t(`status.${newStatus}`) 
+                                    })}
+                                </p>
+                            </div>
+                            
+                            {/* Show rejection reason field if changing to rejected */}
+                            {newStatus === 'rejected' && (
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        {t('modal.rejectionReason')}
+                                    </label>
+                                    <textarea
+                                        value={rejectionReason}
+                                        onChange={(e) => setRejectionReason(e.target.value)}
+                                        placeholder={t('modal.rejectionReasonPlaceholder')}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                        rows={3}
+                                    />
+                                </div>
+                            )}
+                            
+                            <div className="flex gap-2 justify-center">
+                                <button
+                                    onClick={() => {
+                                        setShowChangeStatusModal(false);
+                                        setSelectedReport(null);
+                                        setNewStatus('');
+                                        setRejectionReason('');
+                                    }}
+                                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                                    disabled={changeStatusLoading}
+                                >
+                                    {t('modal.cancel')}
+                                </button>
+                                <button
+                                    onClick={handleChangeStatus}
+                                    className={`px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 ${
+                                        newStatus === 'approved' 
+                                            ? 'bg-green-600 hover:bg-green-700' 
+                                            : 'bg-red-600 hover:bg-red-700'
+                                    }`}
+                                    disabled={changeStatusLoading}
+                                >
+                                    {changeStatusLoading ? t('actions.changingStatus') : t('modal.confirm')}
                                 </button>
                             </div>
                         </div>

@@ -188,3 +188,53 @@ export async function PATCH(request) {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
+
+export async function DELETE(request) {
+    try {
+        if (!supabaseAdmin) {
+            console.error('[API Admin Reports] supabaseAdmin is not configured');
+            return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+        }
+
+        const { searchParams } = new URL(request.url);
+        const userId = searchParams.get('userId');
+        const reportId = searchParams.get('reportId');
+        const type = searchParams.get('type') || 'missing';
+
+        // Validate required fields
+        if (!userId || !reportId) {
+            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        }
+
+        console.log('[API Admin Reports DELETE] Params:', { userId, reportId, type });
+
+        // Verify admin status
+        const isAdmin = await verifyAdmin(userId);
+        if (!isAdmin) {
+            return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
+        }
+
+        const tableName = type === 'sighting' ? 'sightings' : 'missing_persons';
+
+        // Delete the report
+        const { error } = await supabaseAdmin
+            .from(tableName)
+            .delete()
+            .eq('id', reportId);
+
+        if (error) {
+            console.error('[API Admin Reports DELETE] Error deleting report:', error);
+            return NextResponse.json({ error: error.message }, { status: 500 });
+        }
+
+        console.log('[API Admin Reports DELETE] Report deleted successfully:', reportId);
+
+        return NextResponse.json({
+            success: true,
+            message: 'Report deleted successfully'
+        });
+    } catch (err) {
+        console.error('[API Admin Reports DELETE] Exception:', err);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}

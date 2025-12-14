@@ -46,8 +46,12 @@
         "approve": "Approve",
         "reject": "Reject",
         "view": "View Details",
+        "delete": "Delete",
+        "changeStatus": "Change Status",
         "approving": "Approving...",
-        "rejecting": "Rejecting..."
+        "rejecting": "Rejecting...",
+        "deleting": "Deleting...",
+        "changingStatus": "Changing..."
     },
     
     "modal": {
@@ -87,6 +91,11 @@
         "confirmApprovalMessage": "Are you sure you want to approve this report? Once approved, it will be visible to the public.",
         "confirmRejection": "Confirm Rejection",
         "confirmRejectionMessage": "Are you sure you want to reject this report?",
+        "confirmDelete": "Confirm Deletion",
+        "confirmDeleteMessage": "Are you sure you want to delete this report? This will permanently remove all associated data.",
+        "deleteWarning": "This action cannot be undone!",
+        "confirmStatusChange": "Change Report Status",
+        "confirmStatusChangeMessage": "Are you sure you want to change this report's status from {from} to {to}?",
         "noPhotosAvailable": "No photos available"
     },
     
@@ -103,6 +112,8 @@
     "messages": {
         "approveSuccess": "Report approved successfully",
         "rejectSuccess": "Report rejected successfully",
+        "deleteSuccess": "Report deleted successfully",
+        "statusChangeSuccess": "Report status changed successfully",
         "error": "An error occurred. Please try again.",
         "fetchError": "Failed to load reports. Please try again."
     },
