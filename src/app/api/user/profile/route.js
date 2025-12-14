@@ -3,6 +3,11 @@ import { supabaseAdmin } from '@/lib/supabase';
 
 export async function GET(request) {
     try {
+        if (!supabaseAdmin) {
+            console.error('[API Profile] supabaseAdmin is not configured - missing SUPABASE_SERVICE_ROLE_KEY');
+            return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+        }
+
         const { searchParams } = new URL(request.url);
         const userId = searchParams.get('userId');
 

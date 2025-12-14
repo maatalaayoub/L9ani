@@ -17,7 +17,7 @@ export default function ResetPasswordPage() {
     const [isValidSession, setIsValidSession] = useState(false);
     const [checkingSession, setCheckingSession] = useState(true);
     const [locale, setLocale] = useState('en');
-    
+
     // Use ref to track if recovery was validated (avoids stale closure issue)
     const recoveryValidatedRef = useRef(false);
 
@@ -53,7 +53,7 @@ export default function ResetPasswordPage() {
             resetting: "Resetting...",
             success: {
                 title: "Password Reset Successfully!",
-                description: "Your password has been updated. Redirecting to login..."
+                description: "Your password has been updated. Redirecting to your profile..."
             },
             invalidLink: {
                 title: "Invalid or Expired Link",
@@ -84,7 +84,7 @@ export default function ResetPasswordPage() {
             resetting: "جارٍ إعادة التعيين...",
             success: {
                 title: "تم إعادة تعيين كلمة المرور بنجاح!",
-                description: "تم تحديث كلمة المرور الخاصة بك. جارٍ التوجيه إلى تسجيل الدخول..."
+                description: "تم تحديث كلمة المرور الخاصة بك. جارٍ التوجيه إلى صفحتك الشخصية..."
             },
             invalidLink: {
                 title: "رابط غير صالح أو منتهي الصلاحية",
@@ -106,44 +106,125 @@ export default function ResetPasswordPage() {
 
     useEffect(() => {
         let mounted = true;
-        
+
+
+        console.log('[ResetPassword] Page loaded');
+        console.log('[ResetPassword] Full URL:', window.location.href);
+        console.log('[ResetPassword] Hash:', window.location.hash);
+        console.log('[ResetPassword] Search:', window.location.search);
+        console.log('[ResetPassword] Pathname:', window.location.pathname);
+
+        // Parse and log all URL parameters for debugging
+        if (window.location.search) {
+            const urlParams = new URLSearchParams(window.location.search);
+            console.log('[ResetPassword] All query params:');
+            for (const [key, value] of urlParams.entries()) {
+                console.log(`  ${key}:`, value);
+            }
+        }
+
+
         const handleRecovery = async () => {
             // Set up auth listener FIRST to catch PASSWORD_RECOVERY event
             const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-                console.log('Auth event:', event, 'Session:', !!session);
-                
+                console.log('[ResetPassword] Auth event:', event, 'Has session:', !!session);
+
                 if (!mounted) return;
-                
+
                 if (event === 'PASSWORD_RECOVERY') {
-                    console.log('PASSWORD_RECOVERY event received');
+                    console.log('[ResetPassword] PASSWORD_RECOVERY event - allowing access');
+                    recoveryValidatedRef.current = true;
                     setIsValidSession(true);
                     setCheckingSession(false);
+                } else if (event === 'SIGNED_IN' && session) {
+                    // Check if this SIGNED_IN is from a recovery flow
+                    const amr = session.user?.amr || [];
+                    const hasRecovery = amr.some(a => a.method === 'recovery');
+                    console.log('[ResetPassword] SIGNED_IN event, AMR:', amr, 'hasRecovery:', hasRecovery);
+
+                    if (hasRecovery) {
+                        recoveryValidatedRef.current = true;
+                        setIsValidSession(true);
+                        setCheckingSession(false);
+                    }
                 }
             });
 
             try {
-                // Check if we have hash params (tokens from Supabase redirect)
                 const hashParams = window.location.hash;
-                console.log('Hash params:', hashParams);
-                
+                const searchParams = window.location.search;
+
+                // FIRST: Check for existing session before any operations
+                const { data: currentSessionData } = await supabase.auth.getSession();
+                const hasExistingSession = !!currentSessionData?.session;
+                console.log('[ResetPassword] Has existing session:', hasExistingSession);
+
+                // Check for PKCE code in query params (Supabase PKCE flow)
+                if (searchParams) {
+                    const urlParams = new URLSearchParams(searchParams);
+                    const code = urlParams.get('code');
+                    const errorParam = urlParams.get('error');
+                    const errorDescription = urlParams.get('error_description');
+
+                    console.log('[ResetPassword] Query params - code:', !!code, 'error:', errorParam);
+
+                    if (errorParam) {
+                        console.log('[ResetPassword] Error from Supabase:', errorDescription);
+                        setError('invalid');
+                        setCheckingSession(false);
+                        window.history.replaceState(null, '', window.location.pathname);
+                        return;
+                    }
+
+                    if (code) {
+                        // Always try to exchange the code for a recovery session
+                        // This works whether the user is logged in or not
+                        console.log('[ResetPassword] Found code, attempting to exchange for recovery session...');
+                        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+                        console.log('[ResetPassword] exchangeCodeForSession result:', { hasSession: !!data?.session, error: error?.message });
+
+                        if (!error && data.session && mounted) {
+                            console.log('[ResetPassword] Code exchange successful');
+                            recoveryValidatedRef.current = true;
+                            setIsValidSession(true);
+                            setCheckingSession(false);
+                            window.history.replaceState(null, '', window.location.pathname);
+                            return;
+                        }
+
+                        // Exchange failed - show error
+                        console.log('[ResetPassword] Code exchange failed');
+                        console.error('[ResetPassword] Error details:', error);
+                        console.error('[ResetPassword] Error message:', error?.message);
+                        setError('invalid');
+                        setCheckingSession(false);
+                        window.history.replaceState(null, '', window.location.pathname);
+                        return;
+                    }
+                }
+
+                // Try hash params (older Supabase flow)
                 if (hashParams && hashParams.includes('access_token')) {
+                    console.log('[ResetPassword] Found tokens in hash');
                     const params = new URLSearchParams(hashParams.substring(1));
                     const accessToken = params.get('access_token');
                     const refreshToken = params.get('refresh_token');
                     const type = params.get('type');
-                    
-                    console.log('Token type:', type, 'Access token exists:', !!accessToken);
-                    
+
+                    console.log('[ResetPassword] Token type:', type);
+
                     // Only accept 'recovery' type tokens
                     if (accessToken && type === 'recovery') {
+                        console.log('[ResetPassword] Setting session from recovery tokens');
                         const { data, error } = await supabase.auth.setSession({
                             access_token: accessToken,
                             refresh_token: refreshToken || ''
                         });
-                        
-                        console.log('setSession result:', { data, error });
-                        
+
+                        console.log('[ResetPassword] setSession result - error:', error, 'hasSession:', !!data?.session);
+
                         if (!error && data.session && mounted) {
+                            recoveryValidatedRef.current = true;
                             setIsValidSession(true);
                             setCheckingSession(false);
                             window.history.replaceState(null, '', window.location.pathname);
@@ -151,49 +232,51 @@ export default function ResetPasswordPage() {
                         }
                     }
                 }
-                
-                // If no hash, check if Supabase already processed it (detectSessionInUrl)
-                // Wait a moment for Supabase to process
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                // Check if we have a valid session from recovery
+
+                // Try query params (some Supabase versions use this)
+                if (searchParams && (searchParams.includes('token_hash') || searchParams.includes('type=recovery'))) {
+                    console.log('[ResetPassword] Found token_hash or recovery type in query params');
+                    // Supabase should auto-detect and process this with detectSessionInUrl
+                    // Just wait for the event
+                }
+
+                // Wait for Supabase to process (it might auto-detect tokens)
+                console.log('[ResetPassword] Waiting for Supabase to process...');
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                if (recoveryValidatedRef.current) {
+                    console.log('[ResetPassword] Already validated via event');
+                    return;
+                }
+
+                // Check current session
                 const { data: { session } } = await supabase.auth.getSession();
-                console.log('Current session:', session);
-                
+                console.log('[ResetPassword] Current session:', session ? 'exists' : 'none');
+
                 if (session && mounted) {
-                    // Check if this session was created recently (within last 2 minutes)
-                    // This helps ensure it's from the recovery link, not an old session
-                    const sessionCreatedAt = new Date(session.user?.confirmed_at || session.user?.created_at || 0);
-                    const now = new Date();
-                    const sessionAge = now.getTime() - sessionCreatedAt.getTime();
-                    
-                    // Also check if the session's aal (authentication assurance level) indicates recovery
-                    // Recovery sessions typically need password update
                     const amr = session.user?.amr || [];
-                    const isRecoverySession = amr.some(a => a.method === 'recovery' || a.method === 'otp');
-                    
-                    console.log('Session AMR:', amr, 'Is recovery:', isRecoverySession);
-                    
-                    // Accept if it's clearly a recovery session OR if hash had recovery type
+                    const isRecoverySession = amr.some(a => a.method === 'recovery');
+                    console.log('[ResetPassword] Session AMR:', amr, 'isRecovery:', isRecoverySession);
+
                     if (isRecoverySession) {
+                        recoveryValidatedRef.current = true;
                         setIsValidSession(true);
                         setCheckingSession(false);
                         return;
                     }
                 }
-                
-                // Give more time for PASSWORD_RECOVERY event
+
+                // Give more time
                 await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                // If still not validated, show error
-                if (mounted && !isValidSession) {
-                    console.log('No valid recovery session found');
+
+                if (mounted && !recoveryValidatedRef.current) {
+                    console.log('[ResetPassword] No valid recovery found - showing error');
                     setError('invalid');
                     setCheckingSession(false);
                 }
-                
+
             } catch (err) {
-                console.error('Recovery error:', err);
+                console.error('[ResetPassword] Error:', err);
                 if (mounted) {
                     setError('invalid');
                     setCheckingSession(false);
@@ -238,25 +321,40 @@ export default function ResetPasswordPage() {
         setLoading(true);
 
         try {
+            // Check if we have a valid session first
+            const { data: { session } } = await supabase.auth.getSession();
+            console.log('[ResetPassword] Current session before update:', !!session);
+            console.log('[ResetPassword] Session user:', session?.user?.email);
+
+            if (!session) {
+                console.error('[ResetPassword] No active session found');
+                throw new Error('No active session. Please click the reset link again.');
+            }
+
+            console.log('[ResetPassword] Attempting to update password...');
             const { error: updateError } = await supabase.auth.updateUser({
                 password: password
             });
 
             if (updateError) {
+                console.error('[ResetPassword] Update error:', updateError);
                 throw updateError;
             }
 
+            console.log('[ResetPassword] Password updated successfully');
+
             setSuccess(true);
 
-            // Sign out and redirect to home after success
-            setTimeout(async () => {
-                await supabase.auth.signOut();
-                router.push(`/${locale}`);
-            }, 3000);
+            // Redirect to profile page after success (keep user logged in)
+            setTimeout(() => {
+                router.push(`/${locale}/profile`);
+            }, 2000);
 
         } catch (err) {
-            console.error('Password reset error:', err);
-            setError(text.errors.failed);
+            console.error('[ResetPassword] Password reset error:', err);
+            console.error('[ResetPassword] Error message:', err.message);
+            console.error('[ResetPassword] Error details:', err);
+            setError(err.message || text.errors.failed);
         } finally {
             setLoading(false);
         }
@@ -274,7 +372,7 @@ export default function ResetPasswordPage() {
         );
     }
 
-    // Invalid link state
+    // Invalid link state - just show error, don't affect user's session
     if (!isValidSession) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
@@ -286,7 +384,7 @@ export default function ResetPasswordPage() {
                     </div>
                     <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{text.invalidLink.title}</h1>
                     <p className="text-gray-500 dark:text-gray-400 mb-6">{text.invalidLink.description}</p>
-                    <a 
+                    <a
                         href={`/${locale}`}
                         className="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
                     >
@@ -368,11 +466,10 @@ export default function ResetPasswordPage() {
                                 type={showConfirmPassword ? "text" : "password"}
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                className={`w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                                    confirmPassword && password !== confirmPassword
-                                        ? 'border-red-500'
-                                        : 'border-gray-200 dark:border-gray-700'
-                                }`}
+                                className={`w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${confirmPassword && password !== confirmPassword
+                                    ? 'border-red-500'
+                                    : 'border-gray-200 dark:border-gray-700'
+                                    }`}
                                 style={{ paddingRight: locale === 'ar' ? '1rem' : '3rem', paddingLeft: locale === 'ar' ? '3rem' : '1rem' }}
                                 required
                             />
@@ -400,7 +497,7 @@ export default function ResetPasswordPage() {
                         <ul className="space-y-1 text-gray-500 dark:text-gray-400">
                             <li className={`flex items-center gap-2 ${password.length >= 8 ? 'text-green-600 dark:text-green-500' : ''}`}>
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    {password.length >= 8 
+                                    {password.length >= 8
                                         ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                                         : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" />
                                     }

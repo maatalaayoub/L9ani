@@ -244,7 +244,25 @@ export function AuthProvider({ children }) {
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             console.log('[Auth] State changed:', event);
             
+            // Ignore PASSWORD_RECOVERY event - this is handled by the reset-password page
+            if (event === 'PASSWORD_RECOVERY') {
+                console.log('[Auth] Ignoring PASSWORD_RECOVERY event in AuthContext');
+                return;
+            }
+            
             if (event === 'SIGNED_IN' && session) {
+                // Only update if user changed or we don't have a user yet
+                const currentUserId = user?.id;
+                const newUserId = session.user?.id;
+                
+                if (currentUserId === newUserId && profile) {
+                    // Same user, already have profile - just update tokens
+                    console.log('[Auth] Same user already logged in, skipping profile fetch');
+                    localStorage.setItem('supabase_token', session.access_token);
+                    localStorage.setItem('supabase_refresh_token', session.refresh_token);
+                    return;
+                }
+                
                 setUser(session.user);
                 localStorage.setItem('supabase_token', session.access_token);
                 localStorage.setItem('supabase_refresh_token', session.refresh_token);

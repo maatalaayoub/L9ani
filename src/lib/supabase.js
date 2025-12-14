@@ -18,13 +18,13 @@ if (typeof window !== 'undefined') {
 
 // Always create the client - required for Next.js static optimization
 // The client will fail gracefully on API calls if credentials are invalid
-export const supabase = supabaseUrl && supabaseAnonKey 
+export const supabase = supabaseUrl && supabaseAnonKey
     ? createClient(supabaseUrl, supabaseAnonKey, {
         auth: {
             autoRefreshToken: true,
             persistSession: true,
             detectSessionInUrl: true,  // Important for OAuth redirects
-            flowType: 'pkce',  // Recommended for SPAs
+            flowType: 'implicit',  // Use implicit flow for better email link compatibility
         }
     })
     : null;

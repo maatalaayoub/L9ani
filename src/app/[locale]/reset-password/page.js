@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
@@ -20,20 +20,32 @@ export default function ResetPasswordPage() {
     const [success, setSuccess] = useState(false);
     const [isValidSession, setIsValidSession] = useState(false);
     const [checkingSession, setCheckingSession] = useState(true);
+    
+    // Use ref to track if recovery was validated
+    const recoveryValidatedRef = useRef(false);
 
     useEffect(() => {
         let mounted = true;
-        let recoveryValidated = false;
 
         const handleRecovery = async () => {
-            try {
-                // SECURITY: Only allow password reset if we have valid recovery tokens in URL
-                // Do NOT allow access just because user has an existing session
+            // Set up auth listener FIRST to catch PASSWORD_RECOVERY event
+            const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+                console.log('Auth event:', event, 'Session:', !!session);
                 
+                if (!mounted) return;
+                
+                if (event === 'PASSWORD_RECOVERY') {
+                    console.log('PASSWORD_RECOVERY event received');
+                    recoveryValidatedRef.current = true;
+                    setIsValidSession(true);
+                    setCheckingSession(false);
+                }
+            });
+
+            try {
                 const hashParams = window.location.hash;
                 console.log('Hash params:', hashParams);
                 
-                // Check for recovery tokens in URL hash
                 if (hashParams && hashParams.includes('access_token')) {
                     const params = new URLSearchParams(hashParams.substring(1));
                     const accessToken = params.get('access_token');
@@ -42,24 +54,14 @@ export default function ResetPasswordPage() {
                     
                     console.log('Token type:', type, 'Access token exists:', !!accessToken);
                     
-                    // CRITICAL: Only accept 'recovery' type tokens
                     if (accessToken && type === 'recovery') {
                         const { data, error } = await supabase.auth.setSession({
                             access_token: accessToken,
                             refresh_token: refreshToken || ''
                         });
                         
-                        if (error) {
-                            console.error('Session error:', error);
-                            if (mounted) {
-                                setError(t('resetPassword.errors.invalidLink'));
-                                setCheckingSession(false);
-                            }
-                            return;
-                        }
-                        
-                        if (data.session && mounted) {
-                            recoveryValidated = true;
+                        if (!error && data.session && mounted) {
+                            recoveryValidatedRef.current = true;
                             setIsValidSession(true);
                             setCheckingSession(false);
                             window.history.replaceState(null, '', window.location.pathname);
@@ -68,33 +70,36 @@ export default function ResetPasswordPage() {
                     }
                 }
                 
-                // Listen for PASSWORD_RECOVERY event from Supabase
-                const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-                    console.log('Auth event:', event);
+                // Wait for Supabase to process
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                if (recoveryValidatedRef.current) return;
+                
+                // Check session AMR for recovery
+                const { data: { session } } = await supabase.auth.getSession();
+                console.log('Current session:', session);
+                
+                if (session && mounted) {
+                    const amr = session.user?.amr || [];
+                    const isRecoverySession = amr.some(a => a.method === 'recovery' || a.method === 'otp');
+                    console.log('Session AMR:', amr, 'Is recovery:', isRecoverySession);
                     
-                    if (!mounted) return;
-                    
-                    // CRITICAL: Only accept PASSWORD_RECOVERY event, not regular SIGNED_IN
-                    if (event === 'PASSWORD_RECOVERY') {
-                        recoveryValidated = true;
+                    if (isRecoverySession) {
+                        recoveryValidatedRef.current = true;
                         setIsValidSession(true);
                         setCheckingSession(false);
+                        return;
                     }
-                });
-
-                // Wait for potential PASSWORD_RECOVERY event
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                }
                 
-                // If no recovery was validated, show invalid link error
-                if (!recoveryValidated && mounted) {
-                    console.log('No valid recovery token found');
+                // Give more time for PASSWORD_RECOVERY event
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                if (mounted && !recoveryValidatedRef.current) {
+                    console.log('No valid recovery session found');
                     setError(t('resetPassword.errors.invalidLink'));
                     setCheckingSession(false);
                 }
-
-                return () => {
-                    subscription?.unsubscribe();
-                };
                 
             } catch (err) {
                 console.error('Recovery error:', err);
@@ -103,6 +108,10 @@ export default function ResetPasswordPage() {
                     setCheckingSession(false);
                 }
             }
+
+            return () => {
+                subscription?.unsubscribe();
+            };
         };
 
         handleRecovery();

@@ -161,7 +161,7 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
     const handleGoogleLogin = async () => {
         setIsLoading(true);
         setPasswordError("");
-        
+
         try {
             const { data, error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
@@ -177,7 +177,7 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
             });
 
             if (error) throw error;
-            
+
             // The user will be redirected to Google for authentication
             // No need to close the dialog here as the page will redirect
         } catch (err) {
@@ -416,6 +416,7 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
             }
 
             // Send password reset email with link
+            // Use emailRedirectTo to avoid PKCE flow which causes 400 errors
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
                 redirectTo: `${window.location.origin}/reset-password`,
             });
@@ -826,7 +827,7 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
                         </div>
 
                         <div className="space-y-3">
-                            <button 
+                            <button
                                 onClick={handleGoogleLogin}
                                 disabled={isLoading}
                                 className="w-full flex items-center justify-center gap-3 py-3 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-700 dark:text-white transition-colors h-12 disabled:opacity-50 disabled:cursor-not-allowed"

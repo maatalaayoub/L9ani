@@ -613,15 +613,19 @@ export default function ProfilePage() {
         setResetEmailError('');
         setIsSendingResetEmail(true);
         
+        console.log('[ForgotPassword] Sending reset email to:', user.email);
+        
         try {
             const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
                 redirectTo: `${window.location.origin}/reset-password`,
             });
 
             if (error) {
+                console.error('[ForgotPassword] Error:', error);
                 throw error;
             }
 
+            console.log('[ForgotPassword] Email sent successfully');
             setResetEmailSent(true);
             
             // Hide message after 5 seconds
