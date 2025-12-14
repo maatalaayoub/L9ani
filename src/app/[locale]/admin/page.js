@@ -185,7 +185,7 @@ export default function AdminPage() {
     // Loading state
     if (isAuthLoading || isCheckingAdmin) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 pt-20">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
                     <p className="text-gray-600 dark:text-gray-400">{t('checkingAccess')}</p>
@@ -197,7 +197,7 @@ export default function AdminPage() {
     // Not logged in
     if (!user) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 pt-20">
                 <div className="text-center max-w-md">
                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center">
                         <svg className="w-8 h-8 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -225,7 +225,7 @@ export default function AdminPage() {
     // Not admin
     if (!isAdmin) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 pt-20">
                 <div className="text-center max-w-md">
                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
                         <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -247,7 +247,7 @@ export default function AdminPage() {
 
     // Admin dashboard
     return (
-        <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 ${isRTL ? 'rtl' : 'ltr'}`}>
+        <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 pt-20 ${isRTL ? 'rtl' : 'ltr'}`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Header */}
                 <div className="mb-8">
