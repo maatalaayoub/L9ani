@@ -9,6 +9,7 @@
     "reportedOn": "تم البلاغ في",
     "viewDetails": "عرض التفاصيل",
     "edit": "تعديل",
+    "editAndResubmit": "تعديل وإعادة التقديم",
     "status": {
         "pending": "قيد المراجعة",
         "approved": "تمت الموافقة",
@@ -41,5 +42,42 @@
         "city": "المدينة",
         "status": "الحالة",
         "submitted": "تاريخ التقديم"
+    },
+    "edit": {
+        "title": "تعديل البلاغ",
+        "titleResubmit": "تعديل وإعادة تقديم البلاغ",
+        "firstName": "الاسم الأول",
+        "lastName": "اسم العائلة",
+        "dateOfBirth": "تاريخ الميلاد",
+        "gender": "الجنس",
+        "selectGender": "اختر الجنس",
+        "male": "ذكر",
+        "female": "أنثى",
+        "healthStatus": "الحالة الصحية",
+        "selectHealthStatus": "اختر الحالة الصحية",
+        "healthy": "بصحة جيدة",
+        "medicalCondition": "لديه حالة طبية",
+        "unknown": "غير معروف",
+        "healthDetails": "تفاصيل الحالة الصحية",
+        "healthDetailsPlaceholder": "أي حالات طبية...",
+        "city": "المدينة",
+        "lastKnownLocation": "آخر موقع معروف",
+        "additionalInfo": "معلومات إضافية",
+        "additionalInfoPlaceholder": "أي تفاصيل أخرى ذات صلة...",
+        "photosNote": "لا يمكن تغيير الصور بعد التقديم. سيتم الاحتفاظ بالصور الحالية.",
+        "rejectedNotice": "تم رفض هذا البلاغ",
+        "resubmitHint": "قم بتعديل المعلومات وأعد التقديم للمراجعة.",
+        "cancel": "إلغاء",
+        "save": "حفظ التغييرات",
+        "resubmit": "حفظ وإعادة التقديم",
+        "saving": "جاري الحفظ...",
+        "success": {
+            "updated": "تم تحديث البلاغ بنجاح!",
+            "resubmitted": "تم إعادة تقديم البلاغ للمراجعة!"
+        },
+        "errors": {
+            "notLoggedIn": "يجب تسجيل الدخول",
+            "failed": "فشل تحديث البلاغ"
+        }
     }
 }

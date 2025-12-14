@@ -9,6 +9,7 @@
     "reportedOn": "Reported on",
     "viewDetails": "View Details",
     "edit": "Edit",
+    "editAndResubmit": "Edit & Resubmit",
     "status": {
         "pending": "Pending Review",
         "approved": "Approved",
@@ -41,5 +42,42 @@
         "city": "City",
         "status": "Status",
         "submitted": "Submitted"
+    },
+    "edit": {
+        "title": "Edit Report",
+        "titleResubmit": "Edit & Resubmit Report",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "dateOfBirth": "Date of Birth",
+        "gender": "Gender",
+        "selectGender": "Select Gender",
+        "male": "Male",
+        "female": "Female",
+        "healthStatus": "Health Status",
+        "selectHealthStatus": "Select Health Status",
+        "healthy": "Healthy",
+        "medicalCondition": "Has Medical Condition",
+        "unknown": "Unknown",
+        "healthDetails": "Health Details",
+        "healthDetailsPlaceholder": "Any medical conditions...",
+        "city": "City",
+        "lastKnownLocation": "Last Known Location",
+        "additionalInfo": "Additional Information",
+        "additionalInfoPlaceholder": "Any other relevant details...",
+        "photosNote": "Photos cannot be changed after submission. Current photos will be kept.",
+        "rejectedNotice": "This report was rejected",
+        "resubmitHint": "Edit the information and resubmit for review.",
+        "cancel": "Cancel",
+        "save": "Save Changes",
+        "resubmit": "Save & Resubmit",
+        "saving": "Saving...",
+        "success": {
+            "updated": "Report updated successfully!",
+            "resubmitted": "Report resubmitted for review!"
+        },
+        "errors": {
+            "notLoggedIn": "You must be logged in",
+            "failed": "Failed to update report"
+        }
     }
 }

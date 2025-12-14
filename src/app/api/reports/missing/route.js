@@ -211,3 +211,103 @@ export async function GET(request) {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
+
+// PUT - Update an existing missing person report
+export async function PUT(request) {
+    try {
+        if (!supabaseAdmin) {
+            console.error('[API Reports PUT] supabaseAdmin is not configured');
+            return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+        }
+
+        // Get auth token from header
+        const authHeader = request.headers.get('authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const token = authHeader.split(' ')[1];
+        
+        // Verify user token
+        const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+        
+        if (authError || !user) {
+            console.error('[API Reports PUT] Auth error:', authError?.message);
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // Parse request body
+        const body = await request.json();
+        const { reportId, firstName, lastName, dateOfBirth, gender, healthStatus, healthDetails, city, lastKnownLocation, coordinates, additionalInfo, resubmit } = body;
+
+        if (!reportId) {
+            return NextResponse.json({ error: 'Report ID is required' }, { status: 400 });
+        }
+
+        // Verify the report belongs to this user and is editable
+        const { data: existingReport, error: fetchError } = await supabaseAdmin
+            .from('missing_persons')
+            .select('*')
+            .eq('id', reportId)
+            .eq('user_id', user.id)
+            .single();
+
+        if (fetchError || !existingReport) {
+            console.error('[API Reports PUT] Report not found or not owned by user');
+            return NextResponse.json({ error: 'Report not found' }, { status: 404 });
+        }
+
+        // Only allow editing pending or rejected reports
+        if (existingReport.status === 'approved') {
+            return NextResponse.json({ error: 'Cannot edit approved reports' }, { status: 403 });
+        }
+
+        // Build update object
+        const updateData = {
+            first_name: firstName || existingReport.first_name,
+            last_name: lastName || existingReport.last_name,
+            date_of_birth: dateOfBirth || existingReport.date_of_birth,
+            gender: gender || existingReport.gender,
+            health_status: healthStatus || existingReport.health_status,
+            health_details: healthDetails || existingReport.health_details,
+            city: city || existingReport.city,
+            last_known_location: lastKnownLocation || existingReport.last_known_location,
+            coordinates: coordinates || existingReport.coordinates,
+            additional_info: additionalInfo || existingReport.additional_info,
+            updated_at: new Date().toISOString()
+        };
+
+        // If resubmitting a rejected report, change status back to pending
+        if (resubmit && existingReport.status === 'rejected') {
+            updateData.status = 'pending';
+            updateData.rejection_reason = null;
+            updateData.reviewed_at = null;
+            updateData.reviewed_by = null;
+        }
+
+        console.log('[API Reports PUT] Updating report:', reportId);
+
+        const { data: updatedReport, error: updateError } = await supabaseAdmin
+            .from('missing_persons')
+            .update(updateData)
+            .eq('id', reportId)
+            .select()
+            .single();
+
+        if (updateError) {
+            console.error('[API Reports PUT] Update error:', updateError);
+            return NextResponse.json({ error: 'Failed to update report' }, { status: 500 });
+        }
+
+        console.log('[API Reports PUT] Report updated successfully');
+
+        return NextResponse.json({ 
+            success: true, 
+            report: updatedReport 
+        });
+
+    } catch (err) {
+        console.error('[API Reports PUT] Exception:', err);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}

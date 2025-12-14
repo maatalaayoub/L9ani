@@ -16,6 +16,15 @@ export default function MyReport() {
     const [selectedReport, setSelectedReport] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [previewImage, setPreviewImage] = useState(null);
+    
+    // Edit modal state
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editingReport, setEditingReport] = useState(null);
+    const [editFormData, setEditFormData] = useState({});
+    const [editLoading, setEditLoading] = useState(false);
+    const [editError, setEditError] = useState('');
+    const [editSuccess, setEditSuccess] = useState('');
+    
     const t = useTranslations('myreport');
     const tCommon = useTranslations('common');
     const { locale } = useLanguage();
@@ -160,6 +169,96 @@ export default function MyReport() {
     const openDetailModal = (report) => {
         setSelectedReport(report);
         setShowDetailModal(true);
+    };
+
+    const openEditModal = (report) => {
+        setEditingReport(report);
+        setEditFormData({
+            firstName: report.first_name || '',
+            lastName: report.last_name || '',
+            dateOfBirth: report.date_of_birth || '',
+            gender: report.gender || '',
+            healthStatus: report.health_status || '',
+            healthDetails: report.health_details || '',
+            city: report.city || '',
+            lastKnownLocation: report.last_known_location || '',
+            additionalInfo: report.additional_info || ''
+        });
+        setEditError('');
+        setEditSuccess('');
+        setShowEditModal(true);
+    };
+
+    const handleEditFormChange = (field, value) => {
+        setEditFormData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleEditSubmit = async (resubmit = false) => {
+        setEditLoading(true);
+        setEditError('');
+        setEditSuccess('');
+
+        try {
+            // Get fresh token
+            let token = null;
+            if (supabase) {
+                const { data: { session } } = await supabase.auth.getSession();
+                token = session?.access_token;
+            }
+            if (!token) {
+                token = localStorage.getItem('supabase_token');
+            }
+
+            if (!token) {
+                setEditError(t('edit.errors.notLoggedIn') || 'You must be logged in');
+                setEditLoading(false);
+                return;
+            }
+
+            const response = await fetch('/api/reports/missing', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    reportId: editingReport.id,
+                    firstName: editFormData.firstName,
+                    lastName: editFormData.lastName,
+                    dateOfBirth: editFormData.dateOfBirth || null,
+                    gender: editFormData.gender || null,
+                    healthStatus: editFormData.healthStatus || null,
+                    healthDetails: editFormData.healthDetails || null,
+                    city: editFormData.city,
+                    lastKnownLocation: editFormData.lastKnownLocation,
+                    additionalInfo: editFormData.additionalInfo || null,
+                    resubmit: resubmit
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to update report');
+            }
+
+            setEditSuccess(resubmit ? (t('edit.success.resubmitted') || 'Report resubmitted successfully!') : (t('edit.success.updated') || 'Report updated successfully!'));
+            
+            // Refresh reports list
+            await fetchReports();
+            
+            // Close modal after a short delay
+            setTimeout(() => {
+                setShowEditModal(false);
+                setEditingReport(null);
+            }, 1500);
+
+        } catch (error) {
+            console.error('[MyReport] Edit error:', error);
+            setEditError(error.message || (t('edit.errors.failed') || 'Failed to update report'));
+        } finally {
+            setEditLoading(false);
+        }
     };
 
     if (!user) {
@@ -347,13 +446,17 @@ export default function MyReport() {
                                                 </svg>
                                                 {t('viewDetails')}
                                             </button>
-                                            {report.status === 'pending' && (
-                                                <Link 
-                                                    href={`/report-missing?edit=${report.id}`}
-                                                    className="px-4 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                            {(report.status === 'pending' || report.status === 'rejected') && (
+                                                <button 
+                                                    onClick={() => openEditModal(report)}
+                                                    className={`px-4 py-2.5 rounded-lg font-medium transition-colors ${
+                                                        report.status === 'rejected' 
+                                                            ? 'bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/30 border border-orange-200 dark:border-orange-800'
+                                                            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                                    }`}
                                                 >
-                                                    {t('edit')}
-                                                </Link>
+                                                    {report.status === 'rejected' ? (t('editAndResubmit') || 'Edit & Resubmit') : t('edit')}
+                                                </button>
                                             )}
                                         </div>
                                     </div>
@@ -573,6 +676,255 @@ export default function MyReport() {
                             alt="Preview"
                             className="max-w-full max-h-[85vh] object-contain rounded-xl"
                         />
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Modal */}
+            {showEditModal && editingReport && (
+                <div className="fixed inset-0 z-50 overflow-y-auto">
+                    <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => !editLoading && setShowEditModal(false)} />
+                        <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl max-w-2xl w-full mx-auto z-10 overflow-hidden max-h-[90vh] overflow-y-auto">
+                            {/* Modal Header */}
+                            <div className="sticky top-0 px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-gray-900 dark:to-gray-800 z-10">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                                            {editingReport.status === 'rejected' ? (t('edit.titleResubmit') || 'Edit & Resubmit Report') : (t('edit.title') || 'Edit Report')}
+                                        </h3>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                            {t('modal.reportId')}: <span className="font-mono text-xs bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded">{editingReport.id?.slice(0, 8)}...</span>
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => !editLoading && setShowEditModal(false)}
+                                        disabled={editLoading}
+                                        className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors disabled:opacity-50"
+                                    >
+                                        <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Rejection Notice */}
+                            {editingReport.status === 'rejected' && editingReport.rejection_reason && (
+                                <div className="mx-6 mt-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
+                                    <div className="flex items-start gap-3">
+                                        <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                        <div>
+                                            <p className="font-semibold text-red-700 dark:text-red-400">{t('edit.rejectedNotice') || 'This report was rejected'}</p>
+                                            <p className="text-sm text-red-600 dark:text-red-300 mt-1">{editingReport.rejection_reason}</p>
+                                            <p className="text-xs text-red-500 dark:text-red-400 mt-2">{t('edit.resubmitHint') || 'Edit the information and resubmit for review.'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Success/Error Messages */}
+                            {editSuccess && (
+                                <div className="mx-6 mt-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                                    <p className="text-green-700 dark:text-green-400 font-medium flex items-center gap-2">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        {editSuccess}
+                                    </p>
+                                </div>
+                            )}
+                            {editError && (
+                                <div className="mx-6 mt-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
+                                    <p className="text-red-700 dark:text-red-400 font-medium flex items-center gap-2">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        {editError}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Form */}
+                            <div className="p-6 space-y-5">
+                                {/* Name Fields */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                            {t('edit.firstName') || 'First Name'} <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={editFormData.firstName}
+                                            onChange={(e) => handleEditFormChange('firstName', e.target.value)}
+                                            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                            {t('edit.lastName') || 'Last Name'} <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={editFormData.lastName}
+                                            onChange={(e) => handleEditFormChange('lastName', e.target.value)}
+                                            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Date of Birth & Gender */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                            {t('edit.dateOfBirth') || 'Date of Birth'}
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={editFormData.dateOfBirth}
+                                            onChange={(e) => handleEditFormChange('dateOfBirth', e.target.value)}
+                                            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                            {t('edit.gender') || 'Gender'}
+                                        </label>
+                                        <select
+                                            value={editFormData.gender}
+                                            onChange={(e) => handleEditFormChange('gender', e.target.value)}
+                                            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                        >
+                                            <option value="">{t('edit.selectGender') || 'Select Gender'}</option>
+                                            <option value="male">{t('edit.male') || 'Male'}</option>
+                                            <option value="female">{t('edit.female') || 'Female'}</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Health Status */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                            {t('edit.healthStatus') || 'Health Status'}
+                                        </label>
+                                        <select
+                                            value={editFormData.healthStatus}
+                                            onChange={(e) => handleEditFormChange('healthStatus', e.target.value)}
+                                            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                        >
+                                            <option value="">{t('edit.selectHealthStatus') || 'Select Health Status'}</option>
+                                            <option value="healthy">{t('edit.healthy') || 'Healthy'}</option>
+                                            <option value="medical_condition">{t('edit.medicalCondition') || 'Has Medical Condition'}</option>
+                                            <option value="unknown">{t('edit.unknown') || 'Unknown'}</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                            {t('edit.healthDetails') || 'Health Details'}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={editFormData.healthDetails}
+                                            onChange={(e) => handleEditFormChange('healthDetails', e.target.value)}
+                                            placeholder={t('edit.healthDetailsPlaceholder') || 'Any medical conditions...'}
+                                            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Location */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        {t('edit.city') || 'City'} <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={editFormData.city}
+                                        onChange={(e) => handleEditFormChange('city', e.target.value)}
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        {t('edit.lastKnownLocation') || 'Last Known Location'} <span className="text-red-500">*</span>
+                                    </label>
+                                    <textarea
+                                        value={editFormData.lastKnownLocation}
+                                        onChange={(e) => handleEditFormChange('lastKnownLocation', e.target.value)}
+                                        rows={2}
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-none"
+                                        required
+                                    />
+                                </div>
+
+                                {/* Additional Info */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        {t('edit.additionalInfo') || 'Additional Information'}
+                                    </label>
+                                    <textarea
+                                        value={editFormData.additionalInfo}
+                                        onChange={(e) => handleEditFormChange('additionalInfo', e.target.value)}
+                                        rows={3}
+                                        placeholder={t('edit.additionalInfoPlaceholder') || 'Any other relevant details...'}
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-none"
+                                    />
+                                </div>
+
+                                {/* Photos Note */}
+                                {editingReport.photos && editingReport.photos.length > 0 && (
+                                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                                        <p className="text-sm text-blue-700 dark:text-blue-400 flex items-center gap-2">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            {t('edit.photosNote') || 'Photos cannot be changed after submission. Current photos will be kept.'}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Modal Footer */}
+                            <div className="sticky bottom-0 px-6 py-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 flex gap-3">
+                                <button
+                                    onClick={() => !editLoading && setShowEditModal(false)}
+                                    disabled={editLoading}
+                                    className="flex-1 px-4 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                                >
+                                    {t('edit.cancel') || 'Cancel'}
+                                </button>
+                                <button
+                                    onClick={() => handleEditSubmit(editingReport.status === 'rejected')}
+                                    disabled={editLoading || !editFormData.firstName || !editFormData.lastName || !editFormData.city || !editFormData.lastKnownLocation}
+                                    className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
+                                        editingReport.status === 'rejected'
+                                            ? 'bg-orange-600 hover:bg-orange-700 text-white'
+                                            : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                    }`}
+                                >
+                                    {editLoading ? (
+                                        <>
+                                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            {t('edit.saving') || 'Saving...'}
+                                        </>
+                                    ) : editingReport.status === 'rejected' ? (
+                                        t('edit.resubmit') || 'Save & Resubmit'
+                                    ) : (
+                                        t('edit.save') || 'Save Changes'
+                                    )}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
