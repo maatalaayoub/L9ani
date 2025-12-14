@@ -4,21 +4,19 @@ import { NextResponse } from 'next/server';
 export async function GET(request) {
     const requestUrl = new URL(request.url);
     const code = requestUrl.searchParams.get('code');
+    const token_hash = requestUrl.searchParams.get('token_hash');
+    const type = requestUrl.searchParams.get('type');
     const error = requestUrl.searchParams.get('error');
     const errorDescription = requestUrl.searchParams.get('error_description');
     const origin = requestUrl.origin;
 
-    console.log('[ResetPassword API] Starting, code exists:', !!code);
+    console.log('[ResetPassword API] Starting');
+    console.log('[ResetPassword API] code:', !!code, 'token_hash:', !!token_hash, 'type:', type);
 
     // Handle errors from Supabase
     if (error) {
         console.error('[ResetPassword API] Error:', error, errorDescription);
         return NextResponse.redirect(`${origin}/reset-password?error=${encodeURIComponent(errorDescription || error)}`);
-    }
-
-    if (!code) {
-        console.error('[ResetPassword API] No code provided');
-        return NextResponse.redirect(`${origin}/reset-password?error=missing_code`);
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -30,38 +28,54 @@ export async function GET(request) {
     }
 
     try {
-        // Create a server-side Supabase client WITHOUT PKCE
-        // This allows us to exchange the code without needing the code_verifier
         const supabase = createClient(supabaseUrl, supabaseAnonKey, {
             auth: {
-                flowType: 'implicit', // Use implicit flow for server-side exchange
+                flowType: 'implicit',
                 autoRefreshToken: false,
                 detectSessionInUrl: false,
                 persistSession: false,
             },
         });
 
-        // Exchange the code for a session
-        const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+        // Try token_hash verification first (OTP flow)
+        if (token_hash && type === 'recovery') {
+            console.log('[ResetPassword API] Using token_hash verification');
+            const { data, error: verifyError } = await supabase.auth.verifyOtp({
+                token_hash: token_hash,
+                type: 'recovery',
+            });
 
-        if (exchangeError) {
-            console.error('[ResetPassword API] Exchange error:', exchangeError);
-            return NextResponse.redirect(`${origin}/reset-password?error=${encodeURIComponent(exchangeError.message)}`);
+            if (verifyError) {
+                console.error('[ResetPassword API] verifyOtp error:', verifyError);
+                return NextResponse.redirect(`${origin}/reset-password?error=${encodeURIComponent(verifyError.message)}`);
+            }
+
+            if (data.session) {
+                console.log('[ResetPassword API] Token verification successful');
+                const { access_token, refresh_token } = data.session;
+                return NextResponse.redirect(`${origin}/reset-password#access_token=${access_token}&refresh_token=${refresh_token}&type=recovery`);
+            }
         }
 
-        if (!data.session) {
-            console.error('[ResetPassword API] No session returned');
-            return NextResponse.redirect(`${origin}/reset-password?error=no_session`);
+        // If we have a code, try to exchange it (may fail with PKCE)
+        if (code) {
+            console.log('[ResetPassword API] Attempting code exchange');
+            const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+
+            if (!exchangeError && data.session) {
+                console.log('[ResetPassword API] Code exchange successful');
+                const { access_token, refresh_token } = data.session;
+                return NextResponse.redirect(`${origin}/reset-password#access_token=${access_token}&refresh_token=${refresh_token}&type=recovery`);
+            }
+
+            // If code exchange fails, redirect with error
+            console.error('[ResetPassword API] Code exchange failed:', exchangeError);
+            return NextResponse.redirect(`${origin}/reset-password?error=${encodeURIComponent(exchangeError?.message || 'code_exchange_failed')}`);
         }
 
-        console.log('[ResetPassword API] Session obtained successfully');
-
-        // Redirect to reset-password page with tokens in hash (implicit flow format)
-        // This way the client can pick up the tokens directly
-        const { access_token, refresh_token } = data.session;
-        const redirectUrl = `${origin}/reset-password#access_token=${access_token}&refresh_token=${refresh_token}&type=recovery`;
-
-        return NextResponse.redirect(redirectUrl);
+        // No valid parameters
+        console.error('[ResetPassword API] No code or token_hash provided');
+        return NextResponse.redirect(`${origin}/reset-password?error=missing_parameters`);
 
     } catch (err) {
         console.error('[ResetPassword API] Error:', err);
