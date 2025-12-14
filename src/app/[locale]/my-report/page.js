@@ -31,41 +31,50 @@ export default function MyReport() {
 
     const fetchReports = async () => {
         try {
-            // First, try to get fresh token from Supabase session
+            // Always get fresh token from Supabase session
             let token = null;
             
             if (supabase) {
-                const { data: { session } } = await supabase.auth.getSession();
+                // First try to get current session
+                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                
+                if (sessionError) {
+                    console.log('[MyReport] Session error:', sessionError.message);
+                }
+                
                 if (session?.access_token) {
                     token = session.access_token;
-                    // Update localStorage with fresh token
                     localStorage.setItem('supabase_token', token);
-                    console.log('[MyReport] Using fresh session token');
+                    console.log('[MyReport] Using session token, expires:', new Date(session.expires_at * 1000).toISOString());
                 } else {
-                    // No active session - try to refresh
-                    console.log('[MyReport] No session, attempting refresh');
-                    const { data: refreshData } = await supabase.auth.refreshSession();
+                    // No session - try to refresh
+                    console.log('[MyReport] No active session, trying refresh...');
+                    const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+                    
+                    if (refreshError) {
+                        console.log('[MyReport] Refresh error:', refreshError.message);
+                    }
+                    
                     if (refreshData?.session?.access_token) {
                         token = refreshData.session.access_token;
                         localStorage.setItem('supabase_token', token);
-                        console.log('[MyReport] Got token from refresh');
+                        localStorage.setItem('supabase_refresh_token', refreshData.session.refresh_token);
+                        console.log('[MyReport] Got refreshed token');
+                    } else {
+                        // Last resort - try stored token
+                        token = localStorage.getItem('supabase_token');
+                        console.log('[MyReport] Fallback to stored token:', !!token);
                     }
                 }
             }
-            
-            // Fallback to stored token only if we couldn't get a fresh one
-            if (!token) {
-                token = localStorage.getItem('supabase_token');
-                console.log('[MyReport] Fallback to stored token:', !!token);
-            }
 
             if (!token) {
-                console.log('[MyReport] No token found, skipping fetch');
+                console.log('[MyReport] No token available, user needs to log in');
                 setLoading(false);
                 return;
             }
 
-            console.log('[MyReport] Fetching reports with token');
+            console.log('[MyReport] Fetching reports...');
             const response = await fetch('/api/reports/missing', {
                 method: 'GET',
                 headers: {
@@ -78,10 +87,11 @@ export default function MyReport() {
             
             if (!response.ok) {
                 console.error('[MyReport] API error:', response.status, data);
-                // If unauthorized, clear stale token
                 if (response.status === 401) {
-                    console.log('[MyReport] Token invalid, clearing stored token');
+                    // Token is invalid - clear it so user can re-login
                     localStorage.removeItem('supabase_token');
+                    localStorage.removeItem('supabase_refresh_token');
+                    console.log('[MyReport] Cleared invalid tokens');
                 }
                 setReports([]);
                 return;
@@ -90,7 +100,7 @@ export default function MyReport() {
             console.log('[MyReport] Fetched', data.reports?.length || 0, 'reports');
             setReports(data.reports || []);
         } catch (error) {
-            console.error('[MyReport] Error fetching reports:', error);
+            console.error('[MyReport] Error:', error);
             setReports([]);
         } finally {
             setLoading(false);
