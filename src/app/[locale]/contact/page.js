@@ -1,10 +1,41 @@
 "use client"
 
+import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "@/context/LanguageContext";
 
 export default function Contact() {
     const t = useTranslations('contact');
     const tCommon = useTranslations('common');
+    
+    const [isSubjectDropdownOpen, setIsSubjectDropdownOpen] = useState(false);
+    const [selectedSubject, setSelectedSubject] = useState(null);
+    const subjectDropdownRef = useRef(null);
+
+    const subjects = [
+        { id: 'reportMissing', label: t('form.subjects.reportMissing') },
+        { id: 'reportSighting', label: t('form.subjects.reportSighting') },
+        { id: 'techSupport', label: t('form.subjects.techSupport') },
+        { id: 'general', label: t('form.subjects.general') },
+        { id: 'partnership', label: t('form.subjects.partnership') },
+    ];
+
+    // Set default selection
+    useEffect(() => {
+        if (!selectedSubject) {
+            setSelectedSubject(subjects[0]);
+        }
+    }, [subjects, selectedSubject]);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (subjectDropdownRef.current && !subjectDropdownRef.current.contains(event.target)) {
+                setIsSubjectDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-[#101828] dark:to-[#0a0f1e] pt-24 pb-20 px-6">
@@ -53,16 +84,44 @@ export default function Contact() {
                                 <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     {tCommon('labels.subject')}
                                 </label>
-                                <select
-                                    id="subject"
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-[#101828] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition"
-                                >
-                                    <option>{t('form.subjects.reportMissing')}</option>
-                                    <option>{t('form.subjects.reportSighting')}</option>
-                                    <option>{t('form.subjects.techSupport')}</option>
-                                    <option>{t('form.subjects.general')}</option>
-                                    <option>{t('form.subjects.partnership')}</option>
-                                </select>
+                                <div className="relative" ref={subjectDropdownRef}>
+                                    {/* Custom Dropdown Button */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsSubjectDropdownOpen(!isSubjectDropdownOpen)}
+                                        className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-[#101828] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition cursor-pointer"
+                                    >
+                                        <span className="text-base">
+                                            {selectedSubject?.label || subjects[0]?.label}
+                                        </span>
+                                        <svg className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${isSubjectDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+
+                                    {/* Dropdown Menu */}
+                                    {isSubjectDropdownOpen && (
+                                        <div className="absolute z-[100] w-full mt-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg overflow-hidden">
+                                            {subjects.map((subject) => (
+                                                <button
+                                                    key={subject.id}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setSelectedSubject(subject);
+                                                        setIsSubjectDropdownOpen(false);
+                                                    }}
+                                                    className={`w-full flex items-center px-4 py-3.5 text-start text-base transition-colors ${
+                                                        selectedSubject?.id === subject.id
+                                                            ? 'bg-blue-500 text-white'
+                                                            : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800'
+                                                    }`}
+                                                >
+                                                    {subject.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             <div>
@@ -131,7 +190,7 @@ export default function Contact() {
                                     <div>
                                         <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('otherWays.hotline')}</p>
                                         <a href="tel:+1-800-FIND-HELP" className="text-green-600 dark:text-green-400 hover:underline font-medium">
-                                            1-800-FIND-HELP
+                                            0512345678
                                         </a>
                                     </div>
                                 </div>
