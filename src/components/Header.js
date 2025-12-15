@@ -570,16 +570,44 @@ export default function Header() {
 
                     <button
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        className={`group flex flex-col items-center justify-center w-full h-full space-y-1 active:scale-95 transition-all duration-200 ${isMenuOpen ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-blue-600'}`}
+                        className={`group flex flex-col items-center justify-center w-full h-full space-y-1 active:scale-95 transition-all duration-200 ${isMenuOpen ? 'text-blue-600 dark:text-blue-400' : isAdmin ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 hover:text-blue-600'}`}
                     >
-                        {user && profile?.avatar_url ? (
-                            <img src={profile.avatar_url} className="w-6 h-6 rounded-full border border-gray-300 dark:border-gray-600 ring-2 ring-transparent group-hover:ring-blue-500 group-hover:scale-110 transition-all duration-200" alt="Menu" />
-                        ) : (
-                            <svg className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8h16M4 16h16" />
-                            </svg>
-                        )}
-                        <span className="text-[10px] font-medium">{user ? t('profile') : t('menu')}</span>
+                        <div className="relative">
+                            {user && profile?.avatar_url ? (
+                                <img 
+                                    src={profile.avatar_url} 
+                                    className={`w-6 h-6 rounded-full border group-hover:scale-110 transition-all duration-200 ${
+                                        isAdmin 
+                                            ? 'border-amber-400 ring-2 ring-amber-400/50 shadow-[0_0_10px_rgba(251,191,36,0.5)]' 
+                                            : 'border-gray-300 dark:border-gray-600 ring-2 ring-transparent group-hover:ring-blue-500'
+                                    }`} 
+                                    alt="Menu" 
+                                />
+                            ) : user ? (
+                                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold group-hover:scale-110 transition-all duration-200 ${
+                                    isAdmin 
+                                        ? 'bg-gradient-to-br from-amber-400 to-orange-500 ring-2 ring-amber-400/50 shadow-[0_0_10px_rgba(251,191,36,0.5)]' 
+                                        : 'bg-gradient-to-br from-blue-500 to-indigo-600'
+                                }`}>
+                                    {profile?.first_name?.[0]?.toUpperCase() || profile?.username?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
+                                </div>
+                            ) : (
+                                <svg className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8h16M4 16h16" />
+                                </svg>
+                            )}
+                            {/* Admin Badge */}
+                            {user && isAdmin && (
+                                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center border border-white dark:border-gray-900 shadow-sm animate-pulse">
+                                    <svg className="w-1.5 h-1.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                            )}
+                        </div>
+                        <span className={`text-[10px] font-medium ${isAdmin && user ? 'text-amber-500 dark:text-amber-400' : ''}`}>
+                            {user ? t('profile') : t('menu')}
+                        </span>
                     </button>
                 </div>
             </div>
