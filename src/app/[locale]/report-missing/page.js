@@ -135,6 +135,8 @@ export default function ReportMissingPage() {
 
         // All validations passed, clear warning and proceed
         setCurrentWarning('');
+        setError('');
+        setMessage('');
         setLoading(true);
 
         try {
@@ -305,13 +307,38 @@ export default function ReportMissingPage() {
 
                 {/* Notifications */}
                 {message && (
-                    <div className="mb-6 flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+                    <div className="mb-6 flex items-center gap-3 px-4 py-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg shadow-sm">
                         <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
                             <svg className="w-3 h-3 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                             </svg>
                         </div>
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{message}</span>
+                        <div className="flex-1">
+                            <span className="text-sm font-medium text-green-700 dark:text-green-300">{message}</span>
+                            <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">{t('success.redirecting')}</p>
+                        </div>
+                        <div className="flex-shrink-0">
+                            <div className="w-4 h-4 border-2 border-green-500/30 border-t-green-500 rounded-full animate-spin"></div>
+                        </div>
+                    </div>
+                )}
+
+                {error && (
+                    <div className="mb-6 flex items-center gap-3 px-4 py-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg shadow-sm">
+                        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                            <svg className="w-3 h-3 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </div>
+                        <span className="text-sm font-medium text-red-700 dark:text-red-300">{error}</span>
+                        <button 
+                            onClick={() => setError('')}
+                            className="ml-auto text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
                     </div>
                 )}
 

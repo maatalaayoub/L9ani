@@ -72,6 +72,7 @@
         "photoRequired": "Please upload at least one photo",
         "locationRequired": "City and last known location are required",
         "submitFailed": "Failed to submit report. Please try again.",
+        "notLoggedIn": "You must be logged in to submit a report.",
         "legalConfirmationRequired": "You must confirm the above statement to submit the report."
     },
 
@@ -85,7 +86,8 @@
     },
 
     "success": {
-        "reportSubmitted": "Report submitted successfully! Redirecting..."
+        "reportSubmitted": "Report submitted successfully!",
+        "redirecting": "Redirecting to your reports..."
     },
 
     "legalConfirmation": "I confirm that the information provided is true and that providing information about people who are not missing, for the purpose of defamation or any other reason, is prohibited and may expose me to legal action."
