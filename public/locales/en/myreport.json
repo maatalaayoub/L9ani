@@ -79,5 +79,17 @@
             "notLoggedIn": "You must be logged in",
             "failed": "Failed to update report"
         }
+    },
+    "delete": {
+        "title": "Delete Report",
+        "message": "Are you sure you want to delete this report? This action cannot be undone.",
+        "warning": "This action cannot be undone!",
+        "cancel": "Cancel",
+        "confirm": "Delete Report",
+        "deleting": "Deleting...",
+        "errors": {
+            "notLoggedIn": "You must be logged in",
+            "failed": "Failed to delete report"
+        }
     }
 }

@@ -311,3 +311,96 @@ export async function PUT(request) {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
+
+// DELETE - Delete a missing person report
+export async function DELETE(request) {
+    try {
+        if (!supabaseAdmin) {
+            console.error('[API Reports DELETE] supabaseAdmin is not configured');
+            return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+        }
+
+        // Get auth token from header
+        const authHeader = request.headers.get('authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const token = authHeader.split(' ')[1];
+        
+        // Verify user token
+        const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+        
+        if (authError || !user) {
+            console.error('[API Reports DELETE] Auth error:', authError?.message);
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // Get report ID from query params
+        const { searchParams } = new URL(request.url);
+        const reportId = searchParams.get('reportId');
+
+        if (!reportId) {
+            return NextResponse.json({ error: 'Report ID is required' }, { status: 400 });
+        }
+
+        console.log('[API Reports DELETE] Deleting report:', reportId, 'for user:', user.id);
+
+        // Verify the report belongs to this user
+        const { data: existingReport, error: fetchError } = await supabaseAdmin
+            .from('missing_persons')
+            .select('id, user_id, photos')
+            .eq('id', reportId)
+            .eq('user_id', user.id)
+            .single();
+
+        if (fetchError || !existingReport) {
+            console.error('[API Reports DELETE] Report not found or not owned by user');
+            return NextResponse.json({ error: 'Report not found' }, { status: 404 });
+        }
+
+        // Delete associated photos from storage if they exist
+        if (existingReport.photos && existingReport.photos.length > 0) {
+            console.log('[API Reports DELETE] Deleting', existingReport.photos.length, 'photos');
+            for (const photoUrl of existingReport.photos) {
+                try {
+                    // Extract file path from URL
+                    const urlParts = photoUrl.split('/missing-persons-photos/');
+                    if (urlParts.length > 1) {
+                        const filePath = urlParts[1];
+                        await supabaseAdmin.storage
+                            .from('missing-persons-photos')
+                            .remove([filePath]);
+                        console.log('[API Reports DELETE] Deleted photo:', filePath);
+                    }
+                } catch (photoErr) {
+                    console.error('[API Reports DELETE] Error deleting photo:', photoErr);
+                    // Continue with deletion even if photo removal fails
+                }
+            }
+        }
+
+        // Delete the report
+        const { error: deleteError } = await supabaseAdmin
+            .from('missing_persons')
+            .delete()
+            .eq('id', reportId)
+            .eq('user_id', user.id);
+
+        if (deleteError) {
+            console.error('[API Reports DELETE] Delete error:', deleteError);
+            return NextResponse.json({ error: 'Failed to delete report' }, { status: 500 });
+        }
+
+        console.log('[API Reports DELETE] Report deleted successfully');
+
+        return NextResponse.json({ 
+            success: true, 
+            message: 'Report deleted successfully' 
+        });
+
+    } catch (err) {
+        console.error('[API Reports DELETE] Exception:', err);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}
