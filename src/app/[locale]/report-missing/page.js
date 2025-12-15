@@ -194,9 +194,25 @@ export default function ReportMissingPage() {
 
             setMessage(t('success.reportSubmitted'));
             
-            // Redirect after success
+            // Redirect after success - reset form and navigate
+            setFormData({
+                firstName: '',
+                lastName: '',
+                dateOfBirth: '',
+                gender: '',
+                healthStatus: '',
+                healthDetails: '',
+                city: '',
+                lastKnownLocation: '',
+                coordinates: { lat: null, lng: null },
+                additionalInfo: ''
+            });
+            setPhotos([]);
+            
+            // Use a timeout to show the success message, then redirect
             setTimeout(() => {
-                router.push('/my-report');
+                // Use window.location for reliable redirect with locale
+                window.location.href = `/${locale}/my-report`;
             }, 2000);
 
         } catch (err) {
