@@ -878,7 +878,7 @@ export default function AdminPage() {
             {showDetailModal && selectedReport && (
                 <div className="fixed inset-0 z-50 overflow-y-auto">
                     <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-                        <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => setShowDetailModal(false)} />
+                        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setShowDetailModal(false)} />
                         <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-3xl w-full mx-auto z-10 overflow-hidden">
                             {/* Modal Header */}
                             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-750">
@@ -1144,7 +1144,7 @@ export default function AdminPage() {
             {showApproveModal && selectedReport && (
                 <div className="fixed inset-0 z-50 overflow-y-auto">
                     <div className="flex items-center justify-center min-h-screen px-4">
-                        <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => setShowApproveModal(false)} />
+                        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setShowApproveModal(false)} />
                         <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-auto z-10 p-6">
                             <div className="text-center mb-4">
                                 <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
@@ -1180,7 +1180,7 @@ export default function AdminPage() {
             {showRejectModal && selectedReport && (
                 <div className="fixed inset-0 z-50 overflow-y-auto">
                     <div className="flex items-center justify-center min-h-screen px-4">
-                        <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => setShowRejectModal(false)} />
+                        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setShowRejectModal(false)} />
                         <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-auto z-10 p-6">
                             <div className="text-center mb-4">
                                 <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
@@ -1231,7 +1231,7 @@ export default function AdminPage() {
             {showDeleteModal && selectedReport && (
                 <div className="fixed inset-0 z-50 overflow-y-auto">
                     <div className="flex items-center justify-center min-h-screen px-4">
-                        <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => setShowDeleteModal(false)} />
+                        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setShowDeleteModal(false)} />
                         <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-auto z-10 p-6">
                             <div className="text-center mb-4">
                                 <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
@@ -1278,7 +1278,7 @@ export default function AdminPage() {
             {showChangeStatusModal && selectedReport && (
                 <div className="fixed inset-0 z-50 overflow-y-auto">
                     <div className="flex items-center justify-center min-h-screen px-4">
-                        <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => setShowChangeStatusModal(false)} />
+                        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setShowChangeStatusModal(false)} />
                         <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-auto z-10 p-6">
                             <div className="text-center mb-4">
                                 <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-amber-100 dark:bg-amber-900 flex items-center justify-center">
@@ -1288,10 +1288,7 @@ export default function AdminPage() {
                                 </div>
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('modal.confirmStatusChange')}</h3>
                                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                                    {t('modal.confirmStatusChangeMessage', { 
-                                        from: t(`status.${selectedReport.status}`), 
-                                        to: t(`status.${newStatus}`) 
-                                    })}
+                                    {t('modal.confirmStatusChangeFrom')} <span className="font-semibold">{t(`status.${selectedReport.status}`)}</span> {t('modal.confirmStatusChangeTo')} <span className="font-semibold">{t(`status.${newStatus}`)}</span>?
                                 </p>
                             </div>
                             

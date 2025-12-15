@@ -95,7 +95,8 @@
         "confirmDeleteMessage": "Are you sure you want to delete this report? This will permanently remove all associated data.",
         "deleteWarning": "This action cannot be undone!",
         "confirmStatusChange": "Change Report Status",
-        "confirmStatusChangeMessage": "Are you sure you want to change this report's status from {from} to {to}?",
+        "confirmStatusChangeFrom": "Are you sure you want to change this report's status from",
+        "confirmStatusChangeTo": "to",
         "noPhotosAvailable": "No photos available"
     },
     

@@ -95,7 +95,8 @@
         "confirmDeleteMessage": "هل أنت متأكد من حذف هذا البلاغ؟ سيؤدي هذا إلى إزالة جميع البيانات المرتبطة نهائياً.",
         "deleteWarning": "لا يمكن التراجع عن هذا الإجراء!",
         "confirmStatusChange": "تغيير حالة البلاغ",
-        "confirmStatusChangeMessage": "هل أنت متأكد من تغيير حالة هذا البلاغ من {from} إلى {to}؟",
+        "confirmStatusChangeFrom": "هل أنت متأكد من تغيير حالة هذا البلاغ من",
+        "confirmStatusChangeTo": "إلى",
         "noPhotosAvailable": "لا توجد صور متاحة"
     },
     
