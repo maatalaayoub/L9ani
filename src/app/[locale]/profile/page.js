@@ -1030,7 +1030,7 @@ export default function ProfilePage() {
                                     <div className="flex items-center justify-end gap-2 flex-1 min-w-0">
                                         <span className="text-gray-900 dark:text-white font-medium text-sm truncate" title={user.email}>{user.email}</span>
                                         {/* Edit Email Button */}
-                                        {!profile?.email_verified && (
+                                        {!profile?.email_verified && !isOAuthUser && (
                                             <button
                                                 onClick={() => setIsVerifyModalOpen(true)}
                                                 className="px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-xs rounded border border-yellow-200 dark:border-yellow-800 hover:bg-yellow-200 dark:hover:bg-yellow-900/50 transition-colors shrink-0"
@@ -1051,7 +1051,7 @@ export default function ProfilePage() {
                                         >
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                         </button>
-                                        {profile?.email_verified && (
+                                        {(profile?.email_verified || isOAuthUser) && (
                                             <span className="text-green-500 shrink-0" title="Verified">
                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                             </span>
