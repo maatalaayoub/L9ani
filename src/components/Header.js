@@ -172,22 +172,49 @@ export default function Header() {
                                         <Link
                                             href="/profile"
                                             onClick={closeDialogs}
-                                            className="btn-outline flex items-center gap-2 px-3 py-2 rounded-full border border-gray-300 dark:border-gray-700 bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500"
+                                            className={`btn-outline flex items-center gap-2 px-3 py-2 rounded-full border bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 ${
+                                                isAdmin 
+                                                    ? 'border-amber-400 dark:border-amber-500 shadow-[0_0_12px_rgba(251,191,36,0.4)] hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:border-amber-500 dark:hover:border-amber-400' 
+                                                    : 'border-gray-300 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500'
+                                            }`}
                                         >
-                                            {profile?.avatar_url ? (
-                                                <img
-                                                    src={profile.avatar_url}
-                                                    alt="Profile"
-                                                    className="w-6 h-6 rounded-full object-cover"
-                                                />
-                                            ) : (
-                                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
-                                                    {profile?.first_name?.[0]?.toUpperCase() || profile?.username?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
-                                                </div>
-                                            )}
-                                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            <div className="relative">
+                                                {profile?.avatar_url ? (
+                                                    <img
+                                                        src={profile.avatar_url}
+                                                        alt="Profile"
+                                                        className={`w-6 h-6 rounded-full object-cover ${isAdmin ? 'ring-2 ring-amber-400 dark:ring-amber-500' : ''}`}
+                                                    />
+                                                ) : (
+                                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold ${
+                                                        isAdmin 
+                                                            ? 'bg-gradient-to-br from-amber-400 to-orange-500 ring-2 ring-amber-300 dark:ring-amber-500' 
+                                                            : 'bg-gradient-to-br from-blue-500 to-indigo-600'
+                                                    }`}>
+                                                        {profile?.first_name?.[0]?.toUpperCase() || profile?.username?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
+                                                    </div>
+                                                )}
+                                                {/* Admin Badge on Avatar */}
+                                                {isAdmin && (
+                                                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800 shadow-lg animate-pulse">
+                                                        <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                        </svg>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <span className={`text-sm font-medium ${isAdmin ? 'text-amber-600 dark:text-amber-400' : 'text-gray-700 dark:text-gray-300'}`}>
                                                 {profile?.first_name || profile?.username || 'User'}
                                             </span>
+                                            {/* Admin Text Badge */}
+                                            {isAdmin && (
+                                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-full shadow-sm uppercase tracking-wide">
+                                                    <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                    </svg>
+                                                    Admin
+                                                </span>
+                                            )}
                                         </Link>
                                         <button
                                             onClick={logout}
@@ -260,19 +287,31 @@ export default function Header() {
 
                         {/* Mobile User Profile Header */}
                         {user && (
-                            <div className="mb-8 p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-200 dark:border-gray-700">
+                            <div className={`mb-8 p-4 rounded-2xl border transition-all duration-300 ${
+                                isAdmin 
+                                    ? 'bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-500/10 dark:to-orange-500/10 border-amber-300 dark:border-amber-500/50 shadow-[0_0_20px_rgba(251,191,36,0.3)] dark:shadow-[0_0_20px_rgba(251,191,36,0.2)]' 
+                                    : 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-gray-700'
+                            }`}>
                                 <Link href="/profile" onClick={closeDialogs} className="flex items-center gap-4">
                                     <div className="relative">
                                         {profile?.avatar_url ? (
-                                            <img src={profile.avatar_url} alt="Profile" className="w-12 h-12 rounded-full object-cover border border-gray-300 dark:border-gray-600 ring-2 ring-white dark:ring-gray-800" />
+                                            <img src={profile.avatar_url} alt="Profile" className={`w-12 h-12 rounded-full object-cover border-2 ${
+                                                isAdmin 
+                                                    ? 'border-amber-400 dark:border-amber-500 ring-2 ring-amber-300 dark:ring-amber-400/50 shadow-[0_0_12px_rgba(251,191,36,0.5)]' 
+                                                    : 'border-gray-300 dark:border-gray-600 ring-2 ring-white dark:ring-gray-800'
+                                            }`} />
                                         ) : (
-                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg">
+                                            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg ${
+                                                isAdmin 
+                                                    ? 'bg-gradient-to-br from-amber-400 to-orange-500 ring-2 ring-amber-300 dark:ring-amber-400/50 shadow-[0_0_12px_rgba(251,191,36,0.5)]' 
+                                                    : 'bg-gradient-to-br from-blue-500 to-indigo-600'
+                                            }`}>
                                                 {profile?.first_name?.[0] || profile?.username?.[0] || user?.email?.[0]}
                                             </div>
                                         )}
                                         {/* Admin Badge on Avatar */}
                                         {isAdmin && (
-                                            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800 shadow-lg">
+                                            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800 shadow-lg animate-pulse">
                                                 <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                                 </svg>
@@ -280,15 +319,15 @@ export default function Header() {
                                         )}
                                     </div>
                                     <div className="overflow-hidden flex-1">
-                                        <div className="flex items-center gap-2">
-                                            <p className="font-semibold text-gray-900 dark:text-white truncate">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <p className={`font-semibold truncate ${isAdmin ? 'text-amber-700 dark:text-amber-400' : 'text-gray-900 dark:text-white'}`}>
                                                 {profile?.first_name 
                                                     ? `${profile.first_name} ${profile.last_name || ''}`.trim()
                                                     : profile?.username || 'User'}
                                             </p>
                                             {/* Admin Verified Badge */}
                                             {isAdmin && (
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-full shadow-sm">
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-full shadow-sm uppercase tracking-wide">
                                                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                                     </svg>
