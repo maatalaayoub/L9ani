@@ -8,7 +8,7 @@
     },
     "reportedOn": "Reported on",
     "viewDetails": "View Details",
-    "edit": "Edit",
+    "editButton": "Edit",
     "editAndResubmit": "Edit & Resubmit",
     "status": {
         "pending": "Pending Review",

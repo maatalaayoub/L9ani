@@ -470,7 +470,7 @@ export default function MyReport() {
                                                             : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                                                     }`}
                                                 >
-                                                    {report.status === 'rejected' ? (t('editAndResubmit') || 'Edit & Resubmit') : t('edit')}
+                                                    {report.status === 'rejected' ? (t('editAndResubmit') || 'Edit & Resubmit') : (t('editButton') || 'Edit')}
                                                 </button>
                                             )}
                                         </div>

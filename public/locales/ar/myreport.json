@@ -8,7 +8,7 @@
     },
     "reportedOn": "تم البلاغ في",
     "viewDetails": "عرض التفاصيل",
-    "edit": "تعديل",
+    "editButton": "تعديل",
     "editAndResubmit": "تعديل وإعادة التقديم",
     "status": {
         "pending": "قيد المراجعة",
