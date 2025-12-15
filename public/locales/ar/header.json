@@ -14,5 +14,7 @@
     "reportMissingPerson": "بلاغ عن شخص مفقود",
     "menu": "القائمة",
     "profile": "الحساب",
-    "adminDashboard": "لوحة التحكم"
+    "adminDashboard": "لوحة التحكم",
+    "admin": "مشرف",
+    "adminBadge": "مشرف"
 }

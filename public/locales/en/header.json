@@ -14,5 +14,7 @@
     "reportMissingPerson": "Report Missing Person",
     "menu": "Menu",
     "profile": "Profile",
-    "adminDashboard": "Admin Dashboard"
+    "adminDashboard": "Admin Dashboard",
+    "admin": "Admin",
+    "adminBadge": "ADMIN"
 }
