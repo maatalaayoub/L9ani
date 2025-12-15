@@ -89,6 +89,8 @@ function HomePageContent() {
     const [step1Ref, step1Visible] = useScrollAnimation({ threshold: 0.2 });
     const [step2Ref, step2Visible] = useScrollAnimation({ threshold: 0.2 });
     const [step3Ref, step3Visible] = useScrollAnimation({ threshold: 0.2 });
+    const [categoriesHeaderRef, categoriesHeaderVisible] = useScrollAnimation({ threshold: 0.2 });
+    const [categoriesGridRef, categoriesGridVisible] = useScrollAnimation({ threshold: 0.15 });
     const [featuresHeaderRef, featuresHeaderVisible] = useScrollAnimation({ threshold: 0.2 });
     const [featuresContentRef, featuresContentVisible] = useScrollAnimation({ threshold: 0.15 });
     const [featuresIllustrationRef, featuresIllustrationVisible] = useScrollAnimation({ threshold: 0.15 });
@@ -265,6 +267,123 @@ function HomePageContent() {
                                     {t('howItWorks.step3.description')}
                                 </p>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Categories Section */}
+            <section className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800/50 dark:to-gray-900">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div
+                        ref={categoriesHeaderRef}
+                        style={animations.fadeUp(categoriesHeaderVisible)}
+                        className="text-center mb-16"
+                    >
+                        <span className="inline-block px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-sm font-semibold mb-4">
+                            {t('categories.label')}
+                        </span>
+                        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                            {t('categories.title')}
+                        </h2>
+                        <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                            {t('categories.subtitle')}
+                        </p>
+                    </div>
+
+                    <div
+                        ref={categoriesGridRef}
+                        style={animations.fadeUp(categoriesGridVisible)}
+                        className="grid grid-cols-2 sm:grid-cols-3 gap-4 md:gap-6"
+                    >
+                        {/* Missing Persons */}
+                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-red-200 dark:hover:border-red-800 hover:-translate-y-1">
+                            <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                                {t('categories.person.title')}
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {t('categories.person.description')}
+                            </p>
+                        </div>
+
+                        {/* Documents & IDs */}
+                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 hover:-translate-y-1">
+                            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                                </svg>
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                                {t('categories.documents.title')}
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {t('categories.documents.description')}
+                            </p>
+                        </div>
+
+                        {/* Electronics */}
+                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-purple-200 dark:hover:border-purple-800 hover:-translate-y-1">
+                            <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                                {t('categories.electronics.title')}
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {t('categories.electronics.description')}
+                            </p>
+                        </div>
+
+                        {/* Keys & Accessories */}
+                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-amber-200 dark:hover:border-amber-800 hover:-translate-y-1">
+                            <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                                {t('categories.keys.title')}
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {t('categories.keys.description')}
+                            </p>
+                        </div>
+
+                        {/* Pets & Animals */}
+                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-pink-200 dark:hover:border-pink-800 hover:-translate-y-1">
+                            <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                                {t('categories.pets.title')}
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {t('categories.pets.description')}
+                            </p>
+                        </div>
+
+                        {/* Other Items */}
+                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:-translate-y-1">
+                            <div className="w-14 h-14 bg-gradient-to-br from-gray-500 to-gray-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                </svg>
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                                {t('categories.other.title')}
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {t('categories.other.description')}
+                            </p>
                         </div>
                     </div>
                 </div>

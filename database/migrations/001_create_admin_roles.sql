@@ -167,7 +167,7 @@ CREATE TRIGGER update_sightings_updated_at
     EXECUTE FUNCTION update_updated_at_column();
 
 -- =====================================================
--- 7. Documentation comments
+-- 7. Documentation comments                            
 -- =====================================================
 COMMENT ON TABLE admin_users IS 'Stores admin user privileges for the application';
 COMMENT ON COLUMN admin_users.role IS 'Role type: admin, super_admin, etc.';

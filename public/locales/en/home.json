@@ -1,38 +1,38 @@
 {
     "hero": {
-        "badge": "Helping reunite families across Morocco",
-        "title": "Find Your Loved Ones",
-        "titleHighlight": "Bring Them Home",
-        "subtitle": "L9ani uses advanced technology and community support to help find missing persons. Upload a photo or report a sighting to help reunite families.",
-        "reportMissing": "Report Missing Person",
+        "badge": "Helping reunite people with what matters most",
+        "title": "Find What You've Lost",
+        "titleHighlight": "Reunite What Matters",
+        "subtitle": "L9ani uses advanced technology and community support to help find missing persons and lost items. Whether it's a loved one, important documents, a phone, keys, or even a pet — upload a photo or report a sighting to help bring them back.",
+        "reportMissing": "Report Missing",
         "reportSighting": "Report a Sighting"
     },
     "stats": {
-        "families": "Families Helped",
+        "families": "People Helped",
         "photos": "Photos Analyzed",
-        "matches": "Successful Matches"
+        "matches": "Successful Reunions"
     },
     "howItWorks": {
         "label": "How It Works",
         "title": "Three Simple Steps",
-        "subtitle": "Our platform makes it easy to report and find missing persons through a simple and secure process.",
+        "subtitle": "Our platform makes it easy to report and find missing persons or lost items through a simple and secure process.",
         "step1": {
             "title": "Submit a Report",
-            "description": "Upload photos and provide details about the missing person or someone you've spotted. The more information, the better."
+            "description": "Upload photos and provide details about a missing person, lost item, or something you've found. The more information, the better the chances of recovery."
         },
         "step2": {
             "title": "AI-Powered Matching",
-            "description": "Our advanced algorithms analyze photos and compare them against our database to find potential matches instantly."
+            "description": "Our advanced algorithms analyze photos and descriptions, comparing them against our database to find potential matches instantly."
         },
         "step3": {
             "title": "Get Connected",
-            "description": "When a match is found, we securely connect the parties involved to help facilitate the reunion process."
+            "description": "When a match is found, we securely connect the parties involved to help facilitate the reunion — whether it's a family member or a lost belonging."
         }
     },
     "features": {
         "label": "Why Choose L9ani",
         "title": "Powerful Features to Help You",
-        "subtitle": "We've built a comprehensive platform with the tools and technology needed to maximize the chances of finding missing persons.",
+        "subtitle": "We've built a comprehensive platform with the tools and technology needed to maximize the chances of finding missing persons and recovering lost items.",
         "feature1": {
             "title": "Secure & Private",
             "description": "Your data is encrypted and protected. We never share personal information without consent."
@@ -52,12 +52,41 @@
         "card1": "Smart Search",
         "card2": "AI Matching",
         "card3": "Location Based",
-        "card4": "Family Reunion"
+        "card4": "Quick Recovery"
+    },
+    "categories": {
+        "label": "What We Help Find",
+        "title": "More Than Just Missing Persons",
+        "subtitle": "L9ani is your go-to platform for finding anything that matters to you.",
+        "person": {
+            "title": "Missing Persons",
+            "description": "Help reunite families by reporting or searching for missing loved ones."
+        },
+        "documents": {
+            "title": "Documents & IDs",
+            "description": "Lost your ID card, passport, or important papers? Report them here."
+        },
+        "electronics": {
+            "title": "Electronics",
+            "description": "Phones, laptops, tablets, and other electronic devices."
+        },
+        "pets": {
+            "title": "Pets & Animals",
+            "description": "Lost or found pets in your area — help reunite them with their owners."
+        },
+        "keys": {
+            "title": "Keys & Accessories",
+            "description": "Car keys, house keys, wallets, bags, and personal accessories."
+        },
+        "other": {
+            "title": "Other Items",
+            "description": "Anything else you've lost or found in public places."
+        }
     },
     "impact": {
         "label": "Our Impact",
         "title": "Stories That Matter",
-        "subtitle": "Real stories from families who have been reunited through our platform.",
+        "subtitle": "Real stories from people who have been reunited with what they lost through our platform.",
         "testimonial1": {
             "quote": "Thanks to L9ani, we found our uncle after 3 years of searching. This platform gave us hope when we had none.",
             "name": "Ahmed M.",
@@ -65,13 +94,13 @@
             "initial": "A"
         },
         "testimonial2": {
-            "quote": "I spotted someone matching a report and submitted a sighting. A week later, I learned they were reunited. Amazing!",
+            "quote": "I lost my wallet with all my documents at the market. Someone found it and posted on L9ani. Got it back the same day!",
             "name": "Fatima Z.",
             "location": "Rabat",
             "initial": "F"
         },
         "testimonial3": {
-            "quote": "The process was so simple and the team was incredibly supportive throughout our search. Forever grateful.",
+            "quote": "Our cat went missing for 2 weeks. A neighbor spotted her and reported it on L9ani. She's home now, safe and sound.",
             "name": "Omar B.",
             "location": "Marrakech",
             "initial": "O"
@@ -79,9 +108,9 @@
     },
     "cta": {
         "title": "Ready to Make a Difference?",
-        "description": "Every report brings us closer to reuniting another family. Join thousands of Moroccans helping bring loved ones home.",
-        "button1": "Report Missing Person",
-        "button2": "Report a Sighting"
+        "description": "Every report brings us closer to reuniting someone with what they've lost. Join thousands of Moroccans helping each other recover missing persons and lost belongings.",
+        "button1": "Report Something Missing",
+        "button2": "Report Something Found"
     },
     "trust": {
         "secure": "256-bit Encryption",

@@ -50,8 +50,18 @@ export function AuthProvider({ children }) {
         try {
             console.log('[Profile] Fetching profile via API for user:', userId);
             
-            // Use API route to bypass RLS
-            const response = await fetch(`/api/user/profile?userId=${userId}`);
+            // Use API route to bypass RLS - add timeout to prevent hanging
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+            
+            const response = await fetch(`/api/user/profile?userId=${userId}`, {
+                signal: controller.signal,
+                headers: {
+                    'Cache-Control': 'no-cache',
+                }
+            });
+            
+            clearTimeout(timeoutId);
             
             if (!response.ok) {
                 throw new Error(`API returned ${response.status}`);
@@ -99,9 +109,14 @@ export function AuthProvider({ children }) {
                     lastName = nameParts.slice(1).join(' ') || '';
                 }
                 
+                // Add timeout for create request
+                const createController = new AbortController();
+                const createTimeoutId = setTimeout(() => createController.abort(), 15000); // 15s timeout
+                
                 const createResponse = await fetch('/api/user/profile', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    signal: createController.signal,
                     body: JSON.stringify({
                         userId: userId,
                         email: userData.email,
@@ -114,6 +129,8 @@ export function AuthProvider({ children }) {
                         phone: metadata.phoneNumber || null
                     }),
                 });
+                
+                clearTimeout(createTimeoutId);
                 
                 const createResult = await createResponse.json();
                 
@@ -137,7 +154,12 @@ export function AuthProvider({ children }) {
             
             return null;
         } catch (error) {
-            console.error('[Profile] Exception:', error);
+            // Handle abort errors (timeout)
+            if (error.name === 'AbortError') {
+                console.warn('[Profile] Request timed out, using cached profile if available');
+            } else {
+                console.error('[Profile] Exception:', error.message || error);
+            }
             
             // On error, try to use cached profile
             const cachedProfile = getStoredProfile();
@@ -147,8 +169,8 @@ export function AuthProvider({ children }) {
                 return cachedProfile;
             }
             
-            // Retry logic for transient failures
-            if (profileRetryCount.current < maxRetries) {
+            // Only retry for network errors, not for abort
+            if (error.name !== 'AbortError' && profileRetryCount.current < maxRetries) {
                 profileRetryCount.current++;
                 console.log(`[Profile] Retrying fetch (${profileRetryCount.current}/${maxRetries})...`);
                 profileFetchRef.current = null; // Clear lock for retry
