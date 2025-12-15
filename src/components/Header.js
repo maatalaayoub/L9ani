@@ -398,7 +398,7 @@ export default function Header() {
                             <Link
                                 href="/"
                                 onClick={closeDialogs}
-                                className={`sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 sm:hidden ${isActive('/')
+                                className={`sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 md:hidden ${isActive('/')
                                     ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium'
                                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:translate-x-1'
                                     }`}
@@ -537,7 +537,7 @@ export default function Header() {
                         </div>
 
                         {/* Mobile Auth Actions */}
-                        <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800 space-y-3 sm:hidden">
+                        <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800 space-y-3 md:hidden">
                             {!user ? (
                                 <>
                                     <button
@@ -587,7 +587,7 @@ export default function Header() {
             </div>
 
             {/* Bottom Navigation Bar (Mobile Only) */}
-            <div className="fixed bottom-0 inset-x-0 z-[60] bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-lg border-t border-gray-200 dark:border-gray-800 pb-safe sm:hidden">
+            <div className="fixed bottom-0 inset-x-0 z-[60] bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-lg border-t border-gray-200 dark:border-gray-800 pb-safe md:hidden">
                 <div className="flex justify-around items-center h-16 px-2 flex-row-reverse">
                     <Link href="/" onClick={closeDialogs} className={`group flex flex-col items-center justify-center w-full h-full space-y-1 active:scale-95 transition-all duration-200 ${isActive('/') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}>
                         <svg className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">

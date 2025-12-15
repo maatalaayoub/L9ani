@@ -8,17 +8,31 @@ import Footer from '@/components/Footer';
 import ScrollToTop from '@/components/ScrollToTop';
 import TermsDialogWrapper from '@/components/TermsDialogWrapper';
 import { ThemeProvider } from 'next-themes';
-import { Geist, Geist_Mono } from 'next/font/google';
 import localFont from 'next/font/local';
 
-const geistSans = Geist({
+// Use local Geist fonts to avoid network dependency on Google Fonts
+const geistSans = localFont({
+    src: [
+        {
+            path: '../../../public/fonts/GeistVF.woff2',
+            style: 'normal',
+        },
+    ],
     variable: '--font-geist-sans',
-    subsets: ['latin'],
+    display: 'swap',
+    fallback: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
 });
 
-const geistMono = Geist_Mono({
+const geistMono = localFont({
+    src: [
+        {
+            path: '../../../public/fonts/GeistMonoVF.woff2',
+            style: 'normal',
+        },
+    ],
     variable: '--font-geist-mono',
-    subsets: ['latin'],
+    display: 'swap',
+    fallback: ['ui-monospace', 'SFMono-Regular', 'SF Mono', 'Menlo', 'Consolas', 'Liberation Mono', 'monospace'],
 });
 
 const tajawal = localFont({
