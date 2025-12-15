@@ -16,7 +16,8 @@
         "userId": "معرف المستخدم",
         "memberSince": "عضو منذ",
         "plan": "الخطة",
-        "freeTier": "الفئة المجانية"
+        "freeTier": "الفئة المجانية",
+        "fullAccess": "صلاحيات كاملة"
     },
     "notSet": "غير محدد",
     "passwordSetup": {

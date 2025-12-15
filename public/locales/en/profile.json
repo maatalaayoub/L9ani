@@ -16,7 +16,8 @@
         "userId": "User ID",
         "memberSince": "Member Since",
         "plan": "Plan",
-        "freeTier": "Free Tier"
+        "freeTier": "Free Tier",
+        "fullAccess": "Full Access"
     },
     "notSet": "Not set",
     "passwordSetup": {

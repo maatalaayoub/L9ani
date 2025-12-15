@@ -787,7 +787,7 @@ export default function ProfilePage() {
                                 </div>
                                 {/* Admin Crown Badge */}
                                 {isAdmin && (
-                                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg border-2 border-white dark:border-gray-900 animate-pulse">
+                                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg border-2 border-white dark:border-gray-900">
                                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                         </svg>
@@ -808,13 +808,13 @@ export default function ProfilePage() {
 
                             {/* Name & Username */}
                             <div className="flex-1 text-center sm:text-start sm:rtl:text-right sm:ltr:text-left min-w-0">
-                                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2">
+                                <div className="flex flex-col sm:flex-row items-center sm:items-center justify-center sm:justify-start gap-2">
                                     <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white truncate">
                                         {formData.first_name} {formData.last_name}
                                     </h1>
                                     {/* Admin Badge */}
                                     {isAdmin && (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full shadow-lg shadow-amber-500/30">
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full shadow-lg shadow-amber-500/30 flex-shrink-0">
                                             <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                             </svg>
@@ -894,9 +894,20 @@ export default function ProfilePage() {
                 {/* 2. Content Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Left Column: Personal Info */}
-                    <div className="col-span-2 bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
-                        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-                            <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    <div className={`col-span-2 rounded-2xl p-6 border relative overflow-hidden ${
+                        isAdmin 
+                            ? 'bg-gradient-to-br from-amber-50 via-white to-orange-50 dark:from-amber-950/30 dark:via-gray-900 dark:to-orange-950/30 border-amber-200 dark:border-amber-800/50' 
+                            : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800'
+                    }`}>
+                        {/* Admin Background Pattern */}
+                        {isAdmin && (
+                            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-amber-400/10 to-orange-500/10 rounded-full blur-2xl"></div>
+                                <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-gradient-to-tr from-amber-400/10 to-orange-500/10 rounded-full blur-2xl"></div>
+                            </div>
+                        )}
+                        <h2 className={`relative text-lg font-bold mb-6 flex items-center gap-2 ${isAdmin ? 'text-amber-800 dark:text-amber-300' : 'text-gray-900 dark:text-white'}`}>
+                            <svg className={`w-5 h-5 ${isAdmin ? 'text-amber-500' : 'text-indigo-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                             {t('sections.personalInfo')}
                         </h2>
 
@@ -1013,9 +1024,20 @@ export default function ProfilePage() {
                     {/* Right Column: Account & Actions */}
                     <div className="space-y-6">
                         {/* Account Details */}
-                        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
-                            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-                                <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        <div className={`rounded-2xl p-6 border relative overflow-hidden ${
+                            isAdmin 
+                                ? 'bg-gradient-to-br from-amber-50 via-white to-orange-50 dark:from-amber-950/30 dark:via-gray-900 dark:to-orange-950/30 border-amber-200 dark:border-amber-800/50' 
+                                : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800'
+                        }`}>
+                            {/* Admin Background Pattern */}
+                            {isAdmin && (
+                                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                                    <div className="absolute -top-8 -right-8 w-24 h-24 bg-gradient-to-br from-amber-400/10 to-orange-500/10 rounded-full blur-2xl"></div>
+                                    <div className="absolute -bottom-8 -left-8 w-20 h-20 bg-gradient-to-tr from-amber-400/10 to-orange-500/10 rounded-full blur-2xl"></div>
+                                </div>
+                            )}
+                            <h2 className={`relative text-lg font-bold mb-6 flex items-center gap-2 ${isAdmin ? 'text-amber-800 dark:text-amber-300' : 'text-gray-900 dark:text-white'}`}>
+                                <svg className={`w-5 h-5 ${isAdmin ? 'text-amber-500' : 'text-indigo-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
                                 {t('sections.accountStatus')}
                             </h2>
                             <div className="space-y-4">
@@ -1063,8 +1085,17 @@ export default function ProfilePage() {
                                     <span className="text-gray-900 dark:text-white font-medium text-sm">{new Date(user.created_at).toLocaleDateString()}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2">
-                                    <span className="text-gray-500 dark:text-gray-400 text-sm">{t('labels.plan')}</span>
-                                    <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs rounded-full font-bold">{t('labels.freeTier')}</span>
+                                    <span className={`text-sm ${isAdmin ? 'text-amber-600 dark:text-amber-400' : 'text-gray-500 dark:text-gray-400'}`}>{t('labels.plan')}</span>
+                                    {isAdmin ? (
+                                        <span className="px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs rounded-full font-bold shadow-lg shadow-amber-500/30 flex items-center gap-1">
+                                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                            </svg>
+                                            {t('labels.fullAccess') || 'Full Access'}
+                                        </span>
+                                    ) : (
+                                        <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs rounded-full font-bold">{t('labels.freeTier')}</span>
+                                    )}
                                 </div>
                             </div>
                         </div>

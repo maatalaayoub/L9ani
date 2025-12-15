@@ -292,8 +292,9 @@ export default function Header() {
                                     ? 'bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-500/10 dark:to-orange-500/10 border-amber-300 dark:border-amber-500/50 shadow-[0_0_20px_rgba(251,191,36,0.3)] dark:shadow-[0_0_20px_rgba(251,191,36,0.2)]' 
                                     : 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-gray-700'
                             }`}>
-                                <Link href="/profile" onClick={closeDialogs} className="flex items-center gap-4">
-                                    <div className="relative">
+                                <Link href="/profile" onClick={closeDialogs} className="flex items-center gap-3">
+                                    {/* Avatar */}
+                                    <div className="relative flex-shrink-0">
                                         {profile?.avatar_url ? (
                                             <img src={profile.avatar_url} alt="Profile" className={`w-12 h-12 rounded-full object-cover border-2 ${
                                                 isAdmin 
@@ -318,24 +319,27 @@ export default function Header() {
                                             </div>
                                         )}
                                     </div>
-                                    <div className="overflow-hidden flex-1">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            <p className={`font-semibold truncate ${isAdmin ? 'text-amber-700 dark:text-amber-400' : 'text-gray-900 dark:text-white'}`}>
-                                                {profile?.first_name 
-                                                    ? `${profile.first_name} ${profile.last_name || ''}`.trim()
-                                                    : profile?.username || 'User'}
-                                            </p>
-                                            {/* Admin Verified Badge */}
-                                            {isAdmin && (
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-full shadow-sm uppercase tracking-wide">
-                                                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                                    </svg>
-                                                    Admin
-                                                </span>
-                                            )}
-                                        </div>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
+                                    {/* User Info */}
+                                    <div className="flex-1 min-w-0">
+                                        {/* Name Row */}
+                                        <p className={`font-semibold truncate leading-tight ${
+                                            isAdmin ? 'text-amber-700 dark:text-amber-400' : 'text-gray-900 dark:text-white'
+                                        }`}>
+                                            {profile?.first_name 
+                                                ? `${profile.first_name} ${profile.last_name || ''}`.trim()
+                                                : profile?.username || 'User'}
+                                        </p>
+                                        {/* Admin Badge Row */}
+                                        {isAdmin && (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 mt-1 text-[10px] font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-full shadow-sm uppercase tracking-wide">
+                                                <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                </svg>
+                                                Admin
+                                            </span>
+                                        )}
+                                        {/* Email Row */}
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{user?.email}</p>
                                     </div>
                                 </Link>
                             </div>
