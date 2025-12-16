@@ -5,7 +5,8 @@
     "buttons": {
         "editProfile": "تعديل الملف الشخصي",
         "saving": "جارٍ الحفظ...",
-        "saveChanges": "حفظ التغييرات"
+        "saveChanges": "حفظ التغييرات",
+        "adminDashboard": "لوحة تحكم المشرف"
     },
     "chooseAvatar": "اختر صورة رمزية",
     "sections": {

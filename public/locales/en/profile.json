@@ -5,7 +5,8 @@
     "buttons": {
         "editProfile": "Edit Profile",
         "saving": "Saving...",
-        "saveChanges": "Save Changes"
+        "saveChanges": "Save Changes",
+        "adminDashboard": "Admin Dashboard"
     },
     "chooseAvatar": "Choose an Avatar",
     "sections": {
