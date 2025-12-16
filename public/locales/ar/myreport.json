@@ -6,6 +6,18 @@
         "description": "لم تقم بإنشاء أي بلاغات عن أشخاص مفقودين بعد. ارفع صورة للبدء.",
         "button": "إنشاء بلاغ جديد"
     },
+    "reportTypes": {
+        "person": "شخص",
+        "pet": "حيوان أليف",
+        "document": "وثيقة",
+        "electronics": "إلكترونيات",
+        "vehicle": "مركبة",
+        "other": "أخرى"
+    },
+    "typeInfo": {
+        "petName": "اسم الحيوان الأليف",
+        "itemName": "العنصر"
+    },
     "reportedOn": "تم البلاغ في",
     "viewDetails": "عرض التفاصيل",
     "editButton": "تعديل",

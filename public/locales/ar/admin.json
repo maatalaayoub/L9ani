@@ -1,15 +1,78 @@
 {
     "title": "لوحة تحكم المسؤول",
-    "subtitle": "إدارة بلاغات الأشخاص المفقودين والمشاهدات",
+    "subtitle": "إدارة بلاغات المفقودات والمشاهدات",
     "unauthorized": "تم رفض الوصول",
     "unauthorizedMessage": "ليس لديك صلاحية للوصول إلى هذه الصفحة. مطلوب امتيازات المسؤول.",
     "loginRequired": "يرجى تسجيل الدخول للوصول إلى لوحة تحكم المسؤول.",
     "loading": "جاري التحميل...",
     "checkingAccess": "جاري التحقق من صلاحيات الوصول...",
     
+    "search": {
+        "placeholder": "البحث برقم المستخدم أو اسم المستخدم أو رقم البلاغ...",
+        "resultsFor": "عرض نتائج البحث عن"
+    },
+    
     "tabs": {
-        "missing": "الأشخاص المفقودون",
+        "missing": "بلاغات المفقودات",
         "sightings": "المشاهدات"
+    },
+    
+    "reportTypes": {
+        "person": "شخص",
+        "pet": "حيوان أليف",
+        "document": "وثيقة",
+        "electronics": "إلكترونيات",
+        "vehicle": "مركبة",
+        "other": "أخرى",
+        "unknown": "غير معروف"
+    },
+    
+    "typeInfo": {
+        "person": {
+            "title": "معلومات الشخص المفقود",
+            "name": "الاسم الكامل",
+            "dateOfBirth": "تاريخ الميلاد",
+            "gender": "الجنس",
+            "healthStatus": "الحالة الصحية",
+            "healthDetails": "تفاصيل الحالة الصحية"
+        },
+        "pet": {
+            "title": "معلومات الحيوان الأليف المفقود",
+            "name": "اسم الحيوان",
+            "petType": "نوع الحيوان",
+            "breed": "السلالة",
+            "color": "اللون",
+            "size": "الحجم"
+        },
+        "document": {
+            "title": "معلومات الوثيقة المفقودة",
+            "documentType": "نوع الوثيقة",
+            "documentNumber": "رقم الوثيقة",
+            "issuingAuthority": "الجهة المصدرة",
+            "ownerName": "اسم المالك"
+        },
+        "electronics": {
+            "title": "معلومات الإلكترونيات المفقودة",
+            "deviceType": "نوع الجهاز",
+            "brand": "العلامة التجارية",
+            "model": "الموديل",
+            "color": "اللون",
+            "serialNumber": "الرقم التسلسلي"
+        },
+        "vehicle": {
+            "title": "معلومات المركبة المفقودة",
+            "vehicleType": "نوع المركبة",
+            "brand": "العلامة التجارية",
+            "model": "الموديل",
+            "year": "السنة",
+            "color": "اللون",
+            "plateNumber": "رقم اللوحة"
+        },
+        "other": {
+            "title": "معلومات الغرض المفقود",
+            "itemName": "اسم الغرض",
+            "description": "الوصف"
+        }
     },
     
     "filters": {
@@ -45,7 +108,8 @@
     "actions": {
         "approve": "موافقة",
         "reject": "رفض",
-        "view": "عرض التفاصيل",
+        "view": "عرض",
+        "viewDetails": "عرض التفاصيل",
         "delete": "حذف",
         "changeStatus": "تغيير الحالة",
         "approving": "جاري الموافقة...",
@@ -97,7 +161,10 @@
         "confirmStatusChange": "تغيير حالة البلاغ",
         "confirmStatusChangeFrom": "هل أنت متأكد من تغيير حالة هذا البلاغ من",
         "confirmStatusChangeTo": "إلى",
-        "noPhotosAvailable": "لا توجد صور متاحة"
+        "noPhotosAvailable": "لا توجد صور متاحة",
+        "reportedBy": "أبلغ بواسطة",
+        "anonymous": "مجهول",
+        "notAvailable": "غير متوفر"
     },
     
     "pagination": {

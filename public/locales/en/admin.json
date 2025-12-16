@@ -1,15 +1,78 @@
 {
     "title": "Admin Dashboard",
-    "subtitle": "Manage missing person reports and sightings",
+    "subtitle": "Manage missing reports and sightings",
     "unauthorized": "Access Denied",
     "unauthorizedMessage": "You do not have permission to access this page. Admin privileges are required.",
     "loginRequired": "Please log in to access the admin dashboard.",
     "loading": "Loading...",
     "checkingAccess": "Verifying admin access...",
     
+    "search": {
+        "placeholder": "Search by user ID, username, or report ID...",
+        "resultsFor": "Showing results for"
+    },
+    
     "tabs": {
-        "missing": "Missing Persons",
+        "missing": "Missing Reports",
         "sightings": "Sightings"
+    },
+    
+    "reportTypes": {
+        "person": "Person",
+        "pet": "Pet",
+        "document": "Document",
+        "electronics": "Electronics",
+        "vehicle": "Vehicle",
+        "other": "Other",
+        "unknown": "Unknown"
+    },
+    
+    "typeInfo": {
+        "person": {
+            "title": "Missing Person Information",
+            "name": "Full Name",
+            "dateOfBirth": "Date of Birth",
+            "gender": "Gender",
+            "healthStatus": "Health Status",
+            "healthDetails": "Health Details"
+        },
+        "pet": {
+            "title": "Missing Pet Information",
+            "name": "Pet Name",
+            "petType": "Pet Type",
+            "breed": "Breed",
+            "color": "Color",
+            "size": "Size"
+        },
+        "document": {
+            "title": "Missing Document Information",
+            "documentType": "Document Type",
+            "documentNumber": "Document Number",
+            "issuingAuthority": "Issuing Authority",
+            "ownerName": "Owner Name"
+        },
+        "electronics": {
+            "title": "Missing Electronics Information",
+            "deviceType": "Device Type",
+            "brand": "Brand",
+            "model": "Model",
+            "color": "Color",
+            "serialNumber": "Serial Number"
+        },
+        "vehicle": {
+            "title": "Missing Vehicle Information",
+            "vehicleType": "Vehicle Type",
+            "brand": "Brand",
+            "model": "Model",
+            "year": "Year",
+            "color": "Color",
+            "plateNumber": "License Plate"
+        },
+        "other": {
+            "title": "Missing Item Information",
+            "itemName": "Item Name",
+            "description": "Description"
+        }
     },
     
     "filters": {
@@ -45,7 +108,8 @@
     "actions": {
         "approve": "Approve",
         "reject": "Reject",
-        "view": "View Details",
+        "view": "View",
+        "viewDetails": "View Details",
         "delete": "Delete",
         "changeStatus": "Change Status",
         "approving": "Approving...",
@@ -97,7 +161,10 @@
         "confirmStatusChange": "Change Report Status",
         "confirmStatusChangeFrom": "Are you sure you want to change this report's status from",
         "confirmStatusChangeTo": "to",
-        "noPhotosAvailable": "No photos available"
+        "noPhotosAvailable": "No photos available",
+        "reportedBy": "Reported by",
+        "anonymous": "Anonymous",
+        "notAvailable": "N/A"
     },
     
     "pagination": {

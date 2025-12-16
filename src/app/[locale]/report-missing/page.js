@@ -18,6 +18,50 @@ const MapPicker = dynamic(() => import('@/components/MapPicker'), {
     )
 });
 
+// Report type icons
+const typeIcons = {
+    person: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+    ),
+    pet: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
+    ),
+    document: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+        </svg>
+    ),
+    electronics: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+    ),
+    vehicle: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 17h8M8 17a2 2 0 11-4 0 2 2 0 014 0zm8 0a2 2 0 104 0 2 2 0 00-4 0zM9 11V6a1 1 0 011-1h4a1 1 0 011 1v5M5 17h14a2 2 0 002-2v-3a2 2 0 00-2-2H5a2 2 0 00-2 2v3a2 2 0 002 2z" />
+        </svg>
+    ),
+    other: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+        </svg>
+    )
+};
+
+// Type colors for styling
+const typeColors = {
+    person: { bg: 'bg-red-500', light: 'bg-red-50 dark:bg-red-900/20', border: 'border-red-500', text: 'text-red-500' },
+    pet: { bg: 'bg-pink-500', light: 'bg-pink-50 dark:bg-pink-900/20', border: 'border-pink-500', text: 'text-pink-500' },
+    document: { bg: 'bg-blue-500', light: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-500', text: 'text-blue-500' },
+    electronics: { bg: 'bg-purple-500', light: 'bg-purple-50 dark:bg-purple-900/20', border: 'border-purple-500', text: 'text-purple-500' },
+    vehicle: { bg: 'bg-amber-500', light: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-500', text: 'text-amber-500' },
+    other: { bg: 'bg-gray-500', light: 'bg-gray-50 dark:bg-gray-800', border: 'border-gray-500', text: 'text-gray-500' }
+};
+
 export default function ReportMissingPage() {
     const { user, isAuthLoading } = useAuth();
     const router = useRouter();
@@ -34,14 +78,47 @@ export default function ReportMissingPage() {
     const [isGenderDropdownOpen, setIsGenderDropdownOpen] = useState(false);
     const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
     const [loginDialogTab, setLoginDialogTab] = useState('login');
+    
+    // Report type selection
+    const [reportType, setReportType] = useState('');
 
+    // Form data - includes all possible fields for different types
     const [formData, setFormData] = useState({
+        // Person fields
         firstName: '',
         lastName: '',
         dateOfBirth: '',
         gender: '',
         healthStatus: '',
         healthDetails: '',
+        // Pet fields
+        petName: '',
+        petType: '',
+        petBreed: '',
+        petColor: '',
+        petSize: '',
+        // Document fields
+        documentType: '',
+        documentNumber: '',
+        documentIssuer: '',
+        ownerName: '',
+        // Electronics fields
+        deviceType: '',
+        deviceBrand: '',
+        deviceModel: '',
+        deviceColor: '',
+        serialNumber: '',
+        // Vehicle fields
+        vehicleType: '',
+        vehicleBrand: '',
+        vehicleModel: '',
+        vehicleColor: '',
+        vehicleYear: '',
+        licensePlate: '',
+        // Other item fields
+        itemName: '',
+        itemDescription: '',
+        // Common fields
         city: '',
         lastKnownLocation: '',
         coordinates: { lat: null, lng: null },
@@ -55,9 +132,35 @@ export default function ReportMissingPage() {
 
     // Get the first validation error (in order of priority)
     const getFirstValidationError = () => {
+        if (!reportType) return t('errors.typeRequired');
         if (photos.length === 0) return t('validation.photo');
-        if (!formData.firstName.trim()) return t('validation.firstName');
-        if (!formData.lastName.trim()) return t('validation.lastName');
+        
+        // Type-specific validation
+        switch (reportType) {
+            case 'person':
+                if (!formData.firstName.trim()) return t('validation.firstName');
+                if (!formData.lastName.trim()) return t('validation.lastName');
+                break;
+            case 'pet':
+                if (!formData.petName.trim()) return t('validation.petName');
+                if (!formData.petType) return t('validation.petType');
+                break;
+            case 'document':
+                if (!formData.documentType) return t('validation.documentType');
+                break;
+            case 'electronics':
+                if (!formData.deviceType) return t('validation.deviceType');
+                if (!formData.deviceBrand.trim()) return t('validation.deviceBrand');
+                break;
+            case 'vehicle':
+                if (!formData.vehicleType) return t('validation.vehicleType');
+                if (!formData.vehicleBrand.trim()) return t('validation.vehicleBrand');
+                break;
+            case 'other':
+                if (!formData.itemName.trim()) return t('validation.itemName');
+                break;
+        }
+        
         if (!formData.city.trim()) return t('validation.city');
         if (!formData.lastKnownLocation.trim()) return t('validation.lastKnownLocation');
         if (!agreedToLegal) return t('validation.legalConfirmation');
@@ -150,23 +253,54 @@ export default function ReportMissingPage() {
 
             // Create FormData for multipart upload
             const submitData = new FormData();
-            submitData.append('firstName', formData.firstName);
-            submitData.append('lastName', formData.lastName);
+            submitData.append('reportType', reportType);
             submitData.append('city', formData.city);
             submitData.append('lastKnownLocation', formData.lastKnownLocation);
             
-            if (formData.dateOfBirth) {
-                submitData.append('dateOfBirth', formData.dateOfBirth);
+            // Type-specific fields
+            switch (reportType) {
+                case 'person':
+                    submitData.append('firstName', formData.firstName);
+                    submitData.append('lastName', formData.lastName);
+                    if (formData.dateOfBirth) submitData.append('dateOfBirth', formData.dateOfBirth);
+                    if (formData.gender) submitData.append('gender', formData.gender);
+                    if (formData.healthStatus) submitData.append('healthStatus', formData.healthStatus);
+                    if (formData.healthDetails) submitData.append('healthDetails', formData.healthDetails);
+                    break;
+                case 'pet':
+                    submitData.append('petName', formData.petName);
+                    submitData.append('petType', formData.petType);
+                    if (formData.petBreed) submitData.append('petBreed', formData.petBreed);
+                    if (formData.petColor) submitData.append('petColor', formData.petColor);
+                    if (formData.petSize) submitData.append('petSize', formData.petSize);
+                    break;
+                case 'document':
+                    submitData.append('documentType', formData.documentType);
+                    if (formData.documentNumber) submitData.append('documentNumber', formData.documentNumber);
+                    if (formData.documentIssuer) submitData.append('documentIssuer', formData.documentIssuer);
+                    if (formData.ownerName) submitData.append('ownerName', formData.ownerName);
+                    break;
+                case 'electronics':
+                    submitData.append('deviceType', formData.deviceType);
+                    submitData.append('deviceBrand', formData.deviceBrand);
+                    if (formData.deviceModel) submitData.append('deviceModel', formData.deviceModel);
+                    if (formData.deviceColor) submitData.append('deviceColor', formData.deviceColor);
+                    if (formData.serialNumber) submitData.append('serialNumber', formData.serialNumber);
+                    break;
+                case 'vehicle':
+                    submitData.append('vehicleType', formData.vehicleType);
+                    submitData.append('vehicleBrand', formData.vehicleBrand);
+                    if (formData.vehicleModel) submitData.append('vehicleModel', formData.vehicleModel);
+                    if (formData.vehicleColor) submitData.append('vehicleColor', formData.vehicleColor);
+                    if (formData.vehicleYear) submitData.append('vehicleYear', formData.vehicleYear);
+                    if (formData.licensePlate) submitData.append('licensePlate', formData.licensePlate);
+                    break;
+                case 'other':
+                    submitData.append('itemName', formData.itemName);
+                    if (formData.itemDescription) submitData.append('itemDescription', formData.itemDescription);
+                    break;
             }
-            if (formData.gender) {
-                submitData.append('gender', formData.gender);
-            }
-            if (formData.healthStatus) {
-                submitData.append('healthStatus', formData.healthStatus);
-            }
-            if (formData.healthDetails) {
-                submitData.append('healthDetails', formData.healthDetails);
-            }
+            
             if (formData.additionalInfo) {
                 submitData.append('additionalInfo', formData.additionalInfo);
             }
@@ -179,8 +313,8 @@ export default function ReportMissingPage() {
                 submitData.append('photos', photo);
             });
 
-            // Submit to API
-            const response = await fetch('/api/reports/missing', {
+            // Submit to API (new modular reports endpoint)
+            const response = await fetch('/api/reports', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -197,6 +331,7 @@ export default function ReportMissingPage() {
             setMessage(t('success.reportSubmitted'));
             
             // Redirect after success - reset form and navigate
+            setReportType('');
             setFormData({
                 firstName: '',
                 lastName: '',
@@ -204,6 +339,28 @@ export default function ReportMissingPage() {
                 gender: '',
                 healthStatus: '',
                 healthDetails: '',
+                petName: '',
+                petType: '',
+                petBreed: '',
+                petColor: '',
+                petSize: '',
+                documentType: '',
+                documentNumber: '',
+                documentIssuer: '',
+                ownerName: '',
+                deviceType: '',
+                deviceBrand: '',
+                deviceModel: '',
+                deviceColor: '',
+                serialNumber: '',
+                vehicleType: '',
+                vehicleBrand: '',
+                vehicleModel: '',
+                vehicleColor: '',
+                vehicleYear: '',
+                licensePlate: '',
+                itemName: '',
+                itemDescription: '',
                 city: '',
                 lastKnownLocation: '',
                 coordinates: { lat: null, lng: null },
@@ -344,6 +501,172 @@ export default function ReportMissingPage() {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
 
+                    {/* Section 0: Type Selection */}
+                    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                        <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                </svg>
+                                {t('types.selectType')} <span className="text-red-500">*</span>
+                            </h2>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('types.selectTypeDescription')}</p>
+                        </div>
+                        <div className="p-6">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                {/* Person */}
+                                <button
+                                    type="button"
+                                    onClick={() => setReportType('person')}
+                                    className={`flex flex-col items-center gap-3 p-5 rounded-xl border-2 transition-all ${
+                                        reportType === 'person'
+                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-md'
+                                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                    }`}
+                                >
+                                    <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
+                                        reportType === 'person' ? 'bg-blue-100 dark:bg-blue-900/40' : 'bg-gray-100 dark:bg-gray-800'
+                                    }`}>
+                                        <svg className={`w-7 h-7 ${reportType === 'person' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                    </div>
+                                    <span className={`text-sm font-medium ${reportType === 'person' ? 'text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-300'}`}>
+                                        {t('types.person.title')}
+                                    </span>
+                                </button>
+
+                                {/* Pet */}
+                                <button
+                                    type="button"
+                                    onClick={() => setReportType('pet')}
+                                    className={`flex flex-col items-center gap-3 p-5 rounded-xl border-2 transition-all ${
+                                        reportType === 'pet'
+                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-md'
+                                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                    }`}
+                                >
+                                    <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
+                                        reportType === 'pet' ? 'bg-blue-100 dark:bg-blue-900/40' : 'bg-gray-100 dark:bg-gray-800'
+                                    }`}>
+                                        <svg className={`w-7 h-7 ${reportType === 'pet' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 19c-4 0-7-2-7-5 0-2 2-4 4-4 1.5 0 2.5 1 3 2 .5-1 1.5-2 3-2 2 0 4 2 4 4 0 3-3 5-7 5z" />
+                                            <circle cx="7" cy="8" r="2" strokeWidth="1.5" />
+                                            <circle cx="17" cy="8" r="2" strokeWidth="1.5" />
+                                            <circle cx="10" cy="5" r="1.5" strokeWidth="1.5" />
+                                            <circle cx="14" cy="5" r="1.5" strokeWidth="1.5" />
+                                        </svg>
+                                    </div>
+                                    <span className={`text-sm font-medium ${reportType === 'pet' ? 'text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-300'}`}>
+                                        {t('types.pet.title')}
+                                    </span>
+                                </button>
+
+                                {/* Documents */}
+                                <button
+                                    type="button"
+                                    onClick={() => setReportType('document')}
+                                    className={`flex flex-col items-center gap-3 p-5 rounded-xl border-2 transition-all ${
+                                        reportType === 'document'
+                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-md'
+                                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                    }`}
+                                >
+                                    <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
+                                        reportType === 'document' ? 'bg-blue-100 dark:bg-blue-900/40' : 'bg-gray-100 dark:bg-gray-800'
+                                    }`}>
+                                        <svg className={`w-7 h-7 ${reportType === 'document' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    </div>
+                                    <span className={`text-sm font-medium ${reportType === 'document' ? 'text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-300'}`}>
+                                        {t('types.documents.title')}
+                                    </span>
+                                </button>
+
+                                {/* Electronics */}
+                                <button
+                                    type="button"
+                                    onClick={() => setReportType('electronics')}
+                                    className={`flex flex-col items-center gap-3 p-5 rounded-xl border-2 transition-all ${
+                                        reportType === 'electronics'
+                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-md'
+                                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                    }`}
+                                >
+                                    <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
+                                        reportType === 'electronics' ? 'bg-blue-100 dark:bg-blue-900/40' : 'bg-gray-100 dark:bg-gray-800'
+                                    }`}>
+                                        <svg className={`w-7 h-7 ${reportType === 'electronics' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <span className={`text-sm font-medium ${reportType === 'electronics' ? 'text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-300'}`}>
+                                        {t('types.electronics.title')}
+                                    </span>
+                                </button>
+
+                                {/* Vehicle */}
+                                <button
+                                    type="button"
+                                    onClick={() => setReportType('vehicle')}
+                                    className={`flex flex-col items-center gap-3 p-5 rounded-xl border-2 transition-all ${
+                                        reportType === 'vehicle'
+                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-md'
+                                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                    }`}
+                                >
+                                    <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
+                                        reportType === 'vehicle' ? 'bg-blue-100 dark:bg-blue-900/40' : 'bg-gray-100 dark:bg-gray-800'
+                                    }`}>
+                                        <svg className={`w-7 h-7 ${reportType === 'vehicle' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+                                        </svg>
+                                    </div>
+                                    <span className={`text-sm font-medium ${reportType === 'vehicle' ? 'text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-300'}`}>
+                                        {t('types.vehicle.title')}
+                                    </span>
+                                </button>
+
+                                {/* Other */}
+                                <button
+                                    type="button"
+                                    onClick={() => setReportType('other')}
+                                    className={`flex flex-col items-center gap-3 p-5 rounded-xl border-2 transition-all ${
+                                        reportType === 'other'
+                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-md'
+                                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                    }`}
+                                >
+                                    <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
+                                        reportType === 'other' ? 'bg-blue-100 dark:bg-blue-900/40' : 'bg-gray-100 dark:bg-gray-800'
+                                    }`}>
+                                        <svg className={`w-7 h-7 ${reportType === 'other' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                        </svg>
+                                    </div>
+                                    <span className={`text-sm font-medium ${reportType === 'other' ? 'text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-300'}`}>
+                                        {t('types.other.title')}
+                                    </span>
+                                </button>
+                            </div>
+
+                            {/* Warning if no type selected */}
+                            {currentWarning === t('validation.reportType') && (
+                                <div className="mt-4 flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                                    <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                    <span className="text-sm text-amber-700 dark:text-amber-300">{t('validation.reportType')}</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Only show remaining sections if type is selected */}
+                    {reportType && (
+                        <>
                     {/* Section 1: Photo Upload */}
                     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-gray-100 dark:border-gray-800">
@@ -410,171 +733,608 @@ export default function ReportMissingPage() {
                         </div>
                     </div>
 
-                    {/* Section 2: Personal Information */}
-                    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
-                        <div className="p-6 border-b border-gray-100 dark:border-gray-800">
-                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                {t('sections.personalInfo.title')}
-                            </h2>
-                        </div>
-                        <div className="p-6">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                {/* First Name */}
-                                <div>
-                                    <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
-                                        {t('fields.firstName')} <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="firstName"
-                                        value={formData.firstName}
-                                        onChange={handleChange}
-                                        dir={isRTL ? 'rtl' : 'ltr'}
-                                        className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
-                                        placeholder={t('placeholders.firstName')}
-                                    />
+                    {/* Section 2: Type-Specific Details */}
+                    {reportType === 'person' && (
+                        <>
+                            {/* Personal Information */}
+                            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                                <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+                                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                        <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                        {t('sections.personalInfo.title')}
+                                    </h2>
                                 </div>
+                                <div className="p-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                        {/* First Name */}
+                                        <div>
+                                            <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                                {t('fields.firstName')} <span className="text-red-500">*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="firstName"
+                                                value={formData.firstName}
+                                                onChange={handleChange}
+                                                dir={isRTL ? 'rtl' : 'ltr'}
+                                                className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                                placeholder={t('placeholders.firstName')}
+                                            />
+                                        </div>
 
-                                {/* Last Name */}
-                                <div>
-                                    <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
-                                        {t('fields.lastName')} <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="lastName"
-                                        value={formData.lastName}
-                                        onChange={handleChange}
-                                        dir={isRTL ? 'rtl' : 'ltr'}
-                                        className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
-                                        placeholder={t('placeholders.lastName')}
-                                    />
-                                </div>
+                                        {/* Last Name */}
+                                        <div>
+                                            <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                                {t('fields.lastName')} <span className="text-red-500">*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="lastName"
+                                                value={formData.lastName}
+                                                onChange={handleChange}
+                                                dir={isRTL ? 'rtl' : 'ltr'}
+                                                className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                                placeholder={t('placeholders.lastName')}
+                                            />
+                                        </div>
 
-                                {/* Date of Birth */}
-                                <div>
-                                    <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
-                                        {t('fields.dateOfBirth')}
-                                    </label>
-                                    <input
-                                        type="date"
-                                        name="dateOfBirth"
-                                        value={formData.dateOfBirth}
-                                        onChange={handleChange}
-                                        className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
-                                    />
-                                </div>
+                                        {/* Date of Birth */}
+                                        <div>
+                                            <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                                {t('fields.dateOfBirth')}
+                                            </label>
+                                            <input
+                                                type="date"
+                                                name="dateOfBirth"
+                                                value={formData.dateOfBirth}
+                                                onChange={handleChange}
+                                                className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            />
+                                        </div>
 
-                                {/* Gender */}
-                                <div>
-                                    <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
-                                        {t('fields.gender')}
-                                    </label>
-                                    <div className="relative" ref={genderDropdownRef}>
-                                        {/* Custom Dropdown Button */}
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsGenderDropdownOpen(!isGenderDropdownOpen)}
-                                            className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg border-2 ${isGenderDropdownOpen ? 'border-blue-500' : 'border-gray-200 dark:border-gray-700'} bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 outline-none transition-all cursor-pointer`}
-                                        >
-                                            <span className={`text-sm ${selectedGender ? 'font-medium' : 'text-gray-400 dark:text-gray-500'}`}>
-                                                {selectedGender ? selectedGender.label : t('options.selectGender')}
-                                            </span>
-                                            <svg className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${isGenderDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </button>
-
-                                        {/* Dropdown Menu */}
-                                        {isGenderDropdownOpen && (
-                                            <div className="absolute z-[100] w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg overflow-hidden">
-                                                {genderOptions.map((option) => (
-                                                    <button
-                                                        key={option.value}
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setFormData(prev => ({ ...prev, gender: option.value }));
-                                                            setIsGenderDropdownOpen(false);
-                                                        }}
-                                                        className={`w-full flex items-center px-4 py-3 text-start text-sm font-medium transition-colors ${
-                                                            formData.gender === option.value
-                                                                ? 'bg-blue-500 text-white'
-                                                                : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
-                                                        }`}
-                                                    >
-                                                        {option.label}
-                                                    </button>
-                                                ))}
+                                        {/* Gender */}
+                                        <div>
+                                            <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                                {t('fields.gender')}
+                                            </label>
+                                            <div className="relative" ref={genderDropdownRef}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setIsGenderDropdownOpen(!isGenderDropdownOpen)}
+                                                    className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg border-2 ${isGenderDropdownOpen ? 'border-blue-500' : 'border-gray-200 dark:border-gray-700'} bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 outline-none transition-all cursor-pointer`}
+                                                >
+                                                    <span className={`text-sm ${selectedGender ? 'font-medium' : 'text-gray-400 dark:text-gray-500'}`}>
+                                                        {selectedGender ? selectedGender.label : t('options.selectGender')}
+                                                    </span>
+                                                    <svg className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${isGenderDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                </button>
+                                                {isGenderDropdownOpen && (
+                                                    <div className="absolute z-[100] w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg overflow-hidden">
+                                                        {genderOptions.map((option) => (
+                                                            <button
+                                                                key={option.value}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setFormData(prev => ({ ...prev, gender: option.value }));
+                                                                    setIsGenderDropdownOpen(false);
+                                                                }}
+                                                                className={`w-full flex items-center px-4 py-3 text-start text-sm font-medium transition-colors ${
+                                                                    formData.gender === option.value
+                                                                        ? 'bg-blue-500 text-white'
+                                                                        : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
+                                                                }`}
+                                                            >
+                                                                {option.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Health Status */}
+                            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                                <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+                                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                        <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                        </svg>
+                                        {t('sections.healthStatus.title')}
+                                    </h2>
+                                </div>
+                                <div className="p-6 space-y-5">
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.healthStatus')}
+                                        </label>
+                                        <div className="flex flex-wrap gap-3">
+                                            {['healthy', 'physical', 'mental', 'both'].map((status) => (
+                                                <label
+                                                    key={status}
+                                                    className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border cursor-pointer transition-all ${
+                                                        formData.healthStatus === status
+                                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                                                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300'
+                                                    }`}
+                                                >
+                                                    <input
+                                                        type="radio"
+                                                        name="healthStatus"
+                                                        value={status}
+                                                        checked={formData.healthStatus === status}
+                                                        onChange={handleChange}
+                                                        className="sr-only"
+                                                    />
+                                                    <span className="text-sm font-medium">{t(`options.health.${status}`)}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    {formData.healthStatus && formData.healthStatus !== 'healthy' && (
+                                        <div className="animate-in slide-in-from-top-2">
+                                            <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                                {t('fields.healthDetails')}
+                                            </label>
+                                            <textarea
+                                                name="healthDetails"
+                                                value={formData.healthDetails}
+                                                onChange={handleChange}
+                                                dir={isRTL ? 'rtl' : 'ltr'}
+                                                rows={3}
+                                                className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none ${isRTL ? 'text-right' : 'text-left'}`}
+                                                placeholder={t('placeholders.healthDetails')}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </>
+                    )}
+
+                    {/* Pet Details */}
+                    {reportType === 'pet' && (
+                        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                            <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 19c-4 0-7-2-7-5 0-2 2-4 4-4 1.5 0 2.5 1 3 2 .5-1 1.5-2 3-2 2 0 4 2 4 4 0 3-3 5-7 5z" />
+                                    </svg>
+                                    {t('sections.petInfo.title')}
+                                </h2>
+                            </div>
+                            <div className="p-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    {/* Pet Name */}
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.petName')} <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="petName"
+                                            value={formData.petName}
+                                            onChange={handleChange}
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.petName')}
+                                        />
+                                    </div>
+
+                                    {/* Pet Type */}
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.petType')} <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="petType"
+                                            value={formData.petType}
+                                            onChange={handleChange}
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.petType')}
+                                        />
+                                    </div>
+
+                                    {/* Pet Breed */}
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.petBreed')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="petBreed"
+                                            value={formData.petBreed}
+                                            onChange={handleChange}
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.petBreed')}
+                                        />
+                                    </div>
+
+                                    {/* Pet Color */}
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.petColor')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="petColor"
+                                            value={formData.petColor}
+                                            onChange={handleChange}
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.petColor')}
+                                        />
+                                    </div>
+
+                                    {/* Pet Size */}
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.petSize')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="petSize"
+                                            value={formData.petSize}
+                                            onChange={handleChange}
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.petSize')}
+                                        />
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    )}
 
-                    {/* Section 3: Health Status */}
-                    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-                        <div className="p-6 border-b border-gray-100 dark:border-gray-800">
-                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                </svg>
-                                {t('sections.healthStatus.title')}
-                            </h2>
-                        </div>
-                        <div className="p-6 space-y-5">
-                            {/* Health Status Radio */}
-                            <div>
-                                <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 ${isRTL ? 'text-right' : 'text-left'}`}>
-                                    {t('fields.healthStatus')}
-                                </label>
-                                <div className="flex flex-wrap gap-3">
-                                    {['healthy', 'physical', 'mental', 'both'].map((status) => (
-                                        <label
-                                            key={status}
-                                            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border cursor-pointer transition-all ${
-                                                formData.healthStatus === status
-                                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                                                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300'
-                                            }`}
-                                        >
-                                            <input
-                                                type="radio"
-                                                name="healthStatus"
-                                                value={status}
-                                                checked={formData.healthStatus === status}
-                                                onChange={handleChange}
-                                                className="sr-only"
-                                            />
-                                            <span className="text-sm font-medium">{t(`options.health.${status}`)}</span>
+                    {/* Document Details */}
+                    {reportType === 'document' && (
+                        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                            <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    {t('sections.documentInfo.title')}
+                                </h2>
+                            </div>
+                            <div className="p-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    {/* Document Type */}
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.documentType')} <span className="text-red-500">*</span>
                                         </label>
-                                    ))}
+                                        <input
+                                            type="text"
+                                            name="documentType"
+                                            value={formData.documentType}
+                                            onChange={handleChange}
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.documentType')}
+                                        />
+                                    </div>
+
+                                    {/* Document Number */}
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.documentNumber')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="documentNumber"
+                                            value={formData.documentNumber}
+                                            onChange={handleChange}
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.documentNumber')}
+                                        />
+                                    </div>
+
+                                    {/* Document Issuer */}
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.documentIssuer')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="documentIssuer"
+                                            value={formData.documentIssuer}
+                                            onChange={handleChange}
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.documentIssuer')}
+                                        />
+                                    </div>
+
+                                    {/* Owner Name */}
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.ownerName')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="ownerName"
+                                            value={formData.ownerName}
+                                            onChange={handleChange}
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.ownerName')}
+                                        />
+                                    </div>
                                 </div>
                             </div>
-
-                            {/* Health Details (conditional) */}
-                            {formData.healthStatus && formData.healthStatus !== 'healthy' && (
-                                <div className="animate-in slide-in-from-top-2">
-                                    <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
-                                        {t('fields.healthDetails')}
-                                    </label>
-                                    <textarea
-                                        name="healthDetails"
-                                        value={formData.healthDetails}
-                                        onChange={handleChange}
-                                        dir={isRTL ? 'rtl' : 'ltr'}
-                                        rows={3}
-                                        className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none ${isRTL ? 'text-right' : 'text-left'}`}
-                                        placeholder={t('placeholders.healthDetails')}
-                                    />
-                                </div>
-                            )}
                         </div>
-                    </div>
+                    )}
+
+                    {/* Electronics Details */}
+                    {reportType === 'electronics' && (
+                        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                            <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                    </svg>
+                                    {t('sections.electronicsInfo.title')}
+                                </h2>
+                            </div>
+                            <div className="p-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    {/* Device Type */}
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.deviceType')} <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="deviceType"
+                                            value={formData.deviceType}
+                                            onChange={handleChange}
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.deviceType')}
+                                        />
+                                    </div>
+
+                                    {/* Device Brand */}
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.deviceBrand')} <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="deviceBrand"
+                                            value={formData.deviceBrand}
+                                            onChange={handleChange}
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.deviceBrand')}
+                                        />
+                                    </div>
+
+                                    {/* Device Model */}
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.deviceModel')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="deviceModel"
+                                            value={formData.deviceModel}
+                                            onChange={handleChange}
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.deviceModel')}
+                                        />
+                                    </div>
+
+                                    {/* Device Color */}
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.deviceColor')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="deviceColor"
+                                            value={formData.deviceColor}
+                                            onChange={handleChange}
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.deviceColor')}
+                                        />
+                                    </div>
+
+                                    {/* Serial Number */}
+                                    <div className="sm:col-span-2">
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.serialNumber')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="serialNumber"
+                                            value={formData.serialNumber}
+                                            onChange={handleChange}
+                                            dir="ltr"
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.serialNumber')}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Vehicle Details */}
+                    {reportType === 'vehicle' && (
+                        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                            <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+                                    </svg>
+                                    {t('sections.vehicleInfo.title')}
+                                </h2>
+                            </div>
+                            <div className="p-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    {/* Vehicle Type */}
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.vehicleType')} <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="vehicleType"
+                                            value={formData.vehicleType}
+                                            onChange={handleChange}
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.vehicleType')}
+                                        />
+                                    </div>
+
+                                    {/* Vehicle Brand */}
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.vehicleBrand')} <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="vehicleBrand"
+                                            value={formData.vehicleBrand}
+                                            onChange={handleChange}
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.vehicleBrand')}
+                                        />
+                                    </div>
+
+                                    {/* Vehicle Model */}
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.vehicleModel')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="vehicleModel"
+                                            value={formData.vehicleModel}
+                                            onChange={handleChange}
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.vehicleModel')}
+                                        />
+                                    </div>
+
+                                    {/* Vehicle Year */}
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.vehicleYear')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="vehicleYear"
+                                            value={formData.vehicleYear}
+                                            onChange={handleChange}
+                                            dir="ltr"
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.vehicleYear')}
+                                        />
+                                    </div>
+
+                                    {/* Vehicle Color */}
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.vehicleColor')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="vehicleColor"
+                                            value={formData.vehicleColor}
+                                            onChange={handleChange}
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.vehicleColor')}
+                                        />
+                                    </div>
+
+                                    {/* License Plate */}
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.licensePlate')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="licensePlate"
+                                            value={formData.licensePlate}
+                                            onChange={handleChange}
+                                            dir="ltr"
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.licensePlate')}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Other Item Details */}
+                    {reportType === 'other' && (
+                        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                            <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                    </svg>
+                                    {t('sections.otherInfo.title')}
+                                </h2>
+                            </div>
+                            <div className="p-6">
+                                <div className="space-y-5">
+                                    {/* Item Name */}
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.itemName')} <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="itemName"
+                                            value={formData.itemName}
+                                            onChange={handleChange}
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.itemName')}
+                                        />
+                                    </div>
+
+                                    {/* Item Description */}
+                                    <div>
+                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+                                            {t('fields.itemDescription')}
+                                        </label>
+                                        <textarea
+                                            name="itemDescription"
+                                            value={formData.itemDescription}
+                                            onChange={handleChange}
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            rows={4}
+                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none ${isRTL ? 'text-right' : 'text-left'}`}
+                                            placeholder={t('placeholders.itemDescription')}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Section 4: Location Information */}
                     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
@@ -725,6 +1485,8 @@ export default function ReportMissingPage() {
                             )}
                         </button>
                     </div>
+                        </>
+                    )}
 
                 </form>
             </div>

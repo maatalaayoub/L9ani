@@ -27,17 +27,143 @@ const storeProfile = (profile) => {
     }
 };
 
+// Secure admin status storage - tied to user ID and session token
+// Uses a simple hash to prevent tampering
+const generateSecurityHash = (userId, isAdmin, role, tokenFragment) => {
+    // Create a deterministic hash from the data
+    const data = `${userId}:${isAdmin}:${role}:${tokenFragment}`;
+    let hash = 0;
+    for (let i = 0; i < data.length; i++) {
+        const char = data.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash).toString(36);
+};
+
+const getStoredAdminStatus = (userId, token) => {
+    try {
+        const stored = sessionStorage.getItem('admin_status');
+        if (!stored) return null;
+        
+        const data = JSON.parse(stored);
+        
+        // Verify the stored data belongs to the current user and session
+        if (data.userId !== userId) {
+            console.log('[Admin] Stored admin status is for different user, clearing');
+            sessionStorage.removeItem('admin_status');
+            return null;
+        }
+        
+        // Verify integrity with security hash
+        const tokenFragment = token?.slice(-16) || '';
+        const expectedHash = generateSecurityHash(userId, data.isAdmin, data.role, tokenFragment);
+        
+        if (data.hash !== expectedHash) {
+            console.log('[Admin] Admin status hash mismatch, clearing (possible tampering)');
+            sessionStorage.removeItem('admin_status');
+            return null;
+        }
+        
+        // Check expiry (24 hours max)
+        if (Date.now() - data.timestamp > 24 * 60 * 60 * 1000) {
+            console.log('[Admin] Admin status expired, clearing');
+            sessionStorage.removeItem('admin_status');
+            return null;
+        }
+        
+        return { isAdmin: data.isAdmin, role: data.role };
+    } catch {
+        sessionStorage.removeItem('admin_status');
+        return null;
+    }
+};
+
+const storeAdminStatus = (userId, isAdmin, role, token) => {
+    try {
+        const tokenFragment = token?.slice(-16) || '';
+        const hash = generateSecurityHash(userId, isAdmin, role, tokenFragment);
+        
+        sessionStorage.setItem('admin_status', JSON.stringify({
+            userId,
+            isAdmin,
+            role,
+            hash,
+            timestamp: Date.now()
+        }));
+    } catch (e) {
+        console.error('[Admin] Error storing admin status:', e);
+    }
+};
+
+const clearAdminStatus = () => {
+    try {
+        sessionStorage.removeItem('admin_status');
+    } catch (e) {
+        console.error('[Admin] Error clearing admin status:', e);
+    }
+};
+
 export function AuthProvider({ children }) {
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const [user, setUser] = useState(null);
     const [profile, setProfile] = useState(null);
     const [isAuthLoading, setIsAuthLoading] = useState(true);
     const [showTermsDialog, setShowTermsDialog] = useState(false);
+    
+    // Admin status state - checked once on login
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [adminRole, setAdminRole] = useState(null);
+    const [isAdminChecked, setIsAdminChecked] = useState(false);
 
     // Track profile fetch to prevent duplicate requests
     const profileFetchRef = useRef(null);
     const profileRetryCount = useRef(0);
+    const adminCheckRef = useRef(null);
     const maxRetries = 3;
+
+    // Check admin status - called once during login/session init
+    const checkAdminStatus = async (userId, token) => {
+        // Prevent duplicate checks for the same user
+        if (adminCheckRef.current === userId) {
+            console.log('[Admin] Already checking admin status for this user, skipping');
+            return;
+        }
+        adminCheckRef.current = userId;
+        
+        try {
+            // First, check if we have a valid cached status
+            const cachedStatus = getStoredAdminStatus(userId, token);
+            if (cachedStatus !== null) {
+                console.log('[Admin] Using cached admin status:', cachedStatus);
+                setIsAdmin(cachedStatus.isAdmin);
+                setAdminRole(cachedStatus.role);
+                setIsAdminChecked(true);
+                return;
+            }
+            
+            // Fetch from server
+            console.log('[Admin] Checking admin status from server for user:', userId);
+            const response = await fetch(`/api/admin/check?userId=${userId}`);
+            const data = await response.json();
+            
+            console.log('[Admin] Server response:', data);
+            
+            setIsAdmin(data.isAdmin || false);
+            setAdminRole(data.role || null);
+            setIsAdminChecked(true);
+            
+            // Store securely for this session
+            storeAdminStatus(userId, data.isAdmin || false, data.role || null, token);
+        } catch (err) {
+            console.error('[Admin] Error checking admin status:', err);
+            setIsAdmin(false);
+            setAdminRole(null);
+            setIsAdminChecked(true);
+        } finally {
+            adminCheckRef.current = null;
+        }
+    };
 
     const fetchProfile = async (userId, userData = null, forceRefresh = false) => {
         // Prevent duplicate simultaneous fetches for the same user
@@ -193,12 +319,18 @@ export function AuthProvider({ children }) {
         // Clear state first
         setUser(null);
         setProfile(null);
+        setIsAdmin(false);
+        setAdminRole(null);
+        setIsAdminChecked(false);
         
         // Clear our custom localStorage items
         localStorage.removeItem('supabase_token');
         localStorage.removeItem('supabase_refresh_token');
         localStorage.removeItem('supabase_user');
         localStorage.removeItem('supabase_profile'); // Also clear cached profile
+        
+        // Clear admin status from session storage
+        clearAdminStatus();
         
         // Clear Supabase's own localStorage items
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -269,6 +401,9 @@ export function AuthProvider({ children }) {
                             localStorage.setItem('supabase_user', JSON.stringify(data.session.user));
                             await fetchProfile(data.session.user.id, data.session.user);
                             
+                            // Check admin status once on login
+                            await checkAdminStatus(data.session.user.id, accessToken);
+                            
                             // Clear the auth param from URL
                             window.history.replaceState({}, '', window.location.pathname);
                             
@@ -294,6 +429,9 @@ export function AuthProvider({ children }) {
                     localStorage.setItem('supabase_user', JSON.stringify(session.user));
                     await fetchProfile(session.user.id, session.user);
                     
+                    // Check admin status once on session restore
+                    await checkAdminStatus(session.user.id, session.access_token);
+                    
                     setIsAuthLoading(false);
                     return;
                 }
@@ -311,6 +449,9 @@ export function AuthProvider({ children }) {
                         setUser(data.user);
                         localStorage.setItem('supabase_user', JSON.stringify(data.user));
                         await fetchProfile(data.user.id, data.user);
+                        
+                        // Check admin status once on session restore from storage
+                        await checkAdminStatus(data.user.id, storedToken);
                     } else if (error) {
                         // Network error or invalid token - check if it's a network issue
                         console.error('[Auth] Session error:', error.message);
@@ -319,18 +460,28 @@ export function AuthProvider({ children }) {
                             console.log('[Auth] Network issue detected, keeping local session');
                             const parsedUser = JSON.parse(storedUser);
                             setUser(parsedUser);
+                            // Use cached admin status if available
+                            const cachedStatus = getStoredAdminStatus(parsedUser.id, storedToken);
+                            if (cachedStatus) {
+                                setIsAdmin(cachedStatus.isAdmin);
+                                setAdminRole(cachedStatus.role);
+                                setIsAdminChecked(true);
+                            }
                         } else {
                             // Invalid token - clear session
                             console.log('[Auth] Invalid token, clearing session');
                             localStorage.removeItem('supabase_token');
                             localStorage.removeItem('supabase_refresh_token');
                             localStorage.removeItem('supabase_user');
+                            clearAdminStatus();
                         }
                     } else if (storedUser) {
                         // No error but no user data - use stored user
                         const parsedUser = JSON.parse(storedUser);
                         setUser(parsedUser);
                         fetchProfile(parsedUser.id, parsedUser);
+                        // Check admin status
+                        await checkAdminStatus(parsedUser.id, storedToken);
                     }
                 }
             } catch (error) {
@@ -369,15 +520,26 @@ export function AuthProvider({ children }) {
                 localStorage.setItem('supabase_refresh_token', session.refresh_token);
                 localStorage.setItem('supabase_user', JSON.stringify(session.user));
                 await fetchProfile(session.user.id, session.user);
+                
+                // Check admin status on new sign in
+                await checkAdminStatus(session.user.id, session.access_token);
             } else if (event === 'SIGNED_OUT') {
                 setUser(null);
                 setProfile(null);
+                setIsAdmin(false);
+                setAdminRole(null);
+                setIsAdminChecked(false);
                 localStorage.removeItem('supabase_token');
                 localStorage.removeItem('supabase_refresh_token');
                 localStorage.removeItem('supabase_user');
+                clearAdminStatus();
             } else if (event === 'TOKEN_REFRESHED' && session) {
                 localStorage.setItem('supabase_token', session.access_token);
                 localStorage.setItem('supabase_refresh_token', session.refresh_token);
+                // Update admin status hash with new token (but don't re-fetch)
+                if (isAdminChecked && user?.id) {
+                    storeAdminStatus(user.id, isAdmin, adminRole, session.access_token);
+                }
             }
         });
 
@@ -403,6 +565,9 @@ export function AuthProvider({ children }) {
         
         // Fetch profile and wait for it to complete
         await fetchProfile(userData.id, userData);
+        
+        // Check admin status once on login
+        await checkAdminStatus(userData.id, sessionData.access_token);
     };
 
     // Handle terms acceptance
@@ -410,6 +575,14 @@ export function AuthProvider({ children }) {
         setShowTermsDialog(false);
         // Update the profile state to reflect terms accepted
         setProfile(prev => prev ? { ...prev, terms_accepted: true, terms_accepted_at: new Date().toISOString() } : prev);
+    };
+    
+    // Force refresh admin status (useful if admin role changes)
+    const refreshAdminStatus = async () => {
+        if (!user) return;
+        const token = localStorage.getItem('supabase_token');
+        clearAdminStatus(); // Clear cache to force fresh fetch
+        await checkAdminStatus(user.id, token);
     };
 
     return (
@@ -422,7 +595,12 @@ export function AuthProvider({ children }) {
             logout,
             isAuthLoading,
             showTermsDialog,
-            handleTermsAccepted
+            handleTermsAccepted,
+            // Admin status - checked once on login, cached securely
+            isAdmin,
+            adminRole,
+            isAdminChecked,
+            refreshAdminStatus
         }}>
             {children}
         </AuthContext.Provider>

@@ -6,6 +6,18 @@
         "description": "You haven't created any missing person reports yet. Upload a photo to get started.",
         "button": "Create New Report"
     },
+    "reportTypes": {
+        "person": "Person",
+        "pet": "Pet",
+        "document": "Document",
+        "electronics": "Electronics",
+        "vehicle": "Vehicle",
+        "other": "Other"
+    },
+    "typeInfo": {
+        "petName": "Pet Name",
+        "itemName": "Item"
+    },
     "reportedOn": "Reported on",
     "viewDetails": "View Details",
     "editButton": "Edit",

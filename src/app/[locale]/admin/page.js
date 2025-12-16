@@ -7,18 +7,94 @@ import { Link } from '@/i18n/navigation';
 import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import LoginDialog from '@/components/LoginDialog';
 
+// Report type icons component
+const ReportTypeIcon = ({ type, className = "w-5 h-5" }) => {
+    const icons = {
+        person: (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+        ),
+        pet: (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+        ),
+        document: (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+        ),
+        electronics: (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+        ),
+        vehicle: (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8m-8 4h8m-4 4h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" />
+                <circle cx="7" cy="17" r="2" />
+                <circle cx="17" cy="17" r="2" />
+            </svg>
+        ),
+        other: (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+        )
+    };
+    return icons[type] || icons.other;
+};
+
+// Report type colors
+const getReportTypeColors = (type) => {
+    const colors = {
+        person: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+        pet: 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300 border-pink-200 dark:border-pink-800',
+        document: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border-amber-200 dark:border-amber-800',
+        electronics: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+        vehicle: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800',
+        other: 'bg-gray-100 text-gray-700 dark:bg-gray-700/50 dark:text-gray-300 border-gray-200 dark:border-gray-600'
+    };
+    return colors[type] || colors.other;
+};
+
+// Helper to get display name for a report
+const getReportDisplayName = (report) => {
+    const { report_type, details } = report;
+    
+    if (!details) {
+        // Fallback for legacy data
+        return report.first_name && report.last_name 
+            ? `${report.first_name} ${report.last_name}` 
+            : report.first_name || 'Unknown';
+    }
+    
+    switch (report_type) {
+        case 'person':
+            return `${details.first_name || ''} ${details.last_name || ''}`.trim() || 'Unknown Person';
+        case 'pet':
+            return details.pet_name || 'Unknown Pet';
+        case 'document':
+            return details.document_type || 'Unknown Document';
+        case 'electronics':
+            return `${details.brand || ''} ${details.model || ''}`.trim() || 'Unknown Device';
+        case 'vehicle':
+            return `${details.brand || ''} ${details.model || ''}`.trim() || 'Unknown Vehicle';
+        case 'other':
+            return details.item_name || 'Unknown Item';
+        default:
+            return report.first_name || 'Unknown';
+    }
+};
+
 export default function AdminPage() {
-    const { user, isAuthLoading } = useAuth();
+    const { user, isAuthLoading, isAdmin, adminRole, isAdminChecked } = useAuth();
     const router = useRouter();
     const t = useTranslations('admin');
     const tCommon = useTranslations('common');
     const { locale } = useLanguage();
     const isRTL = locale === 'ar';
-
-    // Admin state
-    const [isAdmin, setIsAdmin] = useState(false);
-    const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
-    const [adminRole, setAdminRole] = useState(null);
 
     // Reports state
     const [activeTab, setActiveTab] = useState('missing'); // 'missing' or 'sighting'
@@ -59,42 +135,15 @@ export default function AdminPage() {
     const [newStatus, setNewStatus] = useState('');
     const [changeStatusLoading, setChangeStatusLoading] = useState(false);
 
+    // Search state
+    const [searchQuery, setSearchQuery] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
     // Login dialog
     const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
 
     // Image preview state
     const [previewImage, setPreviewImage] = useState(null);
-
-    // Check admin status
-    useEffect(() => {
-        const checkAdminStatus = async () => {
-            if (!user) {
-                setIsCheckingAdmin(false);
-                setIsAdmin(false);
-                return;
-            }
-
-            try {
-                console.log('[Admin Page] Checking admin status for user:', user.id);
-                const response = await fetch(`/api/admin/check?userId=${user.id}`);
-                const data = await response.json();
-                
-                console.log('[Admin Page] Admin check response:', data);
-                
-                setIsAdmin(data.isAdmin);
-                setAdminRole(data.role);
-            } catch (err) {
-                console.error('[Admin Page] Error checking admin status:', err);
-                setIsAdmin(false);
-            } finally {
-                setIsCheckingAdmin(false);
-            }
-        };
-
-        if (!isAuthLoading) {
-            checkAdminStatus();
-        }
-    }, [user, isAuthLoading]);
 
     // Fetch stats for all statuses
     const fetchStats = useCallback(async () => {
@@ -143,6 +192,11 @@ export default function AdminPage() {
                 limit: pagination.limit.toString()
             });
 
+            // Add search query if present
+            if (debouncedSearch.trim()) {
+                params.append('search', debouncedSearch.trim());
+            }
+
             console.log('[Admin] Fetching reports with params:', params.toString());
             const response = await fetch(`/api/admin/reports?${params}`);
             
@@ -163,7 +217,19 @@ export default function AdminPage() {
         } finally {
             setLoading(false);
         }
-    }, [user, isAdmin, activeTab, statusFilter, pagination.page, pagination.limit, t]);
+    }, [user, isAdmin, activeTab, statusFilter, pagination.page, pagination.limit, debouncedSearch, t]);
+
+    // Debounce search input
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchQuery);
+            // Reset to page 1 when search changes
+            if (searchQuery !== debouncedSearch) {
+                setPagination(p => ({ ...p, page: 1 }));
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
 
     useEffect(() => {
         if (isAdmin) {
@@ -329,8 +395,8 @@ export default function AdminPage() {
         }
     };
 
-    // Loading state
-    if (isAuthLoading || isCheckingAdmin) {
+    // Loading state - wait for auth and admin check to complete
+    if (isAuthLoading || !isAdminChecked) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 pt-20">
                 <div className="text-center">
@@ -573,6 +639,39 @@ export default function AdminPage() {
                     </nav>
                 </div>
 
+                {/* Search Bar */}
+                <div className="mb-4">
+                    <div className="relative">
+                        <div className={`absolute inset-y-0 ${isRTL ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center pointer-events-none`}>
+                            <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder={t('search.placeholder')}
+                            className={`w-full ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200`}
+                        />
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className={`absolute inset-y-0 ${isRTL ? 'left-0 pl-3' : 'right-0 pr-3'} flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300`}
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        )}
+                    </div>
+                    {debouncedSearch && (
+                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                            {t('search.resultsFor')} "<span className="font-medium text-gray-700 dark:text-gray-300">{debouncedSearch}</span>"
+                        </p>
+                    )}
+                </div>
+
                 {/* Reports Table */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                     {loading ? (
@@ -595,250 +694,168 @@ export default function AdminPage() {
                             </p>
                         </div>
                     ) : (
-                        <div className="grid gap-4 p-4">
-                            {reports.map((report) => (
+                        <div className="divide-y-2 divide-gray-200 dark:divide-gray-600">
+                            {reports.map((report, index) => (
                                 <div 
                                     key={report.id} 
-                                    className={`bg-white dark:bg-gray-800 rounded-2xl border-2 overflow-hidden transition-all hover:shadow-lg ${
-                                        report.status === 'approved' 
-                                            ? 'border-green-200 dark:border-green-800' 
-                                            : report.status === 'rejected' 
-                                                ? 'border-red-200 dark:border-red-800' 
-                                                : 'border-yellow-200 dark:border-yellow-800'
-                                    }`}
+                                    className="bg-white dark:bg-[#1D2939] p-4 sm:p-5 hover:bg-gray-50 dark:hover:bg-[#344054] transition-colors cursor-pointer"
                                 >
-                                    {/* Status Header Bar */}
-                                    <div className={`px-4 py-2 flex items-center justify-between ${
-                                        report.status === 'approved' 
-                                            ? 'bg-green-50 dark:bg-green-900/30' 
-                                            : report.status === 'rejected' 
-                                                ? 'bg-red-50 dark:bg-red-900/30' 
-                                                : 'bg-yellow-50 dark:bg-yellow-900/30'
-                                    }`}>
-                                        <span className={`inline-flex items-center gap-2 text-sm font-semibold ${
-                                            report.status === 'approved' 
-                                                ? 'text-green-700 dark:text-green-300' 
-                                                : report.status === 'rejected' 
-                                                    ? 'text-red-700 dark:text-red-300' 
-                                                    : 'text-yellow-700 dark:text-yellow-300'
-                                        }`}>
-                                            {report.status === 'approved' && (
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
+                                    {/* Main Layout */}
+                                    <div className="flex items-start gap-4">
+                                        {/* Reporter Profile Picture - Main Focus */}
+                                        <div className="flex-shrink-0">
+                                            {report.reporter?.profile_picture ? (
+                                                <img 
+                                                    src={report.reporter.profile_picture} 
+                                                    alt={report.reporter.name || 'User'}
+                                                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600 shadow-sm"
+                                                />
+                                            ) : (
+                                                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center border-2 border-white dark:border-gray-700 shadow-sm">
+                                                    <span className="text-white font-semibold text-lg">
+                                                        {(report.reporter?.name || report.reporter?.username || 'U').charAt(0).toUpperCase()}
+                                                    </span>
+                                                </div>
                                             )}
-                                            {report.status === 'rejected' && (
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                            )}
-                                            {(!report.status || report.status === 'pending') && (
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                            )}
-                                            {t(`status.${report.status || 'pending'}`)}
-                                        </span>
-                                        <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">
-                                            #{report.id?.slice(0, 8)}
-                                        </span>
-                                    </div>
+                                        </div>
 
-                                    <div className="p-5">
-                                        <div className="flex flex-col lg:flex-row gap-5">
-                                            {/* Photo Section - Clickable */}
-                                            <div className="flex-shrink-0">
-                                                {report.photos && report.photos.length > 0 ? (
-                                                    <button
-                                                        onClick={() => setPreviewImage(report.photos[0])}
-                                                        className="relative group cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-2xl overflow-hidden"
-                                                    >
-                                                        <div className="w-28 h-28 rounded-2xl overflow-hidden border-2 border-gray-200 dark:border-gray-600 shadow-md bg-white dark:bg-gray-700">
-                                                            <img
-                                                                src={report.photos[0]}
-                                                                alt={`${report.first_name} ${report.last_name}`}
-                                                                className="w-full h-full object-contain group-hover:scale-105 transition-transform"
-                                                                style={{ backgroundColor: '#f3f4f6' }}
-                                                            />
-                                                        </div>
-                                                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 rounded-2xl transition-all">
-                                                            <svg className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                                                            </svg>
-                                                        </div>
-                                                    </button>
-                                                ) : (
-                                                    <div className="w-28 h-28 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center border-2 border-gray-200 dark:border-gray-600 shadow-md">
-                                                        <svg className="w-12 h-12 text-blue-300 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                                        </svg>
-                                                    </div>
-                                                )}
+                                        {/* Content */}
+                                        <div className="flex-1 min-w-0">
+                                            {/* Reporter Name & ID */}
+                                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                                                <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+                                                    {report.reporter?.first_name && report.reporter?.last_name 
+                                                        ? `${report.reporter.first_name} ${report.reporter.last_name}`
+                                                        : report.reporter?.name || report.reporter?.username || t('modal.anonymous')}
+                                                </h3>
+                                                <span className="text-xs font-mono text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">
+                                                    ID: {report.reporter?.user_id || t('modal.notAvailable')}
+                                                </span>
+                                                {/* Status Badge */}
+                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full ${
+                                                    report.status === 'approved' 
+                                                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400' 
+                                                        : report.status === 'rejected' 
+                                                            ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400' 
+                                                            : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
+                                                }`}>
+                                                    <span className={`w-1.5 h-1.5 rounded-full ${
+                                                        report.status === 'approved' ? 'bg-emerald-500' : report.status === 'rejected' ? 'bg-red-500' : 'bg-amber-500'
+                                                    }`}></span>
+                                                    {t(`status.${report.status || 'pending'}`)}
+                                                </span>
                                             </div>
 
-                                            {/* Info Section */}
-                                            <div className="flex-1 min-w-0">
-                                                {/* Person Info Card */}
-                                                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 mb-4 border border-blue-100 dark:border-blue-800">
-                                                    <h4 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            {/* Report Info Row */}
+                                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                                {/* Report Type */}
+                                                <span className="inline-flex items-center gap-1.5">
+                                                    <ReportTypeIcon type={report.report_type || 'person'} className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                                    <span className="font-medium">{t(`reportTypes.${report.report_type || 'person'}`)}</span>
+                                                </span>
+                                                
+                                                {/* Location */}
+                                                {report.city && (
+                                                    <span className="inline-flex items-center gap-1.5">
+                                                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                                         </svg>
-                                                        {t('modal.missingPersonInfo')}
-                                                    </h4>
-                                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                                        <div>
-                                                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('modal.fullName')}</p>
-                                                            <p className="text-sm font-semibold text-gray-900 dark:text-white">{report.first_name} {report.last_name}</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('modal.city')}</p>
-                                                            <p className="text-sm font-semibold text-gray-900 dark:text-white">{report.city || '-'}</p>
-                                                        </div>
-                                                        {report.gender && (
-                                                            <div>
-                                                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('modal.gender')}</p>
-                                                                <p className="text-sm font-semibold text-gray-900 dark:text-white capitalize">{report.gender}</p>
-                                                            </div>
-                                                        )}
-                                                        {report.date_of_birth && (
-                                                            <div>
-                                                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('modal.dateOfBirth')}</p>
-                                                                <p className="text-sm font-semibold text-gray-900 dark:text-white">{report.date_of_birth}</p>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                {/* Location Info Card */}
-                                                {(report.last_known_location || report.location_description) && (
-                                                    <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 mb-4 border border-green-100 dark:border-green-800">
-                                                        <h4 className="text-xs font-bold text-green-600 dark:text-green-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                            </svg>
-                                                            {t('modal.lastKnownLocation')}
-                                                        </h4>
-                                                        <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{report.last_known_location || report.location_description}</p>
-                                                    </div>
+                                                        {report.city}
+                                                    </span>
                                                 )}
+                                                
+                                                {/* Date */}
+                                                <span className="inline-flex items-center gap-1.5">
+                                                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                    </svg>
+                                                    {formatDate(report.created_at)}
+                                                </span>
+                                                
+                                                {/* Report ID */}
+                                                <span className="inline-flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
+                                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                                                    </svg>
+                                                    {report.id.slice(0, 8)}
+                                                </span>
+                                            </div>
 
-                                                {/* Additional Info */}
-                                                {report.additional_info && (
-                                                    <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 mb-4 border border-gray-200 dark:border-gray-700">
-                                                        <h4 className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                            </svg>
-                                                            {t('modal.additionalInfo')}
-                                                        </h4>
-                                                        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 italic">"{report.additional_info}"</p>
-                                                    </div>
-                                                )}
+                                            {/* Action Buttons */}
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedReport(report);
+                                                        setShowDetailModal(true);
+                                                    }}
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+                                                >
+                                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                    </svg>
+                                                    {t('actions.viewDetails')}
+                                                </button>
 
-                                                {/* Rejection Reason */}
-                                                {report.status === 'rejected' && report.rejection_reason && (
-                                                    <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 mb-4 border border-red-200 dark:border-red-800">
-                                                        <h4 className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                                            </svg>
-                                                            {t('modal.rejectionReason')}
-                                                        </h4>
-                                                        <p className="text-sm text-red-700 dark:text-red-300">{report.rejection_reason}</p>
-                                                    </div>
-                                                )}
-
-                                                {/* Footer: Date & Actions */}
-                                                <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-gray-100 dark:border-gray-700">
-                                                    <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-                                                        <span className="flex items-center gap-1">
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                            </svg>
-                                                            {t('modal.submittedAt')}: {formatDate(report.created_at)}
-                                                        </span>
-                                                    </div>
-                                                    
-                                                    {/* Action Buttons */}
-                                                    <div className="flex flex-wrap items-center gap-2">
+                                                {(!report.status || report.status === 'pending') && (
+                                                    <>
                                                         <button
                                                             onClick={() => {
                                                                 setSelectedReport(report);
-                                                                setShowDetailModal(true);
+                                                                setShowApproveModal(true);
                                                             }}
-                                                            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors border border-blue-200 dark:border-blue-800"
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors"
                                                         >
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                                             </svg>
-                                                            {t('actions.view')}
+                                                            {t('actions.approve')}
                                                         </button>
-
-                                                        {(!report.status || report.status === 'pending') && (
-                                                            <>
-                                                                <button
-                                                                    onClick={() => {
-                                                                        setSelectedReport(report);
-                                                                        setShowApproveModal(true);
-                                                                    }}
-                                                                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-green-600 rounded-lg hover:from-green-600 hover:to-green-700 transition-all shadow-md hover:shadow-lg"
-                                                                >
-                                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                    </svg>
-                                                                    {t('actions.approve')}
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => {
-                                                                        setSelectedReport(report);
-                                                                        setShowRejectModal(true);
-                                                                    }}
-                                                                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-red-500 to-red-600 rounded-lg hover:from-red-600 hover:to-red-700 transition-all shadow-md hover:shadow-lg"
-                                                                >
-                                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                                    </svg>
-                                                                    {t('actions.reject')}
-                                                                </button>
-                                                            </>
-                                                        )}
-
-                                                        {/* Change Status button - only for approved/rejected reports */}
-                                                        {(report.status === 'approved' || report.status === 'rejected') && (
-                                                            <button
-                                                                onClick={() => {
-                                                                    setSelectedReport(report);
-                                                                    setNewStatus(report.status === 'approved' ? 'rejected' : 'approved');
-                                                                    setRejectionReason('');
-                                                                    setShowChangeStatusModal(true);
-                                                                }}
-                                                                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors border border-amber-200 dark:border-amber-800"
-                                                            >
-                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                                </svg>
-                                                                {t('actions.changeStatus')}
-                                                            </button>
-                                                        )}
-
-                                                        {/* Delete button - for all reports */}
                                                         <button
                                                             onClick={() => {
                                                                 setSelectedReport(report);
-                                                                setShowDeleteModal(true);
+                                                                setShowRejectModal(true);
                                                             }}
-                                                            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-red-600 dark:hover:text-red-400 transition-colors border border-gray-200 dark:border-gray-600"
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
                                                         >
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                                             </svg>
-                                                            {t('actions.delete')}
+                                                            {t('actions.reject')}
                                                         </button>
-                                                    </div>
-                                                </div>
+                                                    </>
+                                                )}
+
+                                                {(report.status === 'approved' || report.status === 'rejected') && (
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedReport(report);
+                                                            setNewStatus(report.status === 'approved' ? 'rejected' : 'approved');
+                                                            setRejectionReason('');
+                                                            setShowChangeStatusModal(true);
+                                                        }}
+                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                                    >
+                                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                        </svg>
+                                                        {t('actions.changeStatus')}
+                                                    </button>
+                                                )}
+
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedReport(report);
+                                                        setShowDeleteModal(true);
+                                                    }}
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-lg transition-colors"
+                                                >
+                                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                    {t('actions.delete')}
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -878,120 +895,345 @@ export default function AdminPage() {
             {showDetailModal && selectedReport && (
                 <div className="fixed inset-0 z-50 overflow-y-auto">
                     <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-                        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setShowDetailModal(false)} />
-                        <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-3xl w-full mx-auto z-10 overflow-hidden">
-                            {/* Modal Header */}
-                            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-750">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">{t('modal.reportDetails')}</h3>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                            {t('modal.reportId')}: <span className="font-mono text-xs bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded">{selectedReport.id?.slice(0, 8)}...</span>
-                                        </p>
+                        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity" onClick={() => setShowDetailModal(false)} />
+                        <div className="relative bg-white dark:bg-[#101828] rounded-2xl shadow-2xl max-w-lg w-full mx-auto z-10 overflow-hidden border border-gray-200 dark:border-gray-700/50">
+                            {/* Modal Header - Clean gradient with status indicator */}
+                            <div className={`relative px-5 py-4 ${
+                                selectedReport.status === 'approved' 
+                                    ? 'bg-gradient-to-r from-emerald-500 to-teal-600' 
+                                    : selectedReport.status === 'rejected' 
+                                        ? 'bg-gradient-to-r from-rose-500 to-pink-600' 
+                                        : 'bg-gradient-to-r from-blue-500 to-indigo-600'
+                            }`}>
+                                {/* Decorative pattern */}
+                                <div className="absolute inset-0 opacity-10">
+                                    <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                                        <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                                            <circle cx="1" cy="1" r="1" fill="white"/>
+                                        </pattern>
+                                        <rect width="100" height="100" fill="url(#grid)"/>
+                                    </svg>
+                                </div>
+                                
+                                <div className="relative flex justify-between items-start">
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <div className="p-1.5 bg-white/20 rounded-lg backdrop-blur-sm">
+                                                <ReportTypeIcon type={selectedReport.report_type || 'person'} className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-lg font-bold text-white">{t('modal.reportDetails')}</h3>
+                                                <p className="text-xs text-white/80">
+                                                    {t(`reportTypes.${selectedReport.report_type || 'person'}`)} • {t(`status.${selectedReport.status || 'pending'}`)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <span className="text-xs text-white/70">{t('modal.reportId')}:</span>
+                                            <code className="text-xs bg-white/20 backdrop-blur-sm px-2 py-1 rounded text-white font-mono truncate max-w-[200px]" title={selectedReport.id}>
+                                                {selectedReport.id}
+                                            </code>
+                                        </div>
                                     </div>
                                     <button
                                         onClick={() => setShowDetailModal(false)}
-                                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                                        className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
                                     >
-                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </button>
                                 </div>
                             </div>
                             
-                            <div className="px-6 py-5 max-h-[70vh] overflow-y-auto">
+                            <div className="px-4 py-4 max-h-[60vh] overflow-y-auto scrollbar-hide bg-gray-50 dark:bg-[#101828]">
                                 {/* Photos Section */}
-                                <div className="mb-6">
-                                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                                        <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
+                                <div className="mb-4">
+                                    <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                                        <div className="p-1 bg-blue-100 dark:bg-blue-500/20 rounded">
+                                            <svg className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
                                         {t('modal.photos')}
                                     </h4>
                                     {selectedReport.photos && selectedReport.photos.length > 0 ? (
-                                        <div className="flex flex-wrap gap-3">
+                                        <div className="flex flex-wrap gap-2">
                                             {selectedReport.photos.map((photo, index) => (
-                                                <img
+                                                <button
                                                     key={index}
-                                                    src={photo}
-                                                    alt={`Photo ${index + 1}`}
-                                                    className="w-28 h-28 rounded-xl object-cover border-2 border-gray-200 dark:border-gray-600 shadow-sm hover:scale-105 transition-transform cursor-pointer"
-                                                />
+                                                    onClick={() => setPreviewImage(photo)}
+                                                    className="group relative"
+                                                >
+                                                    <img
+                                                        src={photo}
+                                                        alt={`Photo ${index + 1}`}
+                                                        className="w-16 h-16 rounded-lg object-cover border-2 border-white dark:border-gray-600 shadow-md group-hover:scale-105 transition-all duration-200"
+                                                    />
+                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 rounded-lg transition-colors flex items-center justify-center">
+                                                        <svg className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                                        </svg>
+                                                    </div>
+                                                </button>
                                             ))}
                                         </div>
                                     ) : (
-                                        <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 text-center">
-                                            <svg className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                            </svg>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">{t('modal.noPhotosAvailable')}</p>
+                                        <div className="bg-white dark:bg-[#1D2939] rounded-lg p-3 text-center border border-gray-200 dark:border-gray-600/30">
+                                            <div className="w-10 h-10 mx-auto mb-1 bg-gray-100 dark:bg-[#344054] rounded-lg flex items-center justify-center">
+                                                <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                            </div>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('modal.noPhotosAvailable')}</p>
                                         </div>
                                     )}
                                 </div>
 
-                                {/* Missing Person Information */}
-                                <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
-                                    <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-4 flex items-center gap-2">
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
-                                        {t('modal.missingPersonInfo')}
-                                    </h4>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="bg-white dark:bg-gray-800 rounded-lg p-3">
-                                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.fullName')}</p>
-                                            <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.first_name} {selectedReport.last_name}</p>
+                                {/* Report Information - Type-based styling */}
+                                <div className="mb-4 bg-white dark:bg-[#1D2939] rounded-lg p-3 border border-gray-200 dark:border-gray-600/30">
+                                    <h4 className={`text-xs font-semibold mb-3 flex items-center gap-2 ${
+                                        selectedReport.report_type === 'person' ? 'text-blue-700 dark:text-blue-300' :
+                                        selectedReport.report_type === 'pet' ? 'text-pink-700 dark:text-pink-300' :
+                                        selectedReport.report_type === 'document' ? 'text-amber-700 dark:text-amber-300' :
+                                        selectedReport.report_type === 'electronics' ? 'text-purple-700 dark:text-purple-300' :
+                                        selectedReport.report_type === 'vehicle' ? 'text-cyan-700 dark:text-cyan-300' :
+                                        'text-blue-700 dark:text-blue-300'
+                                    }`}>
+                                        <div className={`p-1 rounded ${
+                                            selectedReport.report_type === 'person' ? 'bg-blue-100 dark:bg-blue-500/20' :
+                                            selectedReport.report_type === 'pet' ? 'bg-pink-100 dark:bg-pink-500/20' :
+                                            selectedReport.report_type === 'document' ? 'bg-amber-100 dark:bg-amber-500/20' :
+                                            selectedReport.report_type === 'electronics' ? 'bg-purple-100 dark:bg-purple-500/20' :
+                                            selectedReport.report_type === 'vehicle' ? 'bg-cyan-100 dark:bg-cyan-500/20' :
+                                            'bg-blue-100 dark:bg-blue-500/20'
+                                        }`}>
+                                            <ReportTypeIcon type={selectedReport.report_type || 'person'} className="w-4 h-4" />
                                         </div>
-                                        {selectedReport.date_of_birth && (
-                                            <div className="bg-white dark:bg-gray-800 rounded-lg p-3">
-                                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.dateOfBirth')}</p>
-                                                <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.date_of_birth}</p>
-                                            </div>
+                                        {t(`typeInfo.${selectedReport.report_type || 'person'}.title`) || t('modal.missingPersonInfo')}
+                                        <span className={`ml-auto px-2.5 py-1 text-xs font-medium rounded-full ${getReportTypeColors(selectedReport.report_type || 'person')}`}>
+                                            {t(`reportTypes.${selectedReport.report_type || 'person'}`)}
+                                        </span>
+                                    </h4>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        {/* Person fields */}
+                                        {(selectedReport.report_type === 'person' || !selectedReport.report_type) && (
+                                            <>
+                                                <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.person.name')}</p>
+                                                    <p className="text-base font-semibold text-gray-900 dark:text-white">
+                                                        {selectedReport.details?.first_name || selectedReport.first_name} {selectedReport.details?.last_name || selectedReport.last_name}
+                                                    </p>
+                                                </div>
+                                                {(selectedReport.details?.date_of_birth || selectedReport.date_of_birth) && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.person.dateOfBirth')}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.details?.date_of_birth || selectedReport.date_of_birth}</p>
+                                                    </div>
+                                                )}
+                                                {(selectedReport.details?.gender || selectedReport.gender) && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.person.gender')}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white capitalize">{selectedReport.details?.gender || selectedReport.gender}</p>
+                                                    </div>
+                                                )}
+                                                {(selectedReport.details?.health_status || selectedReport.health_status) && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.person.healthStatus')}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white capitalize">{selectedReport.details?.health_status || selectedReport.health_status}</p>
+                                                    </div>
+                                                )}
+                                            </>
                                         )}
-                                        {selectedReport.gender && (
-                                            <div className="bg-white dark:bg-gray-800 rounded-lg p-3">
-                                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.gender')}</p>
-                                                <p className="text-base font-semibold text-gray-900 dark:text-white capitalize">{selectedReport.gender}</p>
-                                            </div>
+                                        
+                                        {/* Pet fields */}
+                                        {selectedReport.report_type === 'pet' && selectedReport.details && (
+                                            <>
+                                                <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.pet.name')}</p>
+                                                    <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.details.pet_name || '-'}</p>
+                                                </div>
+                                                {selectedReport.details.pet_type && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.pet.petType')}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white capitalize">{selectedReport.details.pet_type}</p>
+                                                    </div>
+                                                )}
+                                                {selectedReport.details.breed && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.pet.breed')}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.details.breed}</p>
+                                                    </div>
+                                                )}
+                                                {selectedReport.details.color && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.pet.color')}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.details.color}</p>
+                                                    </div>
+                                                )}
+                                                {selectedReport.details.size && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.pet.size')}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white capitalize">{selectedReport.details.size}</p>
+                                                    </div>
+                                                )}
+                                            </>
                                         )}
-                                        {selectedReport.health_status && (
-                                            <div className="bg-white dark:bg-gray-800 rounded-lg p-3">
-                                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.healthStatus')}</p>
-                                                <p className="text-base font-semibold text-gray-900 dark:text-white capitalize">{selectedReport.health_status}</p>
-                                            </div>
+                                        
+                                        {/* Document fields */}
+                                        {selectedReport.report_type === 'document' && selectedReport.details && (
+                                            <>
+                                                <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.document.documentType')}</p>
+                                                    <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.details.document_type || '-'}</p>
+                                                </div>
+                                                {selectedReport.details.document_number && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.document.documentNumber')}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white font-mono">{selectedReport.details.document_number}</p>
+                                                    </div>
+                                                )}
+                                                {selectedReport.details.issuing_authority && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.document.issuingAuthority')}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.details.issuing_authority}</p>
+                                                    </div>
+                                                )}
+                                                {selectedReport.details.owner_name && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.document.ownerName')}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.details.owner_name}</p>
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
+                                        
+                                        {/* Electronics fields */}
+                                        {selectedReport.report_type === 'electronics' && selectedReport.details && (
+                                            <>
+                                                {selectedReport.details.device_type && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.electronics.deviceType')}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white capitalize">{selectedReport.details.device_type}</p>
+                                                    </div>
+                                                )}
+                                                {selectedReport.details.brand && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.electronics.brand')}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.details.brand}</p>
+                                                    </div>
+                                                )}
+                                                {selectedReport.details.model && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.electronics.model')}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.details.model}</p>
+                                                    </div>
+                                                )}
+                                                {selectedReport.details.color && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.electronics.color')}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.details.color}</p>
+                                                    </div>
+                                                )}
+                                                {selectedReport.details.serial_number && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20 sm:col-span-2">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.electronics.serialNumber')}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white font-mono">{selectedReport.details.serial_number}</p>
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
+                                        
+                                        {/* Vehicle fields */}
+                                        {selectedReport.report_type === 'vehicle' && selectedReport.details && (
+                                            <>
+                                                {selectedReport.details.vehicle_type && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.vehicle.vehicleType')}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white capitalize">{selectedReport.details.vehicle_type}</p>
+                                                    </div>
+                                                )}
+                                                {selectedReport.details.brand && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.vehicle.brand')}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.details.brand}</p>
+                                                    </div>
+                                                )}
+                                                {selectedReport.details.model && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.vehicle.model')}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.details.model}</p>
+                                                    </div>
+                                                )}
+                                                {selectedReport.details.year && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.vehicle.year')}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.details.year}</p>
+                                                    </div>
+                                                )}
+                                                {selectedReport.details.color && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.vehicle.color')}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.details.color}</p>
+                                                    </div>
+                                                )}
+                                                {selectedReport.details.plate_number && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.vehicle.plateNumber')}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white font-mono">{selectedReport.details.plate_number}</p>
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
+                                        
+                                        {/* Other item fields */}
+                                        {selectedReport.report_type === 'other' && selectedReport.details && (
+                                            <>
+                                                <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.other.itemName')}</p>
+                                                    <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.details.item_name || '-'}</p>
+                                                </div>
+                                                {selectedReport.details.description && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20 sm:col-span-2">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.other.description')}</p>
+                                                        <p className="text-sm text-gray-700 dark:text-gray-300">{selectedReport.details.description}</p>
+                                                    </div>
+                                                )}
+                                            </>
                                         )}
                                     </div>
-                                    {selectedReport.health_details && (
-                                        <div className="mt-3 bg-white dark:bg-gray-800 rounded-lg p-3">
-                                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.healthDetails')}</p>
-                                            <p className="text-sm text-gray-700 dark:text-gray-300">{selectedReport.health_details}</p>
+                                    {(selectedReport.details?.health_details || selectedReport.health_details) && selectedReport.report_type === 'person' && (
+                                        <div className="mt-3 bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('typeInfo.person.healthDetails')}</p>
+                                            <p className="text-sm text-gray-700 dark:text-gray-300">{selectedReport.details?.health_details || selectedReport.health_details}</p>
                                         </div>
                                     )}
                                 </div>
 
                                 {/* Location Information */}
-                                <div className="mb-6 bg-green-50 dark:bg-green-900/20 rounded-xl p-4 border border-green-200 dark:border-green-800">
-                                    <h4 className="text-sm font-semibold text-green-900 dark:text-green-100 mb-4 flex items-center gap-2">
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
+                                <div className="mb-4 bg-white dark:bg-[#1D2939] rounded-lg p-3 border border-gray-200 dark:border-gray-600/30">
+                                    <h4 className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 mb-2 flex items-center gap-2">
+                                        <div className="p-1 bg-emerald-100 dark:bg-emerald-500/20 rounded">
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                        </div>
                                         {t('modal.locationInfo')}
                                     </h4>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="bg-white dark:bg-gray-800 rounded-lg p-3">
-                                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.city')}</p>
-                                            <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.city || '-'}</p>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
+                                            <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.city')}</p>
+                                            <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedReport.city || '-'}</p>
                                         </div>
-                                        <div className="bg-white dark:bg-gray-800 rounded-lg p-3 sm:col-span-2">
-                                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.lastKnownLocation')}</p>
-                                            <p className="text-sm text-gray-700 dark:text-gray-300">{selectedReport.last_known_location || selectedReport.location_description || '-'}</p>
+                                        <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20 col-span-2">
+                                            <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.lastKnownLocation')}</p>
+                                            <p className="text-xs text-gray-700 dark:text-gray-300">{selectedReport.last_known_location || selectedReport.location_description || '-'}</p>
                                         </div>
                                         {selectedReport.coordinates && (
-                                            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 sm:col-span-2">
-                                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.coordinates')}</p>
-                                                <p className="text-sm font-mono text-gray-700 dark:text-gray-300">
+                                            <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20 col-span-2">
+                                                <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.coordinates')}</p>
+                                                <p className="text-xs font-mono text-gray-700 dark:text-gray-300">
                                                     {selectedReport.coordinates.lat}, {selectedReport.coordinates.lng}
                                                 </p>
                                             </div>
@@ -1000,36 +1242,34 @@ export default function AdminPage() {
                                 </div>
 
                                 {/* Reporter Information */}
-                                <div className="mb-6 bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4 border border-purple-200 dark:border-purple-800">
-                                    <h4 className="text-sm font-semibold text-purple-900 dark:text-purple-100 mb-4 flex items-center gap-2">
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
+                                <div className="mb-4 bg-white dark:bg-[#1D2939] rounded-lg p-3 border border-gray-200 dark:border-gray-600/30">
+                                    <h4 className="text-xs font-semibold text-violet-700 dark:text-violet-400 mb-2 flex items-center gap-2">
+                                        <div className="p-1 bg-violet-100 dark:bg-violet-500/20 rounded">
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
                                         {t('modal.reporterInfo')}
                                     </h4>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="bg-white dark:bg-gray-800 rounded-lg p-3 sm:col-span-2">
-                                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.reporterId')}</p>
-                                            <p className="text-sm font-mono text-gray-700 dark:text-gray-300 break-all">{selectedReport.user_id || '-'}</p>
-                                        </div>
+                                    <div className="grid grid-cols-2 gap-2">
                                         {(selectedReport.reporter_first_name || selectedReport.reporter_last_name) && (
-                                            <div className="bg-white dark:bg-gray-800 rounded-lg p-3">
-                                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.reporterName')}</p>
-                                                <p className="text-base font-semibold text-gray-900 dark:text-white">
+                                            <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
+                                                <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.reporterName')}</p>
+                                                <p className="text-sm font-semibold text-gray-900 dark:text-white">
                                                     {selectedReport.reporter_first_name} {selectedReport.reporter_last_name}
                                                 </p>
                                             </div>
                                         )}
                                         {selectedReport.reporter_phone && (
-                                            <div className="bg-white dark:bg-gray-800 rounded-lg p-3">
-                                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.reporterPhone')}</p>
-                                                <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.reporter_phone}</p>
+                                            <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
+                                                <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.reporterPhone')}</p>
+                                                <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedReport.reporter_phone}</p>
                                             </div>
                                         )}
                                         {selectedReport.reporter_email && (
-                                            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 sm:col-span-2">
-                                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.reporterEmail')}</p>
-                                                <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.reporter_email}</p>
+                                            <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20 col-span-2">
+                                                <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.reporterEmail')}</p>
+                                                <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedReport.reporter_email}</p>
                                             </div>
                                         )}
                                     </div>
@@ -1037,69 +1277,80 @@ export default function AdminPage() {
 
                                 {/* Additional Information */}
                                 {selectedReport.additional_info && (
-                                    <div className="mb-6 bg-gray-50 dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-                                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                                            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
+                                    <div className="mb-4 bg-white dark:bg-[#1D2939] rounded-lg p-3 border border-gray-200 dark:border-gray-600/30">
+                                        <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                                            <div className="p-1 bg-gray-100 dark:bg-[#344054] rounded">
+                                                <svg className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </div>
                                             {t('modal.additionalInfo')}
                                         </h4>
-                                        <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{selectedReport.additional_info}</p>
+                                        <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
+                                            <p className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">{selectedReport.additional_info}</p>
+                                        </div>
                                     </div>
                                 )}
 
                                 {/* Report Status & Dates */}
-                                <div className="bg-gray-100 dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-                                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                                        <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                        </svg>
+                                <div className="bg-white dark:bg-[#1D2939] rounded-lg p-3 border border-gray-200 dark:border-gray-600/30">
+                                    <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                                        <div className="p-1 bg-gray-100 dark:bg-[#344054] rounded">
+                                            <svg className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                            </svg>
+                                        </div>
                                         {t('modal.reportInfo')}
                                     </h4>
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                        <div>
-                                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.currentStatus')}</p>
-                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full ${getStatusBadgeClass(selectedReport.status || 'pending')}`}>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
+                                            <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.currentStatus')}</p>
+                                            <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeClass(selectedReport.status || 'pending')}`}>
                                                 {selectedReport.status === 'approved' && (
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                                     </svg>
                                                 )}
                                                 {selectedReport.status === 'rejected' && (
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                                     </svg>
                                                 )}
                                                 {(!selectedReport.status || selectedReport.status === 'pending') && (
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
                                                 )}
                                                 {t(`status.${selectedReport.status || 'pending'}`)}
                                             </span>
                                         </div>
-                                        <div>
-                                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.submittedAt')}</p>
-                                            <p className="text-sm font-medium text-gray-900 dark:text-white">{formatDate(selectedReport.created_at)}</p>
+                                        <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
+                                            <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.submittedAt')}</p>
+                                            <p className="text-xs font-medium text-gray-900 dark:text-white">{formatDate(selectedReport.created_at)}</p>
                                         </div>
                                         {selectedReport.updated_at && selectedReport.updated_at !== selectedReport.created_at && (
-                                            <div>
-                                                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.updatedAt')}</p>
-                                                <p className="text-sm font-medium text-gray-900 dark:text-white">{formatDate(selectedReport.updated_at)}</p>
+                                            <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
+                                                <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.updatedAt')}</p>
+                                                <p className="text-xs font-medium text-gray-900 dark:text-white">{formatDate(selectedReport.updated_at)}</p>
                                             </div>
                                         )}
                                     </div>
                                     {selectedReport.status === 'rejected' && selectedReport.rejection_reason && (
-                                        <div className="mt-4 bg-red-50 dark:bg-red-900/30 rounded-lg p-3 border border-red-200 dark:border-red-800">
-                                            <p className="text-xs font-medium text-red-600 dark:text-red-400 uppercase tracking-wide mb-1">{t('modal.rejectionReason')}</p>
-                                            <p className="text-sm text-red-700 dark:text-red-300">{selectedReport.rejection_reason}</p>
+                                        <div className="mt-3 bg-rose-50 dark:bg-rose-900/20 rounded p-2 border border-rose-200 dark:border-rose-800/50">
+                                            <p className="text-[10px] font-medium text-rose-600 dark:text-rose-400 uppercase tracking-wide mb-0.5 flex items-center gap-1">
+                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                </svg>
+                                                {t('modal.rejectionReason')}
+                                            </p>
+                                            <p className="text-xs text-rose-700 dark:text-rose-300">{selectedReport.rejection_reason}</p>
                                         </div>
                                     )}
                                 </div>
                             </div>
                             
                             {/* Modal Footer */}
-                            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex flex-wrap justify-end gap-3">
+                            <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700/50 bg-gray-50 dark:bg-[#1D2939] flex flex-wrap justify-end gap-2">
                                 {selectedReport.status === 'pending' && (
                                     <>
                                         <button
@@ -1107,9 +1358,9 @@ export default function AdminPage() {
                                                 setShowDetailModal(false);
                                                 setShowApproveModal(true);
                                             }}
-                                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-sm"
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-all font-medium shadow-md shadow-emerald-500/25"
                                         >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                             </svg>
                                             {t('actions.approve')}
@@ -1119,9 +1370,9 @@ export default function AdminPage() {
                                                 setShowDetailModal(false);
                                                 setShowRejectModal(true);
                                             }}
-                                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium shadow-sm"
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-rose-500 to-pink-600 text-white text-sm rounded-lg hover:from-rose-600 hover:to-pink-700 transition-all font-medium shadow-md shadow-rose-500/25"
                                         >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                             </svg>
                                             {t('actions.reject')}
@@ -1130,7 +1381,7 @@ export default function AdminPage() {
                                 )}
                                 <button
                                     onClick={() => setShowDetailModal(false)}
-                                    className="px-5 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium"
+                                    className="px-3 py-1.5 bg-gray-100 dark:bg-[#344054] text-gray-700 dark:text-gray-300 text-sm rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium border border-gray-200 dark:border-gray-600/30"
                                 >
                                     {t('modal.close')}
                                 </button>
@@ -1155,20 +1406,28 @@ export default function AdminPage() {
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('modal.confirmApproval')}</h3>
                                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{t('modal.confirmApprovalMessage')}</p>
                             </div>
-                            <div className="flex gap-2 justify-center">
+                            <div className="flex gap-3 justify-center mt-6">
                                 <button
                                     onClick={() => setShowApproveModal(false)}
-                                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                                    className="flex-1 px-5 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 border border-gray-200 dark:border-gray-600"
                                     disabled={actionLoading}
                                 >
                                     {t('modal.cancel')}
                                 </button>
                                 <button
                                     onClick={() => handleAction('approve')}
-                                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                                    className="flex-1 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                     disabled={actionLoading}
                                 >
-                                    {actionLoading ? t('actions.approving') : t('modal.confirm')}
+                                    {actionLoading ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            {t('actions.approving')}
+                                        </span>
+                                    ) : t('modal.confirm')}
                                 </button>
                             </div>
                         </div>
@@ -1203,23 +1462,31 @@ export default function AdminPage() {
                                     rows={3}
                                 />
                             </div>
-                            <div className="flex gap-2 justify-center">
+                            <div className="flex gap-3 justify-center mt-2">
                                 <button
                                     onClick={() => {
                                         setShowRejectModal(false);
                                         setRejectionReason('');
                                     }}
-                                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                                    className="flex-1 px-5 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 border border-gray-200 dark:border-gray-600"
                                     disabled={actionLoading}
                                 >
                                     {t('modal.cancel')}
                                 </button>
                                 <button
                                     onClick={() => handleAction('reject')}
-                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                                    className="flex-1 px-5 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white font-medium rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                     disabled={actionLoading}
                                 >
-                                    {actionLoading ? t('actions.rejecting') : t('modal.confirm')}
+                                    {actionLoading ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            {t('actions.rejecting')}
+                                        </span>
+                                    ) : t('modal.confirm')}
                                 </button>
                             </div>
                         </div>
@@ -1250,23 +1517,31 @@ export default function AdminPage() {
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex gap-2 justify-center">
+                            <div className="flex gap-3 justify-center mt-6">
                                 <button
                                     onClick={() => {
                                         setShowDeleteModal(false);
                                         setSelectedReport(null);
                                     }}
-                                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                                    className="flex-1 px-5 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 border border-gray-200 dark:border-gray-600"
                                     disabled={deleteLoading}
                                 >
                                     {t('modal.cancel')}
                                 </button>
                                 <button
                                     onClick={handleDelete}
-                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                                    className="flex-1 px-5 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white font-medium rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                     disabled={deleteLoading}
                                 >
-                                    {deleteLoading ? t('actions.deleting') : t('actions.delete')}
+                                    {deleteLoading ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            {t('actions.deleting')}
+                                        </span>
+                                    ) : t('actions.delete')}
                                 </button>
                             </div>
                         </div>
@@ -1308,7 +1583,7 @@ export default function AdminPage() {
                                 </div>
                             )}
                             
-                            <div className="flex gap-2 justify-center">
+                            <div className="flex gap-3 justify-center mt-6">
                                 <button
                                     onClick={() => {
                                         setShowChangeStatusModal(false);
@@ -1316,21 +1591,29 @@ export default function AdminPage() {
                                         setNewStatus('');
                                         setRejectionReason('');
                                     }}
-                                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                                    className="flex-1 px-5 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 border border-gray-200 dark:border-gray-600"
                                     disabled={changeStatusLoading}
                                 >
                                     {t('modal.cancel')}
                                 </button>
                                 <button
                                     onClick={handleChangeStatus}
-                                    className={`px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 ${
+                                    className={`flex-1 px-5 py-2.5 text-white font-medium rounded-xl transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${
                                         newStatus === 'approved' 
-                                            ? 'bg-green-600 hover:bg-green-700' 
-                                            : 'bg-red-600 hover:bg-red-700'
+                                            ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700' 
+                                            : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'
                                     }`}
                                     disabled={changeStatusLoading}
                                 >
-                                    {changeStatusLoading ? t('actions.changingStatus') : t('modal.confirm')}
+                                    {changeStatusLoading ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            {t('actions.changingStatus')}
+                                        </span>
+                                    ) : t('modal.confirm')}
                                 </button>
                             </div>
                         </div>

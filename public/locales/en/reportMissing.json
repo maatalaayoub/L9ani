@@ -1,17 +1,61 @@
 {
-    "title": "Report a Missing Person",
-    "subtitle": "Please provide as much detail as possible to help us locate the missing person. All information is kept confidential.",
+    "title": "Report Missing",
+    "subtitle": "Select the type of item you want to report and provide as much detail as possible.",
     "backToReports": "Back to My Reports",
+
+    "types": {
+        "selectType": "What are you reporting?",
+        "selectTypeDescription": "Select the type of missing item to show relevant fields",
+        "person": {
+            "title": "Person",
+            "description": "Missing family member or friend"
+        },
+        "pet": {
+            "title": "Pet",
+            "description": "Lost cat, dog, or other animal"
+        },
+        "documents": {
+            "title": "Document",
+            "description": "ID card, passport, or papers"
+        },
+        "electronics": {
+            "title": "Electronics",
+            "description": "Phone, laptop, or device"
+        },
+        "vehicle": {
+            "title": "Vehicle",
+            "description": "Car, motorcycle, or bicycle"
+        },
+        "other": {
+            "title": "Other",
+            "description": "Keys, bags, or other items"
+        }
+    },
 
     "sections": {
         "photos": {
-            "title": "Photos of the Missing Person",
-            "description": "Upload clear, recent photos. Multiple angles help improve identification accuracy.",
+            "title": "Photos",
+            "description": "Upload clear photos to help with identification.",
             "uploadButton": "Click to upload photos",
             "hint": "Upload up to 5 photos (JPG, PNG)"
         },
         "personalInfo": {
             "title": "Personal Information"
+        },
+        "petInfo": {
+            "title": "Pet Information"
+        },
+        "documentInfo": {
+            "title": "Document Information"
+        },
+        "electronicsInfo": {
+            "title": "Device Information"
+        },
+        "vehicleInfo": {
+            "title": "Vehicle Information"
+        },
+        "otherInfo": {
+            "title": "Item Information"
         },
         "healthStatus": {
             "title": "Health Status"
@@ -21,7 +65,7 @@
         },
         "additionalInfo": {
             "title": "Additional Information",
-            "description": "Any other details that could help identify this person (clothing, distinguishing features, circumstances of disappearance, etc.)"
+            "description": "Any other details that could help identify this item"
         }
     },
 
@@ -37,7 +81,35 @@
         "additionalInfo": "Additional Details",
         "mapLocation": "Mark Location on Map",
         "coordinates": "Coordinates",
-        "mapHint": "Click on the map to mark the last known location"
+        "mapHint": "Click on the map to mark the last known location",
+        
+        "petName": "Pet Name",
+        "petType": "Pet Type",
+        "petBreed": "Breed",
+        "petColor": "Color/Markings",
+        "petSize": "Size",
+        "petAge": "Age",
+        
+        "documentType": "Document Type",
+        "documentNumber": "Document Number (if known)",
+        "documentIssuer": "Issuing Authority",
+        "ownerName": "Owner Name",
+        
+        "deviceType": "Device Type",
+        "deviceBrand": "Brand",
+        "deviceModel": "Model",
+        "deviceColor": "Color",
+        "serialNumber": "Serial Number / IMEI",
+        
+        "vehicleType": "Vehicle Type",
+        "vehicleBrand": "Brand",
+        "vehicleModel": "Model",
+        "vehicleColor": "Color",
+        "vehicleYear": "Year",
+        "licensePlate": "License Plate",
+        
+        "itemName": "Item Name",
+        "itemDescription": "Item Description"
     },
 
     "placeholders": {
@@ -46,7 +118,34 @@
         "healthDetails": "Describe any physical or mental health conditions...",
         "city": "e.g., Casablanca",
         "lastKnownLocation": "e.g., Near Central Market, downtown area",
-        "additionalInfo": "Describe clothing, distinguishing features, time last seen, circumstances..."
+        "additionalInfo": "Describe distinguishing features, time last seen, circumstances...",
+        
+        "petName": "Enter pet's name",
+        "petType": "e.g., Dog, Cat, Bird",
+        "petBreed": "e.g., German Shepherd, Persian",
+        "petColor": "e.g., Brown with white spots",
+        "petSize": "e.g., Small, Medium, Large",
+        
+        "documentType": "e.g., National ID, Passport, Driver's License",
+        "documentNumber": "Enter document number if you remember",
+        "documentIssuer": "e.g., National ID Office",
+        "ownerName": "Name on the document",
+        
+        "deviceType": "e.g., Phone, Laptop, Tablet",
+        "deviceBrand": "e.g., Apple, Samsung",
+        "deviceModel": "e.g., iPhone 15, Galaxy S24",
+        "deviceColor": "e.g., Black, Silver",
+        "serialNumber": "Enter serial number or IMEI if known",
+        
+        "vehicleType": "e.g., Car, Motorcycle, Bicycle",
+        "vehicleBrand": "e.g., Toyota, Honda",
+        "vehicleModel": "e.g., Corolla, Civic",
+        "vehicleColor": "e.g., White, Black",
+        "vehicleYear": "e.g., 2020",
+        "licensePlate": "e.g., 12345-A-67",
+        
+        "itemName": "e.g., Black leather wallet",
+        "itemDescription": "Describe the item in detail..."
     },
 
     "options": {
@@ -58,31 +157,83 @@
             "physical": "Physical Condition",
             "mental": "Mental Condition",
             "both": "Both"
+        },
+        "petTypes": {
+            "dog": "Dog",
+            "cat": "Cat",
+            "bird": "Bird",
+            "rabbit": "Rabbit",
+            "fish": "Fish",
+            "hamster": "Hamster",
+            "turtle": "Turtle",
+            "other": "Other"
+        },
+        "petSizes": {
+            "small": "Small",
+            "medium": "Medium",
+            "large": "Large"
+        },
+        "documentTypes": {
+            "nationalId": "National ID Card (CIN)",
+            "passport": "Passport",
+            "driverLicense": "Driver's License",
+            "residenceCard": "Residence Card",
+            "birthCertificate": "Birth Certificate",
+            "diploma": "Diploma/Certificate",
+            "other": "Other Document"
+        },
+        "deviceTypes": {
+            "phone": "Mobile Phone",
+            "laptop": "Laptop",
+            "tablet": "Tablet",
+            "camera": "Camera",
+            "smartwatch": "Smartwatch",
+            "earbuds": "Earbuds/Headphones",
+            "other": "Other Device"
+        },
+        "vehicleTypes": {
+            "car": "Car",
+            "motorcycle": "Motorcycle",
+            "bicycle": "Bicycle",
+            "scooter": "Scooter",
+            "other": "Other Vehicle"
         }
     },
 
     "buttons": {
         "submitReport": "Submit Report",
-        "submitting": "Submitting..."
+        "submitting": "Submitting...",
+        "next": "Next",
+        "back": "Back"
     },
 
     "errors": {
         "maxPhotos": "You can upload a maximum of 5 photos",
-        "nameRequired": "First name and last name are required",
+        "nameRequired": "Name is required",
         "photoRequired": "Please upload at least one photo",
         "locationRequired": "City and last known location are required",
         "submitFailed": "Failed to submit report. Please try again.",
         "notLoggedIn": "You must be logged in to submit a report.",
-        "legalConfirmationRequired": "You must confirm the above statement to submit the report."
+        "legalConfirmationRequired": "You must confirm the legal statement to submit the report.",
+        "typeRequired": "Please select the type of item you are reporting"
     },
 
     "validation": {
+        "reportType": "Please select what you are reporting",
         "photo": "At least one photo is required",
         "firstName": "First name is required",
         "lastName": "Last name is required",
         "city": "City is required",
         "lastKnownLocation": "Last known location is required",
-        "legalConfirmation": "You must agree to the legal confirmation"
+        "legalConfirmation": "You must agree to the legal confirmation",
+        "petName": "Pet name is required",
+        "petType": "Pet type is required",
+        "documentType": "Document type is required",
+        "deviceType": "Device type is required",
+        "deviceBrand": "Device brand is required",
+        "vehicleType": "Vehicle type is required",
+        "vehicleBrand": "Vehicle brand is required",
+        "itemName": "Item name is required"
     },
 
     "success": {
@@ -90,5 +241,5 @@
         "redirecting": "Redirecting to your reports..."
     },
 
-    "legalConfirmation": "I confirm that the information provided is true and that providing information about people who are not missing, for the purpose of defamation or any other reason, is prohibited and may expose me to legal action."
+    "legalConfirmation": "I confirm that the information provided is true and accurate. I understand that providing false information may expose me to legal action."
 }

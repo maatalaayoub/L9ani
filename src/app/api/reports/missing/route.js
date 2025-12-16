@@ -1,7 +1,41 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 
-// POST - Create a new missing person report
+// Helper to get report details based on type
+async function getReportDetails(reportId, reportType) {
+    const detailTableMap = {
+        'person': 'report_details_person',
+        'pet': 'report_details_pet',
+        'document': 'report_details_document',
+        'electronics': 'report_details_electronics',
+        'vehicle': 'report_details_vehicle',
+        'other': 'report_details_other'
+    };
+    
+    const tableName = detailTableMap[reportType];
+    if (!tableName) return null;
+    
+    try {
+        const { data, error } = await supabaseAdmin
+            .from(tableName)
+            .select('*')
+            .eq('report_id', reportId)
+            .maybeSingle();
+        
+        if (error) {
+            console.log(`[API Reports] Error fetching details from ${tableName}:`, error.message);
+            return null;
+        }
+        
+        return data;
+    } catch (err) {
+        console.log(`[API Reports] Exception fetching details:`, err.message);
+        return null;
+    }
+}
+
+// POST - Create a new person report (legacy endpoint - for backward compatibility)
+// Note: New reports should use /api/reports with report_type specified
 export async function POST(request) {
     try {
         if (!supabaseAdmin) {
@@ -26,7 +60,7 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        console.log('[API Reports POST] Creating report for user:', user.id);
+        console.log('[API Reports POST] Creating person report for user:', user.id);
 
         // Parse form data
         const formData = await request.formData();
@@ -59,9 +93,10 @@ export async function POST(request) {
             }
         }
 
-        // Handle photo uploads (optional - report can be created without photos in storage)
+        // Handle photo uploads - using new unified bucket
         const photoUrls = [];
         const photoFiles = formData.getAll('photos');
+        const STORAGE_BUCKET = 'reports-photos';
         
         if (photoFiles && photoFiles.length > 0) {
             console.log('[API Reports] Processing', photoFiles.length, 'photos');
@@ -69,17 +104,15 @@ export async function POST(request) {
             for (const file of photoFiles) {
                 if (file && file.size > 0) {
                     try {
-                        // Generate unique filename
                         const fileExt = file.name.split('.').pop() || 'jpg';
-                        const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+                        // Organize by: person/userId/timestamp-random.ext
+                        const fileName = `person/${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
                         
-                        // Convert file to buffer
                         const arrayBuffer = await file.arrayBuffer();
                         const buffer = Buffer.from(arrayBuffer);
                         
-                        // Upload to Supabase Storage
                         const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
-                            .from('missing-persons-photos')
+                            .from(STORAGE_BUCKET)
                             .upload(fileName, buffer, {
                                 contentType: file.type || 'image/jpeg',
                                 upsert: false
@@ -87,12 +120,9 @@ export async function POST(request) {
                         
                         if (uploadError) {
                             console.error('[API Reports] Photo upload error:', uploadError.message);
-                            // If bucket doesn't exist or other storage error, continue without photos
-                            // The report will still be created, just without photos in storage
                         } else {
-                            // Get public URL
                             const { data: urlData } = supabaseAdmin.storage
-                                .from('missing-persons-photos')
+                                .from(STORAGE_BUCKET)
                                 .getPublicUrl(fileName);
                             
                             if (urlData?.publicUrl) {
@@ -102,21 +132,15 @@ export async function POST(request) {
                         }
                     } catch (photoErr) {
                         console.error('[API Reports] Photo processing error:', photoErr);
-                        // Continue with other photos
                     }
                 }
             }
         }
 
-        // Insert report into database
+        // Insert into modular reports table
         const reportData = {
             user_id: user.id,
-            first_name: firstName,
-            last_name: lastName,
-            date_of_birth: dateOfBirth || null,
-            gender: gender || null,
-            health_status: healthStatus || null,
-            health_details: healthDetails || null,
+            report_type: 'person',
             city: city,
             last_known_location: lastKnownLocation,
             coordinates: coordinates,
@@ -127,10 +151,10 @@ export async function POST(request) {
             updated_at: new Date().toISOString()
         };
 
-        console.log('[API Reports] Inserting report:', { ...reportData, photos: photoUrls.length + ' photos' });
+        console.log('[API Reports] Inserting report into reports table');
 
         const { data: report, error: insertError } = await supabaseAdmin
-            .from('missing_persons')
+            .from('reports')
             .insert(reportData)
             .select()
             .single();
@@ -140,11 +164,33 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Failed to create report: ' + insertError.message }, { status: 500 });
         }
 
+        // Insert person details
+        const personDetails = {
+            report_id: report.id,
+            first_name: firstName,
+            last_name: lastName,
+            date_of_birth: dateOfBirth || null,
+            gender: gender || null,
+            health_status: healthStatus || null,
+            health_details: healthDetails || null
+        };
+
+        const { error: detailsError } = await supabaseAdmin
+            .from('report_details_person')
+            .insert(personDetails);
+
+        if (detailsError) {
+            console.error('[API Reports] Person details insert error:', detailsError);
+            // Delete the main report since details failed
+            await supabaseAdmin.from('reports').delete().eq('id', report.id);
+            return NextResponse.json({ error: 'Failed to create report details' }, { status: 500 });
+        }
+
         console.log('[API Reports] Report created successfully:', report.id);
 
         return NextResponse.json({ 
             success: true, 
-            report: report 
+            report: { ...report, first_name: firstName, last_name: lastName }
         }, { status: 201 });
 
     } catch (err) {
@@ -153,7 +199,7 @@ export async function POST(request) {
     }
 }
 
-// GET - Get user's missing person reports
+// GET - Get user's reports
 export async function GET(request) {
     try {
         if (!supabaseAdmin) {
@@ -171,16 +217,9 @@ export async function GET(request) {
         }
 
         const token = authHeader.split(' ')[1];
-        console.log('[API Reports GET] Token length:', token?.length);
         
         // Verify user token using admin client
         const { data, error: authError } = await supabaseAdmin.auth.getUser(token);
-        
-        console.log('[API Reports GET] Auth result:', { 
-            hasUser: !!data?.user, 
-            userId: data?.user?.id,
-            error: authError?.message 
-        });
         
         if (authError || !data?.user) {
             console.error('[API Reports GET] Auth error:', authError?.message);
@@ -190,21 +229,39 @@ export async function GET(request) {
         const user = data.user;
         console.log('[API Reports GET] Fetching reports for user:', user.id);
 
-        // Fetch user's reports
-        const { data: reports, error: fetchError } = await supabaseAdmin
-            .from('missing_persons')
+        // Fetch from reports table
+        const { data: reports, error: reportsError } = await supabaseAdmin
+            .from('reports')
             .select('*')
             .eq('user_id', user.id)
             .order('created_at', { ascending: false });
 
-        if (fetchError) {
-            console.error('[API Reports GET] Fetch error:', fetchError);
+        if (reportsError) {
+            console.error('[API Reports GET] Error fetching reports:', reportsError.message);
             return NextResponse.json({ error: 'Failed to fetch reports' }, { status: 500 });
         }
 
-        console.log('[API Reports GET] Found', reports?.length || 0, 'reports');
+        // Fetch details for each report based on type
+        const reportsWithDetails = await Promise.all(
+            (reports || []).map(async (report) => {
+                const details = await getReportDetails(report.id, report.report_type);
+                return {
+                    ...report,
+                    details: details || {},
+                    // Flatten for backward compatibility with my-report page
+                    first_name: details?.first_name || details?.pet_name || details?.item_name || details?.brand || null,
+                    last_name: details?.last_name || details?.model || null,
+                    date_of_birth: details?.date_of_birth || null,
+                    gender: details?.gender || null,
+                    health_status: details?.health_status || null,
+                    health_details: details?.health_details || null,
+                };
+            })
+        );
 
-        return NextResponse.json({ reports: reports || [] });
+        console.log('[API Reports GET] Total reports:', reportsWithDetails.length);
+
+        return NextResponse.json({ reports: reportsWithDetails });
 
     } catch (err) {
         console.error('[API Reports] Exception:', err);
@@ -212,7 +269,7 @@ export async function GET(request) {
     }
 }
 
-// PUT - Update an existing missing person report
+// PUT - Update an existing report
 export async function PUT(request) {
     try {
         if (!supabaseAdmin) {
@@ -238,19 +295,64 @@ export async function PUT(request) {
 
         // Parse request body
         const body = await request.json();
-        const { reportId, firstName, lastName, dateOfBirth, gender, healthStatus, healthDetails, city, lastKnownLocation, coordinates, additionalInfo, resubmit } = body;
+        const { 
+            reportId, 
+            reportType,
+            // Common fields
+            city, 
+            lastKnownLocation, 
+            coordinates, 
+            additionalInfo, 
+            resubmit,
+            // Person fields
+            firstName, 
+            lastName, 
+            dateOfBirth, 
+            gender, 
+            healthStatus, 
+            healthDetails,
+            // Pet fields
+            petName,
+            petType,
+            petBreed,
+            petColor,
+            petSize,
+            // Document fields
+            documentType,
+            documentNumber,
+            documentIssuer,
+            ownerName,
+            // Electronics fields
+            deviceType,
+            deviceBrand,
+            deviceModel,
+            deviceColor,
+            serialNumber,
+            // Vehicle fields
+            vehicleType,
+            vehicleBrand,
+            vehicleModel,
+            vehicleColor,
+            vehicleYear,
+            licensePlate,
+            // Other fields
+            itemName,
+            itemDescription
+        } = body;
 
         if (!reportId) {
             return NextResponse.json({ error: 'Report ID is required' }, { status: 400 });
         }
 
-        // Verify the report belongs to this user and is editable
+        console.log('[API Reports PUT] Updating report:', reportId, 'for user:', user.id);
+
+        // Find the report
         const { data: existingReport, error: fetchError } = await supabaseAdmin
-            .from('missing_persons')
+            .from('reports')
             .select('*')
             .eq('id', reportId)
             .eq('user_id', user.id)
-            .single();
+            .maybeSingle();
 
         if (fetchError || !existingReport) {
             console.error('[API Reports PUT] Report not found or not owned by user');
@@ -262,14 +364,8 @@ export async function PUT(request) {
             return NextResponse.json({ error: 'Cannot edit approved reports' }, { status: 403 });
         }
 
-        // Build update object
+        // Update main report table
         const updateData = {
-            first_name: firstName || existingReport.first_name,
-            last_name: lastName || existingReport.last_name,
-            date_of_birth: dateOfBirth || existingReport.date_of_birth,
-            gender: gender || existingReport.gender,
-            health_status: healthStatus || existingReport.health_status,
-            health_details: healthDetails || existingReport.health_details,
             city: city || existingReport.city,
             last_known_location: lastKnownLocation || existingReport.last_known_location,
             coordinates: coordinates || existingReport.coordinates,
@@ -285,10 +381,8 @@ export async function PUT(request) {
             updateData.reviewed_by = null;
         }
 
-        console.log('[API Reports PUT] Updating report:', reportId);
-
         const { data: updatedReport, error: updateError } = await supabaseAdmin
-            .from('missing_persons')
+            .from('reports')
             .update(updateData)
             .eq('id', reportId)
             .select()
@@ -299,12 +393,86 @@ export async function PUT(request) {
             return NextResponse.json({ error: 'Failed to update report' }, { status: 500 });
         }
 
-        console.log('[API Reports PUT] Report updated successfully');
+        // Update the detail table based on report type
+        const detailTableMap = {
+            'person': 'report_details_person',
+            'pet': 'report_details_pet',
+            'document': 'report_details_document',
+            'electronics': 'report_details_electronics',
+            'vehicle': 'report_details_vehicle',
+            'other': 'report_details_other'
+        };
 
-        return NextResponse.json({ 
-            success: true, 
-            report: updatedReport 
-        });
+        const detailTable = detailTableMap[existingReport.report_type];
+        
+        if (detailTable) {
+            let detailUpdateData = {};
+            
+            switch (existingReport.report_type) {
+                case 'person':
+                    detailUpdateData = {
+                        first_name: firstName,
+                        last_name: lastName,
+                        date_of_birth: dateOfBirth || null,
+                        gender: gender || null,
+                        health_status: healthStatus || null,
+                        health_details: healthDetails || null
+                    };
+                    break;
+                case 'pet':
+                    detailUpdateData = {
+                        pet_name: petName,
+                        pet_type: petType,
+                        breed: petBreed || null,
+                        color: petColor || null,
+                        size: petSize || null
+                    };
+                    break;
+                case 'document':
+                    detailUpdateData = {
+                        document_type: documentType,
+                        document_number: documentNumber || null,
+                        issuing_authority: documentIssuer || null,
+                        owner_name: ownerName || null
+                    };
+                    break;
+                case 'electronics':
+                    detailUpdateData = {
+                        device_type: deviceType,
+                        brand: deviceBrand,
+                        model: deviceModel || null,
+                        color: deviceColor || null,
+                        serial_number: serialNumber || null
+                    };
+                    break;
+                case 'vehicle':
+                    detailUpdateData = {
+                        vehicle_type: vehicleType,
+                        brand: vehicleBrand,
+                        model: vehicleModel || null,
+                        color: vehicleColor || null,
+                        year: vehicleYear || null,
+                        plate_number: licensePlate || null
+                    };
+                    break;
+                case 'other':
+                    detailUpdateData = {
+                        item_name: itemName,
+                        description: itemDescription || null
+                    };
+                    break;
+            }
+            
+            if (Object.keys(detailUpdateData).length > 0) {
+                await supabaseAdmin
+                    .from(detailTable)
+                    .update(detailUpdateData)
+                    .eq('report_id', reportId);
+            }
+        }
+
+        console.log('[API Reports PUT] Report updated successfully');
+        return NextResponse.json({ success: true, report: updatedReport });
 
     } catch (err) {
         console.error('[API Reports PUT] Exception:', err);
@@ -312,7 +480,7 @@ export async function PUT(request) {
     }
 }
 
-// DELETE - Delete a missing person report
+// DELETE - Delete a report
 export async function DELETE(request) {
     try {
         if (!supabaseAdmin) {
@@ -346,13 +514,13 @@ export async function DELETE(request) {
 
         console.log('[API Reports DELETE] Deleting report:', reportId, 'for user:', user.id);
 
-        // Verify the report belongs to this user
+        // Find the report
         const { data: existingReport, error: fetchError } = await supabaseAdmin
-            .from('missing_persons')
-            .select('id, user_id, photos')
+            .from('reports')
+            .select('id, user_id, photos, report_type')
             .eq('id', reportId)
             .eq('user_id', user.id)
-            .single();
+            .maybeSingle();
 
         if (fetchError || !existingReport) {
             console.error('[API Reports DELETE] Report not found or not owned by user');
@@ -360,29 +528,53 @@ export async function DELETE(request) {
         }
 
         // Delete associated photos from storage if they exist
+        const STORAGE_BUCKET = 'reports-photos';
         if (existingReport.photos && existingReport.photos.length > 0) {
             console.log('[API Reports DELETE] Deleting', existingReport.photos.length, 'photos');
             for (const photoUrl of existingReport.photos) {
                 try {
-                    // Extract file path from URL
-                    const urlParts = photoUrl.split('/missing-persons-photos/');
-                    if (urlParts.length > 1) {
-                        const filePath = urlParts[1];
+                    // Extract file path from URL (handles both old and new bucket names)
+                    let filePath = null;
+                    if (photoUrl.includes('/reports-photos/')) {
+                        filePath = photoUrl.split('/reports-photos/')[1];
+                    } else if (photoUrl.includes('/missing-persons-photos/')) {
+                        // Handle old bucket format for backward compatibility
+                        filePath = photoUrl.split('/missing-persons-photos/')[1];
+                    }
+                    if (filePath) {
                         await supabaseAdmin.storage
-                            .from('missing-persons-photos')
+                            .from(STORAGE_BUCKET)
                             .remove([filePath]);
                         console.log('[API Reports DELETE] Deleted photo:', filePath);
                     }
                 } catch (photoErr) {
                     console.error('[API Reports DELETE] Error deleting photo:', photoErr);
-                    // Continue with deletion even if photo removal fails
                 }
             }
         }
 
-        // Delete the report
+        // Delete from detail table first (due to foreign key constraint)
+        const detailTableMap = {
+            'person': 'report_details_person',
+            'pet': 'report_details_pet',
+            'document': 'report_details_document',
+            'electronics': 'report_details_electronics',
+            'vehicle': 'report_details_vehicle',
+            'other': 'report_details_other'
+        };
+        
+        const detailTable = detailTableMap[existingReport.report_type];
+        if (detailTable) {
+            await supabaseAdmin
+                .from(detailTable)
+                .delete()
+                .eq('report_id', reportId);
+            console.log('[API Reports DELETE] Deleted details from', detailTable);
+        }
+
+        // Delete the main report
         const { error: deleteError } = await supabaseAdmin
-            .from('missing_persons')
+            .from('reports')
             .delete()
             .eq('id', reportId)
             .eq('user_id', user.id);

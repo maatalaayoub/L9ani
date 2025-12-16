@@ -9,7 +9,11 @@ async function verifyAdmin(userId) {
     }
     
     console.log('[Admin Reports] verifyAdmin: Checking userId:', userId);
-    console.log('[Admin Reports] verifyAdmin: supabaseAdmin exists:', !!supabaseAdmin);
+    
+    if (!supabaseAdmin) {
+        console.error('[Admin Reports] verifyAdmin: supabaseAdmin is not configured!');
+        return false;
+    }
     
     try {
         const { data, error } = await supabaseAdmin
@@ -26,6 +30,10 @@ async function verifyAdmin(userId) {
         });
         
         if (error) {
+            if (error.code === '42P01' || error.message?.includes('does not exist')) {
+                console.log('[Admin Reports] verifyAdmin: admin_users table does not exist');
+                return true; // Allow legacy behavior
+            }
             console.error('[Admin Reports] verifyAdmin error:', error);
             return false;
         }
@@ -40,78 +48,218 @@ async function verifyAdmin(userId) {
     }
 }
 
+// Helper to get report details based on type
+async function getReportDetails(reportId, reportType) {
+    const detailTableMap = {
+        'person': 'report_details_person',
+        'pet': 'report_details_pet',
+        'document': 'report_details_document',
+        'electronics': 'report_details_electronics',
+        'vehicle': 'report_details_vehicle',
+        'other': 'report_details_other'
+    };
+    
+    const tableName = detailTableMap[reportType];
+    if (!tableName) return null;
+    
+    try {
+        const { data, error } = await supabaseAdmin
+            .from(tableName)
+            .select('*')
+            .eq('report_id', reportId)
+            .maybeSingle();
+        
+        if (error) {
+            console.error(`[Admin Reports] Error fetching details from ${tableName}:`, error);
+            return null;
+        }
+        
+        return data;
+    } catch (err) {
+        console.error(`[Admin Reports] Exception fetching details:`, err);
+        return null;
+    }
+}
+
+// GET - Fetch all reports for admin
 export async function GET(request) {
     try {
         if (!supabaseAdmin) {
             console.error('[API Admin Reports] supabaseAdmin is not configured');
-            return NextResponse.json({ error: 'Server configuration error - supabaseAdmin not configured' }, { status: 500 });
+            return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
         }
 
         const { searchParams } = new URL(request.url);
         const userId = searchParams.get('userId');
-        const type = searchParams.get('type') || 'missing'; // 'missing' or 'sighting'
         const status = searchParams.get('status') || 'all'; // 'pending', 'approved', 'rejected', 'all'
         const page = parseInt(searchParams.get('page') || '1');
         const limit = parseInt(searchParams.get('limit') || '10');
+        const search = searchParams.get('search') || '';
 
-        console.log('[API Admin Reports] Request params:', { userId, type, status, page, limit });
+        console.log('[API Admin Reports] Request params:', { userId, status, page, limit, search });
 
         // Verify admin status
-        let isAdmin = false;
-        try {
-            isAdmin = await verifyAdmin(userId);
-        } catch (adminErr) {
-            console.error('[API Admin Reports] Error verifying admin:', adminErr);
-            // If admin_users table doesn't exist, return helpful error
-            if (adminErr.message?.includes('does not exist')) {
-                return NextResponse.json({ 
-                    error: 'Database tables not set up. Please run the migration SQL in Supabase.',
-                    details: 'admin_users table not found'
-                }, { status: 500 });
-            }
-            return NextResponse.json({ error: 'Failed to verify admin status' }, { status: 500 });
-        }
-
+        const isAdmin = await verifyAdmin(userId);
         if (!isAdmin) {
             return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
         }
 
         const offset = (page - 1) * limit;
-        const tableName = type === 'sighting' ? 'sightings' : 'missing_persons';
 
-        console.log('[API Admin Reports] Querying table:', tableName);
+        // If search is provided, we need to search across reports and profiles
+        let reportIds = null;
+        if (search.trim()) {
+            const searchTerm = search.trim().toLowerCase();
+            console.log('[API Admin Reports] Searching for:', searchTerm);
+            
+            // First, get all profiles to search through
+            const { data: allProfiles, error: profileError } = await supabaseAdmin
+                .from('profiles')
+                .select('auth_user_id, user_id, username, first_name, last_name');
+            
+            if (profileError) {
+                console.error('[API Admin Reports] Profile fetch error:', profileError);
+            }
+            
+            console.log('[API Admin Reports] Total profiles:', allProfiles?.length || 0);
+            if (allProfiles && allProfiles.length > 0) {
+                console.log('[API Admin Reports] Sample profile:', allProfiles[0]);
+            }
+            
+            // Filter profiles that match the search term
+            const matchingProfiles = (allProfiles || []).filter(profile => {
+                // Check username
+                const usernameMatch = profile.username && profile.username.toLowerCase().includes(searchTerm);
+                // Check first_name
+                const firstNameMatch = profile.first_name && profile.first_name.toLowerCase().includes(searchTerm);
+                // Check last_name
+                const lastNameMatch = profile.last_name && profile.last_name.toLowerCase().includes(searchTerm);
+                // Check numeric user_id (convert to string for comparison)
+                const userIdMatch = profile.user_id && String(profile.user_id).includes(searchTerm);
+                
+                return usernameMatch || firstNameMatch || lastNameMatch || userIdMatch;
+            });
+            
+            console.log('[API Admin Reports] Matching profiles:', matchingProfiles.length);
+            
+            const matchingAuthUserIds = matchingProfiles.map(p => p.auth_user_id).filter(Boolean);
+            console.log('[API Admin Reports] Matching auth_user_ids from profiles:', matchingAuthUserIds);
+
+            // Get all reports first, then filter by ID or user_id match
+            const { data: allReports, error: allReportsError } = await supabaseAdmin
+                .from('reports')
+                .select('id, user_id');
+            
+            if (allReportsError) {
+                console.error('[API Admin Reports] Reports fetch error:', allReportsError);
+            }
+            
+            console.log('[API Admin Reports] Total reports found:', allReports?.length || 0);
+
+            // Filter reports that match by report ID, auth user_id, or belong to matching profiles
+            reportIds = (allReports || []).filter(report => {
+                // Normalize IDs by removing dashes for comparison
+                const normalizedSearchTerm = searchTerm.replace(/-/g, '');
+                const normalizedReportId = report.id ? report.id.toLowerCase().replace(/-/g, '') : '';
+                const normalizedUserId = report.user_id ? report.user_id.toLowerCase().replace(/-/g, '') : '';
+                
+                // Check if report ID contains the search term (with or without dashes)
+                const idMatch = normalizedReportId.includes(normalizedSearchTerm) || 
+                               (report.id && report.id.toLowerCase().includes(searchTerm));
+                // Check if report's user_id (auth UUID) contains the search term
+                const authUserIdMatch = normalizedUserId.includes(normalizedSearchTerm) ||
+                                   (report.user_id && report.user_id.toLowerCase().includes(searchTerm));
+                // Check if the user_id is in the list of matching profile auth_user_ids (matched by username or numeric user_id)
+                const profileMatch = matchingAuthUserIds.includes(report.user_id);
+                
+                return idMatch || authUserIdMatch || profileMatch;
+            }).map(r => r.id);
+            
+            console.log('[API Admin Reports] Final matching report IDs count:', reportIds.length);
+            
+            // If no matching reports found, return empty
+            if (reportIds.length === 0) {
+                return NextResponse.json({
+                    reports: [],
+                    pagination: {
+                        total: 0,
+                        page,
+                        limit,
+                        totalPages: 0
+                    }
+                });
+            }
+        }
 
         // Build query
         let query = supabaseAdmin
-            .from(tableName)
+            .from('reports')
             .select('*', { count: 'exact' });
+
+        // Filter by matching report IDs if search was performed
+        if (reportIds) {
+            query = query.in('id', reportIds);
+        }
 
         // Filter by status if not 'all'
         if (status !== 'all') {
             query = query.eq('status', status);
         }
 
-        // Order by created_at descending (newest first) and paginate
-        const { data, error, count } = await query
-            .order('created_at', { ascending: false })
+        // Order by updated_at descending so resubmitted reports appear at the top
+        // This ensures when a rejected report is edited and resubmitted, it shows at the top like a new report
+        const { data: reportsData, error: reportsError, count } = await query
+            .order('updated_at', { ascending: false })
             .range(offset, offset + limit - 1);
 
-        if (error) {
-            console.error('[API Admin Reports] Error fetching reports:', error);
-            // Check if table doesn't exist
-            if (error.message?.includes('does not exist') || error.code === '42P01') {
-                return NextResponse.json({ 
-                    error: `Database table "${tableName}" not found. Please run the migration SQL in Supabase.`,
-                    details: error.message
-                }, { status: 500 });
-            }
-            return NextResponse.json({ error: error.message }, { status: 500 });
+        if (reportsError) {
+            console.error('[API Admin Reports] Error fetching reports:', reportsError);
+            return NextResponse.json({ error: reportsError.message }, { status: 500 });
         }
+
+        // Fetch details for each report based on its type, and include user profile
+        const reportsWithDetails = await Promise.all(
+            (reportsData || []).map(async (report) => {
+                const details = await getReportDetails(report.id, report.report_type);
+                
+                // Fetch user profile for the reporter from 'profiles' table
+                let userProfile = null;
+                if (report.user_id) {
+                    const { data: profileData, error: profileError } = await supabaseAdmin
+                        .from('profiles')
+                        .select('user_id, username, first_name, last_name, avatar_url')
+                        .eq('auth_user_id', report.user_id)
+                        .maybeSingle();
+                    
+                    if (!profileError && profileData) {
+                        userProfile = profileData;
+                    }
+                }
+                
+                return {
+                    ...report,
+                    details: details || {},
+                    // Flatten common fields for display compatibility
+                    first_name: details?.first_name || details?.pet_name || details?.item_name || details?.brand || null,
+                    last_name: details?.last_name || details?.model || null,
+                    // Include reporter info - always include auth user_id as fallback
+                    reporter: {
+                        auth_id: report.user_id,
+                        user_id: userProfile?.user_id || null,
+                        username: userProfile?.username || null,
+                        name: userProfile ? ([userProfile.first_name, userProfile.last_name].filter(Boolean).join(' ') || userProfile.username) : null,
+                        first_name: userProfile?.first_name || null,
+                        last_name: userProfile?.last_name || null,
+                        profile_picture: userProfile?.avatar_url || null
+                    }
+                };
+            })
+        );
 
         console.log('[API Admin Reports] Found', count, 'reports');
 
         return NextResponse.json({
-            reports: data || [],
+            reports: reportsWithDetails,
             pagination: {
                 total: count || 0,
                 page,
@@ -125,6 +273,7 @@ export async function GET(request) {
     }
 }
 
+// PATCH - Update report status (approve/reject)
 export async function PATCH(request) {
     try {
         if (!supabaseAdmin) {
@@ -133,10 +282,10 @@ export async function PATCH(request) {
         }
 
         const body = await request.json();
-        const { userId, reportId, type, action, rejectionReason } = body;
+        const { userId, reportId, action, rejectionReason } = body;
 
         // Validate required fields
-        if (!userId || !reportId || !type || !action) {
+        if (!userId || !reportId || !action) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
@@ -151,7 +300,6 @@ export async function PATCH(request) {
             return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
         }
 
-        const tableName = type === 'sighting' ? 'sightings' : 'missing_persons';
         const newStatus = action === 'approve' ? 'approved' : 'rejected';
 
         // Update the report status
@@ -167,28 +315,34 @@ export async function PATCH(request) {
         }
 
         const { data, error } = await supabaseAdmin
-            .from(tableName)
+            .from('reports')
             .update(updateData)
             .eq('id', reportId)
-            .select()
-            .single();
+            .select();
 
         if (error) {
-            console.error('[API Admin Reports] Error updating report:', error);
+            console.error('[API Admin Reports PATCH] Error updating report:', error);
             return NextResponse.json({ error: error.message }, { status: 500 });
         }
+
+        if (!data || data.length === 0) {
+            return NextResponse.json({ error: 'Report not found' }, { status: 404 });
+        }
+
+        console.log('[API Admin Reports PATCH] Updated report:', reportId, 'to status:', newStatus);
 
         return NextResponse.json({
             success: true,
             message: `Report ${newStatus} successfully`,
-            report: data
+            report: data[0]
         });
     } catch (err) {
-        console.error('[API Admin Reports] Exception:', err);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        console.error('[API Admin Reports PATCH] Exception:', err);
+        return NextResponse.json({ error: 'Internal Server Error: ' + err.message }, { status: 500 });
     }
 }
 
+// DELETE - Delete a report
 export async function DELETE(request) {
     try {
         if (!supabaseAdmin) {
@@ -199,14 +353,13 @@ export async function DELETE(request) {
         const { searchParams } = new URL(request.url);
         const userId = searchParams.get('userId');
         const reportId = searchParams.get('reportId');
-        const type = searchParams.get('type') || 'missing';
 
         // Validate required fields
         if (!userId || !reportId) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        console.log('[API Admin Reports DELETE] Params:', { userId, reportId, type });
+        console.log('[API Admin Reports DELETE] Params:', { userId, reportId });
 
         // Verify admin status
         const isAdmin = await verifyAdmin(userId);
@@ -214,20 +367,74 @@ export async function DELETE(request) {
             return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
         }
 
-        const tableName = type === 'sighting' ? 'sightings' : 'missing_persons';
+        // First get the report to know its type (for deleting from detail table)
+        const { data: report, error: fetchError } = await supabaseAdmin
+            .from('reports')
+            .select('id, report_type, photos')
+            .eq('id', reportId)
+            .maybeSingle();
 
-        // Delete the report
-        const { error } = await supabaseAdmin
-            .from(tableName)
+        if (fetchError || !report) {
+            console.error('[API Admin Reports DELETE] Report not found');
+            return NextResponse.json({ error: 'Report not found' }, { status: 404 });
+        }
+
+        // Delete associated photos from storage if they exist
+        const STORAGE_BUCKET = 'reports-photos';
+        if (report.photos && report.photos.length > 0) {
+            console.log('[API Admin Reports DELETE] Deleting', report.photos.length, 'photos');
+            for (const photoUrl of report.photos) {
+                try {
+                    // Extract file path from URL (handles both old and new bucket names)
+                    let filePath = null;
+                    if (photoUrl.includes('/reports-photos/')) {
+                        filePath = photoUrl.split('/reports-photos/')[1];
+                    } else if (photoUrl.includes('/missing-persons-photos/')) {
+                        // Handle old bucket format for backward compatibility
+                        filePath = photoUrl.split('/missing-persons-photos/')[1];
+                    }
+                    if (filePath) {
+                        await supabaseAdmin.storage
+                            .from(STORAGE_BUCKET)
+                            .remove([filePath]);
+                    }
+                } catch (photoErr) {
+                    console.error('[API Admin Reports DELETE] Error deleting photo:', photoErr);
+                }
+            }
+        }
+
+        // Delete from detail table first (due to foreign key constraint)
+        const detailTableMap = {
+            'person': 'report_details_person',
+            'pet': 'report_details_pet',
+            'document': 'report_details_document',
+            'electronics': 'report_details_electronics',
+            'vehicle': 'report_details_vehicle',
+            'other': 'report_details_other'
+        };
+        
+        const detailTable = detailTableMap[report.report_type];
+        if (detailTable) {
+            await supabaseAdmin
+                .from(detailTable)
+                .delete()
+                .eq('report_id', reportId);
+            console.log('[API Admin Reports DELETE] Deleted details from', detailTable);
+        }
+
+        // Delete the main report
+        const { error: deleteError } = await supabaseAdmin
+            .from('reports')
             .delete()
             .eq('id', reportId);
 
-        if (error) {
-            console.error('[API Admin Reports DELETE] Error deleting report:', error);
-            return NextResponse.json({ error: error.message }, { status: 500 });
+        if (deleteError) {
+            console.error('[API Admin Reports DELETE] Error deleting report:', deleteError);
+            return NextResponse.json({ error: deleteError.message }, { status: 500 });
         }
 
-        console.log('[API Admin Reports DELETE] Report deleted successfully:', reportId);
+        console.log('[API Admin Reports DELETE] Report deleted:', reportId);
 
         return NextResponse.json({
             success: true,
