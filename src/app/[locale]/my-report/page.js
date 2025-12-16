@@ -832,9 +832,28 @@ export default function MyReport() {
                                         </div>
                                         <div className="flex items-center gap-2 mt-2">
                                             <span className="text-xs text-white/70">{t('modal.reportId')}:</span>
-                                            <code className="text-xs bg-white/20 backdrop-blur-sm px-2 py-1 rounded text-white font-mono truncate max-w-[200px]" title={selectedReport.id}>
+                                            <code className="text-xs bg-white/20 backdrop-blur-sm px-2 py-1 rounded text-white font-mono">
                                                 {selectedReport.id}
                                             </code>
+                                            <button
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(selectedReport.id);
+                                                    setCopiedReportId(true);
+                                                    setTimeout(() => setCopiedReportId(false), 2000);
+                                                }}
+                                                className="p-1 hover:bg-white/20 rounded transition-colors"
+                                                title={copiedReportId ? t('modal.copied') || 'Copied!' : t('modal.copyId') || 'Copy ID'}
+                                            >
+                                                {copiedReportId ? (
+                                                    <svg className="w-4 h-4 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                ) : (
+                                                    <svg className="w-4 h-4 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                    </svg>
+                                                )}
+                                            </button>
                                         </div>
                                     </div>
                                     <button

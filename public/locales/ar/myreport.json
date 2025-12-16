@@ -31,6 +31,8 @@
     "modal": {
         "title": "تفاصيل البلاغ",
         "reportId": "معرف البلاغ",
+        "copyId": "نسخ المعرف",
+        "copied": "تم النسخ!",
         "missingPersonInfo": "معلومات الشخص المفقود",
         "fullName": "الاسم الكامل",
         "dateOfBirth": "تاريخ الميلاد",

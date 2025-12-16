@@ -31,6 +31,8 @@
     "modal": {
         "title": "Report Details",
         "reportId": "Report ID",
+        "copyId": "Copy ID",
+        "copied": "Copied!",
         "missingPersonInfo": "Missing Person Information",
         "fullName": "Full Name",
         "dateOfBirth": "Date of Birth",
