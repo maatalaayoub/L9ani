@@ -1,6 +1,5 @@
 "use client"
 
-import { Link } from "@/i18n/navigation";
 import { useEffect, useState, useRef } from "react";
 import { useTranslations } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";

@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
-import { Link } from '@/i18n/navigation';
 import { useTranslations } from "@/context/LanguageContext";
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';

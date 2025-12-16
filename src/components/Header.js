@@ -15,7 +15,7 @@ export default function Header() {
     const [isAdmin, setIsAdmin] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     const pathname = usePathname();
-    const { isSearchFocused, user, profile, logout, isAuthLoading } = useAuth();
+    const { user, profile, logout, isAuthLoading } = useAuth();
     const t = useTranslations('header');
     const { locale } = useLanguage();
     const tCommon = useTranslations('common');

@@ -1,6 +1,16 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 
+// Detail table names mapping
+const DETAIL_TABLE_MAP = {
+    'person': 'report_details_person',
+    'pet': 'report_details_pet',
+    'document': 'report_details_document',
+    'electronics': 'report_details_electronics',
+    'vehicle': 'report_details_vehicle',
+    'other': 'report_details_other'
+};
+
 // Helper to verify admin status
 async function verifyAdmin(userId) {
     if (!userId) {
@@ -50,16 +60,7 @@ async function verifyAdmin(userId) {
 
 // Helper to get report details based on type
 async function getReportDetails(reportId, reportType) {
-    const detailTableMap = {
-        'person': 'report_details_person',
-        'pet': 'report_details_pet',
-        'document': 'report_details_document',
-        'electronics': 'report_details_electronics',
-        'vehicle': 'report_details_vehicle',
-        'other': 'report_details_other'
-    };
-    
-    const tableName = detailTableMap[reportType];
+    const tableName = DETAIL_TABLE_MAP[reportType];
     if (!tableName) return null;
     
     try {
@@ -405,16 +406,7 @@ export async function DELETE(request) {
         }
 
         // Delete from detail table first (due to foreign key constraint)
-        const detailTableMap = {
-            'person': 'report_details_person',
-            'pet': 'report_details_pet',
-            'document': 'report_details_document',
-            'electronics': 'report_details_electronics',
-            'vehicle': 'report_details_vehicle',
-            'other': 'report_details_other'
-        };
-        
-        const detailTable = detailTableMap[report.report_type];
+        const detailTable = DETAIL_TABLE_MAP[report.report_type];
         if (detailTable) {
             await supabaseAdmin
                 .from(detailTable)

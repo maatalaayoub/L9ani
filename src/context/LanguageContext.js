@@ -70,7 +70,7 @@ async function loadTranslationsForLocale(locale) {
 export function LanguageProvider({ children }) {
     const pathname = usePathname();
     const router = useRouter();
-    const [isPending, startTransition] = useTransition();
+    const [, startTransition] = useTransition();
     
     // Initialize locale from URL path immediately to prevent flash
     const [locale, setLocale] = useState(() => getInitialLocale(pathname));
