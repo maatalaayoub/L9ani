@@ -148,6 +148,15 @@ export default function AdminPage() {
     // Copy state for report ID
     const [copiedReportId, setCopiedReportId] = useState(false);
 
+    // Track if initial load has been done
+    const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
+    
+    // Track if background refresh is in progress
+    const [isBackgroundRefreshing, setIsBackgroundRefreshing] = useState(false);
+    
+    // Last refresh time for display
+    const [lastRefreshTime, setLastRefreshTime] = useState(null);
+
     // Fetch stats for all statuses
     const fetchStats = useCallback(async () => {
         if (!user || !isAdmin) return;
@@ -179,11 +188,15 @@ export default function AdminPage() {
         }
     }, [user, isAdmin, activeTab]);
 
-    // Fetch reports
-    const fetchReports = useCallback(async () => {
+    // Fetch reports (with option for background refresh)
+    const fetchReports = useCallback(async (isBackground = false) => {
         if (!user || !isAdmin) return;
 
-        setLoading(true);
+        if (isBackground) {
+            setIsBackgroundRefreshing(true);
+        } else {
+            setLoading(true);
+        }
         setError('');
 
         try {
@@ -214,13 +227,30 @@ export default function AdminPage() {
 
             setReports(data.reports || []);
             setPagination(data.pagination || { total: 0, page: 1, limit: 10, totalPages: 0 });
+            setLastRefreshTime(new Date());
+            
+            if (!hasInitiallyLoaded) {
+                setHasInitiallyLoaded(true);
+            }
         } catch (err) {
             console.error('[Admin] Error fetching reports:', err);
-            setError(err.message || t('messages.fetchError'));
+            if (!isBackground) {
+                setError(err.message || t('messages.fetchError'));
+            }
         } finally {
-            setLoading(false);
+            if (isBackground) {
+                setIsBackgroundRefreshing(false);
+            } else {
+                setLoading(false);
+            }
         }
-    }, [user, isAdmin, activeTab, statusFilter, pagination.page, pagination.limit, debouncedSearch, t]);
+    }, [user, isAdmin, activeTab, statusFilter, pagination.page, pagination.limit, debouncedSearch, t, hasInitiallyLoaded]);
+
+    // Manual refresh function
+    const handleManualRefresh = useCallback(() => {
+        fetchReports(false);
+        fetchStats();
+    }, [fetchReports, fetchStats]);
 
     // Debounce search input
     useEffect(() => {
@@ -234,12 +264,37 @@ export default function AdminPage() {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
+    // Initial load - only once when admin status is confirmed
     useEffect(() => {
-        if (isAdmin) {
-            fetchReports();
+        if (isAdmin && !hasInitiallyLoaded) {
+            fetchReports(false);
             fetchStats();
         }
-    }, [isAdmin, fetchReports, fetchStats]);
+    }, [isAdmin, hasInitiallyLoaded]);
+
+    // Reload when filters change (but not on initial load)
+    useEffect(() => {
+        if (isAdmin && hasInitiallyLoaded) {
+            fetchReports(false);
+            fetchStats();
+        }
+    }, [activeTab, statusFilter, pagination.page, debouncedSearch]);
+
+    // Background polling - check for new reports every 30 seconds
+    useEffect(() => {
+        if (!isAdmin || !hasInitiallyLoaded) return;
+
+        const pollInterval = setInterval(() => {
+            // Only poll if the tab is visible
+            if (document.visibilityState === 'visible') {
+                console.log('[Admin] Background polling for new reports...');
+                fetchReports(true);
+                fetchStats();
+            }
+        }, 30000); // 30 seconds
+
+        return () => clearInterval(pollInterval);
+    }, [isAdmin, hasInitiallyLoaded, fetchReports, fetchStats]);
 
     // Handle approve/reject actions
     const handleAction = async (action) => {
@@ -642,37 +697,78 @@ export default function AdminPage() {
                     </nav>
                 </div>
 
-                {/* Search Bar */}
+                {/* Search Bar and Refresh */}
                 <div className="mb-4">
-                    <div className="relative">
-                        <div className={`absolute inset-y-0 ${isRTL ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center pointer-events-none`}>
-                            <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div>
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder={t('search.placeholder')}
-                            className={`w-full ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200`}
-                        />
-                        {searchQuery && (
-                            <button
-                                onClick={() => setSearchQuery('')}
-                                className={`absolute inset-y-0 ${isRTL ? 'left-0 pl-3' : 'right-0 pr-3'} flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300`}
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <div className="flex items-center gap-3">
+                        <div className="relative flex-1">
+                            <div className={`absolute inset-y-0 ${isRTL ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center pointer-events-none`}>
+                                <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
-                            </button>
-                        )}
+                            </div>
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder={t('search.placeholder')}
+                                className={`w-full ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200`}
+                            />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    className={`absolute inset-y-0 ${isRTL ? 'left-0 pl-3' : 'right-0 pr-3'} flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300`}
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
+                        
+                        {/* Refresh Button */}
+                        <button
+                            onClick={handleManualRefresh}
+                            disabled={loading || isBackgroundRefreshing}
+                            className={`flex items-center gap-2 px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                                (loading || isBackgroundRefreshing) ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                            title={t('actions.refresh') || 'Refresh'}
+                        >
+                            <svg 
+                                className={`w-5 h-5 ${isBackgroundRefreshing ? 'animate-spin' : ''}`} 
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            <span className="hidden sm:inline">{t('actions.refresh') || 'Refresh'}</span>
+                        </button>
                     </div>
-                    {debouncedSearch && (
-                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                            {t('search.resultsFor')} "<span className="font-medium text-gray-700 dark:text-gray-300">{debouncedSearch}</span>"
-                        </p>
-                    )}
+                    
+                    {/* Search results and last refresh info */}
+                    <div className="flex items-center justify-between mt-2">
+                        <div>
+                            {debouncedSearch && (
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    {t('search.resultsFor')} "<span className="font-medium text-gray-700 dark:text-gray-300">{debouncedSearch}</span>"
+                                </p>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
+                            {isBackgroundRefreshing && (
+                                <span className="flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
+                                    {t('messages.updating') || 'Updating...'}
+                                </span>
+                            )}
+                            {lastRefreshTime && !isBackgroundRefreshing && (
+                                <span>
+                                    {t('messages.lastUpdated') || 'Last updated'}: {lastRefreshTime.toLocaleTimeString(locale === 'ar' ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
                 {/* Reports Table */}
@@ -725,7 +821,7 @@ export default function AdminPage() {
                                         {/* Content */}
                                         <div className="flex-1 min-w-0">
                                             {/* Reporter Name & ID */}
-                                            <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                                            <div className="flex items-center gap-2 flex-wrap mb-2">
                                                 <h3 className="text-base font-semibold text-gray-900 dark:text-white">
                                                     {report.reporter?.first_name && report.reporter?.last_name 
                                                         ? `${report.reporter.first_name} ${report.reporter.last_name}`
@@ -750,7 +846,7 @@ export default function AdminPage() {
                                             </div>
 
                                             {/* Report Info Row */}
-                                            <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                            <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-gray-600 dark:text-gray-400 mb-3">
                                                 {/* Report Type */}
                                                 <span className="inline-flex items-center gap-1">
                                                     <ReportTypeIcon type={report.report_type || 'person'} className="w-4 h-4 text-gray-500 dark:text-gray-400" />

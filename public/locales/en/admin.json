@@ -115,7 +115,8 @@
         "approving": "Approving...",
         "rejecting": "Rejecting...",
         "deleting": "Deleting...",
-        "changingStatus": "Changing..."
+        "changingStatus": "Changing...",
+        "refresh": "Refresh"
     },
     
     "modal": {
@@ -185,7 +186,9 @@
         "deleteSuccess": "Report deleted successfully",
         "statusChangeSuccess": "Report status changed successfully",
         "error": "An error occurred. Please try again.",
-        "fetchError": "Failed to load reports. Please try again."
+        "fetchError": "Failed to load reports. Please try again.",
+        "updating": "Updating...",
+        "lastUpdated": "Last updated"
     },
 
     "stats": {
