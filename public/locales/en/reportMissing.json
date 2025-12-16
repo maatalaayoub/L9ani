@@ -241,5 +241,12 @@
         "redirecting": "Redirecting to your reports..."
     },
 
+    "progress": {
+        "uploading": "Uploading your report...",
+        "processing": "Processing your report...",
+        "pleaseWait": "Please wait while we upload your information...",
+        "almostDone": "Almost done, please wait..."
+    },
+
     "legalConfirmation": "I confirm that the information provided is true and accurate. I understand that providing false information may expose me to legal action."
 }

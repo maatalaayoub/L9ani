@@ -126,6 +126,9 @@ export default function MyReport() {
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [deleteError, setDeleteError] = useState('');
     
+    // Copy Report ID state
+    const [copiedReportId, setCopiedReportId] = useState(false);
+    
     const t = useTranslations('myreport');
     const tCommon = useTranslations('common');
     const { locale } = useLanguage();
