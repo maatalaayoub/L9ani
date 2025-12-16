@@ -143,6 +143,8 @@
         "contactInfo": "معلومات الاتصال",
         "reportInfo": "معلومات البلاغ",
         "reportId": "معرف البلاغ",
+        "copyId": "نسخ المعرف",
+        "copied": "تم النسخ!",
         "submittedAt": "تاريخ التقديم",
         "updatedAt": "آخر تحديث",
         "currentStatus": "الحالة الحالية",

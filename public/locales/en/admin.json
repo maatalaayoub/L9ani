@@ -143,6 +143,8 @@
         "contactInfo": "Contact Information",
         "reportInfo": "Report Information",
         "reportId": "Report ID",
+        "copyId": "Copy ID",
+        "copied": "Copied!",
         "submittedAt": "Submitted At",
         "updatedAt": "Last Updated",
         "currentStatus": "Current Status",
