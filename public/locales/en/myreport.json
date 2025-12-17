@@ -1,9 +1,9 @@
 {
     "title": "My Reports",
-    "subtitle": "View and manage your missing person reports",
+    "subtitle": "View and manage your missing item reports",
     "noReports": {
         "title": "No Reports Yet",
-        "description": "You haven't created any missing person reports yet. Upload a photo to get started.",
+        "description": "You haven't created any reports yet. Create a report to get started.",
         "button": "Create New Report"
     },
     "reportTypes": {
@@ -33,7 +33,7 @@
         "reportId": "Report ID",
         "copyId": "Copy ID",
         "copied": "Copied!",
-        "missingPersonInfo": "Missing Person Information",
+        "missingPersonInfo": "Report Details",
         "fullName": "Full Name",
         "dateOfBirth": "Date of Birth",
         "gender": "Gender",

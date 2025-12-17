@@ -121,7 +121,7 @@
     
     "modal": {
         "reportDetails": "Report Details",
-        "missingPersonInfo": "Missing Person Information",
+        "missingPersonInfo": "Report Details",
         "personInfo": "Person Information",
         "firstName": "First Name",
         "lastName": "Last Name",

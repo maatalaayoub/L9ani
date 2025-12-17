@@ -6,6 +6,7 @@ import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import dynamic from 'next/dynamic';
 import LoginDialog from '@/components/LoginDialog';
+import SelectDropdown from '@/components/SelectDropdown';
 
 // Dynamically import MapPicker to avoid SSR issues with Leaflet
 const MapPicker = dynamic(() => import('@/components/MapPicker'), {
@@ -94,7 +95,11 @@ export default function ReportMissingPage() {
     // Get the first validation error (in order of priority)
     const getFirstValidationError = () => {
         if (!reportType) return t('errors.typeRequired');
-        if (photos.length === 0) return t('validation.photo');
+        
+        // Photos are required only for person and pet
+        if ((reportType === 'person' || reportType === 'pet') && photos.length === 0) {
+            return t('validation.photo');
+        }
         
         // Type-specific validation
         switch (reportType) {
@@ -111,11 +116,11 @@ export default function ReportMissingPage() {
                 break;
             case 'electronics':
                 if (!formData.deviceType) return t('validation.deviceType');
-                if (!formData.deviceBrand.trim()) return t('validation.deviceBrand');
+                if (!formData.deviceBrand) return t('validation.deviceBrand');
                 break;
             case 'vehicle':
                 if (!formData.vehicleType) return t('validation.vehicleType');
-                if (!formData.vehicleBrand.trim()) return t('validation.vehicleBrand');
+                if (!formData.vehicleBrand) return t('validation.vehicleBrand');
                 break;
             case 'other':
                 if (!formData.itemName.trim()) return t('validation.itemName');
@@ -131,6 +136,115 @@ export default function ReportMissingPage() {
     const genderOptions = [
         { value: 'male', label: t('options.male') },
         { value: 'female', label: t('options.female') }
+    ];
+
+    // Pet options
+    const petTypeOptions = [
+        { value: 'dog', label: t('options.petTypes.dog') },
+        { value: 'cat', label: t('options.petTypes.cat') },
+        { value: 'bird', label: t('options.petTypes.bird') },
+        { value: 'other', label: t('options.petTypes.other') }
+    ];
+
+    const petSizeOptions = [
+        { value: 'small', label: t('options.petSizes.small') },
+        { value: 'medium', label: t('options.petSizes.medium') },
+        { value: 'large', label: t('options.petSizes.large') }
+    ];
+
+    // Document options
+    const documentTypeOptions = [
+        { value: 'nationalId', label: t('options.documentTypes.nationalId') },
+        { value: 'passport', label: t('options.documentTypes.passport') },
+        { value: 'driverLicense', label: t('options.documentTypes.driverLicense') },
+        { value: 'residenceCard', label: t('options.documentTypes.residenceCard') },
+        { value: 'birthCertificate', label: t('options.documentTypes.birthCertificate') },
+        { value: 'diploma', label: t('options.documentTypes.diploma') },
+        { value: 'other', label: t('options.documentTypes.other') }
+    ];
+
+    // Device options
+    const deviceTypeOptions = [
+        { value: 'phone', label: t('options.deviceTypes.phone') },
+        { value: 'laptop', label: t('options.deviceTypes.laptop') },
+        { value: 'tablet', label: t('options.deviceTypes.tablet') },
+        { value: 'camera', label: t('options.deviceTypes.camera') },
+        { value: 'smartwatch', label: t('options.deviceTypes.smartwatch') },
+        { value: 'earbuds', label: t('options.deviceTypes.earbuds') },
+        { value: 'other', label: t('options.deviceTypes.other') }
+    ];
+
+    const deviceBrandOptions = [
+        { value: 'apple', label: t('options.deviceBrands.apple') },
+        { value: 'samsung', label: t('options.deviceBrands.samsung') },
+        { value: 'huawei', label: t('options.deviceBrands.huawei') },
+        { value: 'xiaomi', label: t('options.deviceBrands.xiaomi') },
+        { value: 'oppo', label: t('options.deviceBrands.oppo') },
+        { value: 'vivo', label: t('options.deviceBrands.vivo') },
+        { value: 'realme', label: t('options.deviceBrands.realme') },
+        { value: 'oneplus', label: t('options.deviceBrands.oneplus') },
+        { value: 'google', label: t('options.deviceBrands.google') },
+        { value: 'sony', label: t('options.deviceBrands.sony') },
+        { value: 'lg', label: t('options.deviceBrands.lg') },
+        { value: 'nokia', label: t('options.deviceBrands.nokia') },
+        { value: 'motorola', label: t('options.deviceBrands.motorola') },
+        { value: 'asus', label: t('options.deviceBrands.asus') },
+        { value: 'lenovo', label: t('options.deviceBrands.lenovo') },
+        { value: 'hp', label: t('options.deviceBrands.hp') },
+        { value: 'dell', label: t('options.deviceBrands.dell') },
+        { value: 'acer', label: t('options.deviceBrands.acer') },
+        { value: 'microsoft', label: t('options.deviceBrands.microsoft') },
+        { value: 'other', label: t('options.deviceBrands.other') }
+    ];
+
+    // Vehicle options
+    const vehicleTypeOptions = [
+        { value: 'car', label: t('options.vehicleTypes.car') },
+        { value: 'motorcycle', label: t('options.vehicleTypes.motorcycle') },
+        { value: 'bicycle', label: t('options.vehicleTypes.bicycle') },
+        { value: 'scooter', label: t('options.vehicleTypes.scooter') },
+        { value: 'other', label: t('options.vehicleTypes.other') }
+    ];
+
+    const vehicleBrandOptions = [
+        { value: 'toyota', label: t('options.vehicleBrands.toyota') },
+        { value: 'honda', label: t('options.vehicleBrands.honda') },
+        { value: 'nissan', label: t('options.vehicleBrands.nissan') },
+        { value: 'hyundai', label: t('options.vehicleBrands.hyundai') },
+        { value: 'kia', label: t('options.vehicleBrands.kia') },
+        { value: 'mercedes', label: t('options.vehicleBrands.mercedes') },
+        { value: 'bmw', label: t('options.vehicleBrands.bmw') },
+        { value: 'audi', label: t('options.vehicleBrands.audi') },
+        { value: 'volkswagen', label: t('options.vehicleBrands.volkswagen') },
+        { value: 'ford', label: t('options.vehicleBrands.ford') },
+        { value: 'chevrolet', label: t('options.vehicleBrands.chevrolet') },
+        { value: 'peugeot', label: t('options.vehicleBrands.peugeot') },
+        { value: 'renault', label: t('options.vehicleBrands.renault') },
+        { value: 'dacia', label: t('options.vehicleBrands.dacia') },
+        { value: 'fiat', label: t('options.vehicleBrands.fiat') },
+        { value: 'citroen', label: t('options.vehicleBrands.citroen') },
+        { value: 'suzuki', label: t('options.vehicleBrands.suzuki') },
+        { value: 'mazda', label: t('options.vehicleBrands.mazda') },
+        { value: 'mitsubishi', label: t('options.vehicleBrands.mitsubishi') },
+        { value: 'other', label: t('options.vehicleBrands.other') }
+    ];
+
+    // Color options
+    const colorOptions = [
+        { value: 'black', label: t('options.colors.black') },
+        { value: 'white', label: t('options.colors.white') },
+        { value: 'silver', label: t('options.colors.silver') },
+        { value: 'gray', label: t('options.colors.gray') },
+        { value: 'red', label: t('options.colors.red') },
+        { value: 'blue', label: t('options.colors.blue') },
+        { value: 'green', label: t('options.colors.green') },
+        { value: 'yellow', label: t('options.colors.yellow') },
+        { value: 'orange', label: t('options.colors.orange') },
+        { value: 'brown', label: t('options.colors.brown') },
+        { value: 'gold', label: t('options.colors.gold') },
+        { value: 'pink', label: t('options.colors.pink') },
+        { value: 'purple', label: t('options.colors.purple') },
+        { value: 'other', label: t('options.colors.other') }
     ];
 
     const selectedGender = genderOptions.find(g => g.value === formData.gender);
@@ -627,7 +741,7 @@ export default function ReportMissingPage() {
 
                     {/* Only show remaining sections if type is selected */}
                     {reportType && (
-                        <>
+                    <>
                     {/* Section 1: Photo Upload */}
                     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-gray-100 dark:border-gray-800">
@@ -636,6 +750,7 @@ export default function ReportMissingPage() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
                                 {t('sections.photos.title')}
+                                {(reportType === 'person' || reportType === 'pet') && <span className="text-red-500">*</span>}
                             </h2>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('sections.photos.description')}</p>
                         </div>
@@ -889,20 +1004,17 @@ export default function ReportMissingPage() {
                                     </div>
 
                                     {/* Pet Type */}
-                                    <div>
-                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
-                                            {t('fields.petType')} <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="petType"
-                                            value={formData.petType}
-                                            onChange={handleChange}
-                                            dir={isRTL ? 'rtl' : 'ltr'}
-                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
-                                            placeholder={t('placeholders.petType')}
-                                        />
-                                    </div>
+                                    <SelectDropdown
+                                        value={formData.petType}
+                                        onChange={(value) => setFormData(prev => ({ ...prev, petType: value }))}
+                                        options={petTypeOptions}
+                                        placeholder={t('options.selectOption')}
+                                        searchPlaceholder={t('options.searchOptions')}
+                                        label={<>{t('fields.petType')} <span className="text-red-500">*</span></>}
+                                        isRTL={isRTL}
+                                        allowCustom={true}
+                                        customLabel={t('options.customOption')}
+                                    />
 
                                     {/* Pet Breed */}
                                     <div>
@@ -921,36 +1033,28 @@ export default function ReportMissingPage() {
                                     </div>
 
                                     {/* Pet Color */}
-                                    <div>
-                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
-                                            {t('fields.petColor')}
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="petColor"
-                                            value={formData.petColor}
-                                            onChange={handleChange}
-                                            dir={isRTL ? 'rtl' : 'ltr'}
-                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
-                                            placeholder={t('placeholders.petColor')}
-                                        />
-                                    </div>
+                                    <SelectDropdown
+                                        value={formData.petColor}
+                                        onChange={(value) => setFormData(prev => ({ ...prev, petColor: value }))}
+                                        options={colorOptions}
+                                        placeholder={t('options.selectOption')}
+                                        searchPlaceholder={t('options.searchOptions')}
+                                        label={t('fields.petColor')}
+                                        isRTL={isRTL}
+                                        allowCustom={true}
+                                        customLabel={t('options.customOption')}
+                                    />
 
                                     {/* Pet Size */}
-                                    <div>
-                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
-                                            {t('fields.petSize')}
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="petSize"
-                                            value={formData.petSize}
-                                            onChange={handleChange}
-                                            dir={isRTL ? 'rtl' : 'ltr'}
-                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
-                                            placeholder={t('placeholders.petSize')}
-                                        />
-                                    </div>
+                                    <SelectDropdown
+                                        value={formData.petSize}
+                                        onChange={(value) => setFormData(prev => ({ ...prev, petSize: value }))}
+                                        options={petSizeOptions}
+                                        placeholder={t('options.selectOption')}
+                                        searchPlaceholder={t('options.searchOptions')}
+                                        label={t('fields.petSize')}
+                                        isRTL={isRTL}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -970,20 +1074,17 @@ export default function ReportMissingPage() {
                             <div className="p-6">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                     {/* Document Type */}
-                                    <div>
-                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
-                                            {t('fields.documentType')} <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="documentType"
-                                            value={formData.documentType}
-                                            onChange={handleChange}
-                                            dir={isRTL ? 'rtl' : 'ltr'}
-                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
-                                            placeholder={t('placeholders.documentType')}
-                                        />
-                                    </div>
+                                    <SelectDropdown
+                                        value={formData.documentType}
+                                        onChange={(value) => setFormData(prev => ({ ...prev, documentType: value }))}
+                                        options={documentTypeOptions}
+                                        placeholder={t('options.selectOption')}
+                                        searchPlaceholder={t('options.searchOptions')}
+                                        label={<>{t('fields.documentType')} <span className="text-red-500">*</span></>}
+                                        isRTL={isRTL}
+                                        allowCustom={true}
+                                        customLabel={t('options.customOption')}
+                                    />
 
                                     {/* Document Number */}
                                     <div>
@@ -1051,36 +1152,30 @@ export default function ReportMissingPage() {
                             <div className="p-6">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                     {/* Device Type */}
-                                    <div>
-                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
-                                            {t('fields.deviceType')} <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="deviceType"
-                                            value={formData.deviceType}
-                                            onChange={handleChange}
-                                            dir={isRTL ? 'rtl' : 'ltr'}
-                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
-                                            placeholder={t('placeholders.deviceType')}
-                                        />
-                                    </div>
+                                    <SelectDropdown
+                                        value={formData.deviceType}
+                                        onChange={(value) => setFormData(prev => ({ ...prev, deviceType: value }))}
+                                        options={deviceTypeOptions}
+                                        placeholder={t('options.selectOption')}
+                                        searchPlaceholder={t('options.searchOptions')}
+                                        label={<>{t('fields.deviceType')} <span className="text-red-500">*</span></>}
+                                        isRTL={isRTL}
+                                        allowCustom={true}
+                                        customLabel={t('options.customOption')}
+                                    />
 
                                     {/* Device Brand */}
-                                    <div>
-                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
-                                            {t('fields.deviceBrand')} <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="deviceBrand"
-                                            value={formData.deviceBrand}
-                                            onChange={handleChange}
-                                            dir={isRTL ? 'rtl' : 'ltr'}
-                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
-                                            placeholder={t('placeholders.deviceBrand')}
-                                        />
-                                    </div>
+                                    <SelectDropdown
+                                        value={formData.deviceBrand}
+                                        onChange={(value) => setFormData(prev => ({ ...prev, deviceBrand: value }))}
+                                        options={deviceBrandOptions}
+                                        placeholder={t('options.selectOption')}
+                                        searchPlaceholder={t('options.searchOptions')}
+                                        label={<>{t('fields.deviceBrand')} <span className="text-red-500">*</span></>}
+                                        isRTL={isRTL}
+                                        allowCustom={true}
+                                        customLabel={t('options.customOption')}
+                                    />
 
                                     {/* Device Model */}
                                     <div>
@@ -1099,20 +1194,17 @@ export default function ReportMissingPage() {
                                     </div>
 
                                     {/* Device Color */}
-                                    <div>
-                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
-                                            {t('fields.deviceColor')}
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="deviceColor"
-                                            value={formData.deviceColor}
-                                            onChange={handleChange}
-                                            dir={isRTL ? 'rtl' : 'ltr'}
-                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
-                                            placeholder={t('placeholders.deviceColor')}
-                                        />
-                                    </div>
+                                    <SelectDropdown
+                                        value={formData.deviceColor}
+                                        onChange={(value) => setFormData(prev => ({ ...prev, deviceColor: value }))}
+                                        options={colorOptions}
+                                        placeholder={t('options.selectOption')}
+                                        searchPlaceholder={t('options.searchOptions')}
+                                        label={t('fields.deviceColor')}
+                                        isRTL={isRTL}
+                                        allowCustom={true}
+                                        customLabel={t('options.customOption')}
+                                    />
 
                                     {/* Serial Number */}
                                     <div className="sm:col-span-2">
@@ -1149,36 +1241,30 @@ export default function ReportMissingPage() {
                             <div className="p-6">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                     {/* Vehicle Type */}
-                                    <div>
-                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
-                                            {t('fields.vehicleType')} <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="vehicleType"
-                                            value={formData.vehicleType}
-                                            onChange={handleChange}
-                                            dir={isRTL ? 'rtl' : 'ltr'}
-                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
-                                            placeholder={t('placeholders.vehicleType')}
-                                        />
-                                    </div>
+                                    <SelectDropdown
+                                        value={formData.vehicleType}
+                                        onChange={(value) => setFormData(prev => ({ ...prev, vehicleType: value }))}
+                                        options={vehicleTypeOptions}
+                                        placeholder={t('options.selectOption')}
+                                        searchPlaceholder={t('options.searchOptions')}
+                                        label={<>{t('fields.vehicleType')} <span className="text-red-500">*</span></>}
+                                        isRTL={isRTL}
+                                        allowCustom={true}
+                                        customLabel={t('options.customOption')}
+                                    />
 
                                     {/* Vehicle Brand */}
-                                    <div>
-                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
-                                            {t('fields.vehicleBrand')} <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="vehicleBrand"
-                                            value={formData.vehicleBrand}
-                                            onChange={handleChange}
-                                            dir={isRTL ? 'rtl' : 'ltr'}
-                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
-                                            placeholder={t('placeholders.vehicleBrand')}
-                                        />
-                                    </div>
+                                    <SelectDropdown
+                                        value={formData.vehicleBrand}
+                                        onChange={(value) => setFormData(prev => ({ ...prev, vehicleBrand: value }))}
+                                        options={vehicleBrandOptions}
+                                        placeholder={t('options.selectOption')}
+                                        searchPlaceholder={t('options.searchOptions')}
+                                        label={<>{t('fields.vehicleBrand')} <span className="text-red-500">*</span></>}
+                                        isRTL={isRTL}
+                                        allowCustom={true}
+                                        customLabel={t('options.customOption')}
+                                    />
 
                                     {/* Vehicle Model */}
                                     <div>
@@ -1213,20 +1299,17 @@ export default function ReportMissingPage() {
                                     </div>
 
                                     {/* Vehicle Color */}
-                                    <div>
-                                        <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
-                                            {t('fields.vehicleColor')}
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="vehicleColor"
-                                            value={formData.vehicleColor}
-                                            onChange={handleChange}
-                                            dir={isRTL ? 'rtl' : 'ltr'}
-                                            className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
-                                            placeholder={t('placeholders.vehicleColor')}
-                                        />
-                                    </div>
+                                    <SelectDropdown
+                                        value={formData.vehicleColor}
+                                        onChange={(value) => setFormData(prev => ({ ...prev, vehicleColor: value }))}
+                                        options={colorOptions}
+                                        placeholder={t('options.selectOption')}
+                                        searchPlaceholder={t('options.searchOptions')}
+                                        label={t('fields.vehicleColor')}
+                                        isRTL={isRTL}
+                                        allowCustom={true}
+                                        customLabel={t('options.customOption')}
+                                    />
 
                                     {/* License Plate */}
                                     <div>
@@ -1504,9 +1587,8 @@ export default function ReportMissingPage() {
                             </button>
                         )}
                     </div>
-                        </>
+                    </>
                     )}
-
                 </form>
             </div>
         </div>

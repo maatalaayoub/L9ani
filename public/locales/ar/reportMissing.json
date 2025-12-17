@@ -156,7 +156,106 @@
             "physical": "حالة جسدية",
             "mental": "حالة نفسية",
             "both": "كلاهما"
-        }
+        },
+        "petTypes": {
+            "dog": "كلب",
+            "cat": "قط",
+            "bird": "طائر",
+            "other": "حيوان آخر"
+        },
+        "petSizes": {
+            "small": "صغير",
+            "medium": "متوسط",
+            "large": "كبير"
+        },
+        "documentTypes": {
+            "nationalId": "بطاقة التعريف الوطنية (CIN)",
+            "passport": "جواز السفر",
+            "driverLicense": "رخصة السياقة",
+            "residenceCard": "بطاقة الإقامة",
+            "birthCertificate": "شهادة الميلاد",
+            "diploma": "شهادة/دبلوم",
+            "other": "وثيقة أخرى"
+        },
+        "deviceTypes": {
+            "phone": "هاتف محمول",
+            "laptop": "حاسوب محمول",
+            "tablet": "لوحة إلكترونية",
+            "camera": "كاميرا",
+            "smartwatch": "ساعة ذكية",
+            "earbuds": "سماعات",
+            "other": "جهاز آخر"
+        },
+        "vehicleTypes": {
+            "car": "سيارة",
+            "motorcycle": "دراجة نارية",
+            "bicycle": "دراجة هوائية",
+            "scooter": "سكوتر",
+            "other": "مركبة أخرى"
+        },
+        "deviceBrands": {
+            "apple": "آبل",
+            "samsung": "سامسونج",
+            "huawei": "هواوي",
+            "xiaomi": "شاومي",
+            "oppo": "أوبو",
+            "vivo": "فيفو",
+            "realme": "ريلمي",
+            "oneplus": "ون بلس",
+            "google": "جوجل",
+            "sony": "سوني",
+            "lg": "إل جي",
+            "nokia": "نوكيا",
+            "motorola": "موتورولا",
+            "asus": "أسوس",
+            "lenovo": "لينوفو",
+            "hp": "إتش بي",
+            "dell": "ديل",
+            "acer": "أيسر",
+            "microsoft": "مايكروسوفت",
+            "other": "ماركة أخرى"
+        },
+        "vehicleBrands": {
+            "toyota": "تويوتا",
+            "honda": "هوندا",
+            "nissan": "نيسان",
+            "hyundai": "هيونداي",
+            "kia": "كيا",
+            "mercedes": "مرسيدس بنز",
+            "bmw": "بي إم دبليو",
+            "audi": "أودي",
+            "volkswagen": "فولكس فاغن",
+            "ford": "فورد",
+            "chevrolet": "شيفروليه",
+            "peugeot": "بيجو",
+            "renault": "رينو",
+            "dacia": "داتشيا",
+            "fiat": "فيات",
+            "citroen": "سيتروين",
+            "suzuki": "سوزوكي",
+            "mazda": "مازدا",
+            "mitsubishi": "ميتسوبيشي",
+            "other": "ماركة أخرى"
+        },
+        "colors": {
+            "black": "أسود",
+            "white": "أبيض",
+            "silver": "فضي",
+            "gray": "رمادي",
+            "red": "أحمر",
+            "blue": "أزرق",
+            "green": "أخضر",
+            "yellow": "أصفر",
+            "orange": "برتقالي",
+            "brown": "بني",
+            "gold": "ذهبي",
+            "pink": "وردي",
+            "purple": "بنفسجي",
+            "other": "لون آخر"
+        },
+        "selectOption": "اختر خياراً",
+        "searchOptions": "بحث...",
+        "customOption": "أدخل قيمة مخصصة"
     },
 
     "buttons": {

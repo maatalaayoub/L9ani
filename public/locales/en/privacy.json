@@ -4,21 +4,21 @@
     "sections": {
         "introduction": {
             "title": "Introduction",
-            "content": "Welcome to Lqani.ma. We understand the sensitive nature of our mission - helping families reunite with their missing loved ones. Your privacy and the security of your personal information are of utmost importance to us. This Privacy Policy explains how we collect, use, protect, and share information when you use our platform. By using Lqani.ma, you agree to the terms outlined in this policy."
+            "content": "Welcome to Lqani.ma. We understand the sensitive nature of our mission - helping people reunite with their missing loved ones, pets, and belongings. Your privacy and the security of your personal information are of utmost importance to us. This Privacy Policy explains how we collect, use, protect, and share information when you use our platform. By using Lqani.ma, you agree to the terms outlined in this policy."
         },
         "dataCollection": {
             "title": "Information We Collect",
             "content": "To provide our services effectively, we collect the following types of information:",
             "items": {
                 "personal": "Account Information: Name, email address, phone number, and password when you register",
-                "photos": "Missing Person Data: Photos, physical descriptions, last known location, and circumstances of disappearance",
+                "photos": "Report Data: Photos, descriptions, last known location, and details about missing persons, pets, documents, electronics, vehicles, or other items",
                 "device": "Technical Data: IP address, browser type, device information, and cookies for security and service improvement",
                 "usage": "Usage Information: How you interact with our platform, search queries, and features you use"
             }
         },
         "dataUsage": {
             "title": "How We Use Your Information",
-            "content": "Your information is used solely to fulfill our mission of reuniting families:",
+            "content": "Your information is used solely to fulfill our mission of reuniting people with what they've lost:",
             "items": {
                 "matching": "Photo Matching: Using advanced technology to compare uploaded photos and identify potential matches",
                 "communication": "Notifications: Alerting you about potential sightings, matches, or important updates about your case",

@@ -1,17 +1,17 @@
 {
     "hero": {
-        "title": "Reuniting Families, One Photo at a Time",
-        "subtitle": "We're on a mission to help families find their missing loved ones through the power of community and technology."
+        "title": "Reuniting What Was Lost, One Report at a Time",
+        "subtitle": "We're on a mission to help people find their missing loved ones, pets, and belongings through the power of community and technology."
     },
     "mission": {
         "title": "Our Mission",
-        "description": "Every day, families around the world search desperately for their missing loved ones. Lqani.ma harnesses the power of community and advanced photo-matching technology to help reunite families and bring hope to those who need it most."
+        "description": "Every day, people search for their missing loved ones, lost pets, important documents, and valuable belongings. Lqani.ma harnesses the power of community and technology to help reunite people with what matters most and bring hope to those who need it."
     },
     "howItWorks": {
         "title": "How It Works",
         "step1": {
-            "title": "Upload a Photo",
-            "description": "Family members upload photos of their missing loved ones with relevant details."
+            "title": "Create a Report",
+            "description": "Upload photos and details about your missing person, pet, document, or item."
         },
         "step2": {
             "title": "Community Reports",
@@ -43,7 +43,7 @@
     },
     "cta": {
         "title": "Join Us in Making a Difference",
-        "description": "Whether you're searching for a loved one or want to help others, your participation matters.",
+        "description": "Whether you're searching for something you've lost or want to help others, your participation matters.",
         "button": "Get Started Today"
     }
 }

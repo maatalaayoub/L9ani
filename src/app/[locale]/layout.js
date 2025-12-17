@@ -20,6 +20,7 @@ const geistSans = localFont({
     ],
     variable: '--font-geist-sans',
     display: 'swap',
+    preload: true,
     fallback: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
 });
 
@@ -32,21 +33,13 @@ const geistMono = localFont({
     ],
     variable: '--font-geist-mono',
     display: 'swap',
+    preload: false, // Don't preload - only used in specific places
     fallback: ['ui-monospace', 'SFMono-Regular', 'SF Mono', 'Menlo', 'Consolas', 'Liberation Mono', 'monospace'],
 });
 
+// Tajawal font for Arabic - only load commonly used weights
 const tajawal = localFont({
     src: [
-        {
-            path: '../../../public/fonts/Tajawal-ExtraLight.ttf',
-            weight: '200',
-            style: 'normal',
-        },
-        {
-            path: '../../../public/fonts/Tajawal-Light.ttf',
-            weight: '300',
-            style: 'normal',
-        },
         {
             path: '../../../public/fonts/Tajawal-Regular.ttf',
             weight: '400',
@@ -62,19 +55,10 @@ const tajawal = localFont({
             weight: '700',
             style: 'normal',
         },
-        {
-            path: '../../../public/fonts/Tajawal-ExtraBold.ttf',
-            weight: '800',
-            style: 'normal',
-        },
-        {
-            path: '../../../public/fonts/Tajawal-Black.ttf',
-            weight: '900',
-            style: 'normal',
-        },
     ],
     variable: '--font-tajawal',
     display: 'swap',
+    preload: false, // Don't preload - only used for Arabic locale
 });
 
 export async function generateMetadata({ params }) {

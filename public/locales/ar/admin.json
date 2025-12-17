@@ -121,7 +121,7 @@
     
     "modal": {
         "reportDetails": "تفاصيل البلاغ",
-        "missingPersonInfo": "معلومات الشخص المفقود",
+        "missingPersonInfo": "تفاصيل البلاغ",
         "personInfo": "معلومات الشخص",
         "firstName": "الاسم الأول",
         "lastName": "اسم العائلة",
