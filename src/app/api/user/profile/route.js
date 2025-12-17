@@ -73,6 +73,9 @@ export async function POST(request) {
         // Generate verification code for email signup users
         const verificationCode = isEmailSignup ? Math.floor(100000 + Math.random() * 900000).toString() : null;
 
+        // Ensure phone number has + prefix if provided
+        const formattedPhone = phone ? (phone.startsWith('+') ? phone : `+${phone}`) : null;
+
         // Create new profile
         const newProfile = {
             auth_user_id: userId,
@@ -85,7 +88,7 @@ export async function POST(request) {
             has_password: hasPassword || false,
             terms_accepted: termsAccepted || false,
             terms_accepted_at: termsAccepted ? new Date().toISOString() : null,
-            phone: phone || null,
+            phone: formattedPhone,
             email_verified: false,
             email_verified_code: verificationCode
         };

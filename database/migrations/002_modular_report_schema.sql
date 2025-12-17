@@ -237,26 +237,28 @@ CREATE POLICY "Users can delete own reports" ON reports
 -- =====================================================
 
 -- Helper function to check report ownership
+-- SET search_path = '' prevents search_path injection attacks
 CREATE OR REPLACE FUNCTION is_report_owner(p_report_id UUID)
 RETURNS BOOLEAN AS $$
 BEGIN
     RETURN EXISTS (
-        SELECT 1 FROM reports 
+        SELECT 1 FROM public.reports 
         WHERE id = p_report_id AND user_id = auth.uid()
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- Helper function to check if report is approved
+-- SET search_path = '' prevents search_path injection attacks
 CREATE OR REPLACE FUNCTION is_report_approved(p_report_id UUID)
 RETURNS BOOLEAN AS $$
 BEGIN
     RETURN EXISTS (
-        SELECT 1 FROM reports 
+        SELECT 1 FROM public.reports 
         WHERE id = p_report_id AND status = 'approved'
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- Apply RLS policies to each detail table
 -- (Using a DO block to apply same pattern to all detail tables)
@@ -368,7 +370,9 @@ CREATE POLICY "Delete own other details" ON report_details_other
 -- =====================================================
 
 -- View: All reports with their details (for internal use)
-CREATE OR REPLACE VIEW reports_with_details AS
+-- Uses SECURITY INVOKER to properly enforce RLS policies of the querying user
+CREATE OR REPLACE VIEW reports_with_details 
+WITH (security_invoker = true) AS
 SELECT 
     r.*,
     -- Person details

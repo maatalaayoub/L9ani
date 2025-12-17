@@ -142,11 +142,16 @@ export default function AdminPage() {
     // Login dialog
     const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
 
-    // Image preview state
-    const [previewImage, setPreviewImage] = useState(null);
+    // Image preview state - gallery support
+    const [previewImages, setPreviewImages] = useState([]);
+    const [previewIndex, setPreviewIndex] = useState(0);
 
     // Copy state for report ID
     const [copiedReportId, setCopiedReportId] = useState(false);
+
+    // User profile modal state
+    const [showProfileModal, setShowProfileModal] = useState(false);
+    const [selectedUserProfile, setSelectedUserProfile] = useState(null);
 
     // Track if initial load has been done
     const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
@@ -432,7 +437,7 @@ export default function AdminPage() {
     const formatDate = (dateString) => {
         if (!dateString) return '-';
         const date = new Date(dateString);
-        return date.toLocaleDateString(locale === 'ar' ? 'ar-MA' : 'en-US', {
+        return date.toLocaleDateString(locale === 'ar' ? 'ar-MA-u-nu-latn' : 'en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
@@ -764,7 +769,7 @@ export default function AdminPage() {
                             )}
                             {lastRefreshTime && !isBackgroundRefreshing && (
                                 <span>
-                                    {t('messages.lastUpdated') || 'Last updated'}: {lastRefreshTime.toLocaleTimeString(locale === 'ar' ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
+                                    {t('messages.lastUpdated') || 'Last updated'}: {lastRefreshTime.toLocaleTimeString(locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
                                 </span>
                             )}
                         </div>
@@ -803,30 +808,52 @@ export default function AdminPage() {
                                     <div className="flex items-start gap-4">
                                         {/* Reporter Profile Picture - Main Focus */}
                                         <div className="flex-shrink-0">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (report.reporter) {
+                                                        setSelectedUserProfile(report.reporter);
+                                                        setShowProfileModal(true);
+                                                    }
+                                                }}
+                                                className="focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full"
+                                                title={t('modal.viewProfile') || 'View Profile'}
+                                            >
                                             {report.reporter?.profile_picture ? (
                                                 <img 
                                                     src={report.reporter.profile_picture} 
                                                     alt={report.reporter.name || 'User'}
-                                                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600 shadow-sm"
+                                                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600 shadow-sm hover:border-blue-400 dark:hover:border-blue-500 transition-colors cursor-pointer"
                                                 />
                                             ) : (
-                                                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center border-2 border-white dark:border-gray-700 shadow-sm">
+                                                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center border-2 border-white dark:border-gray-700 shadow-sm hover:border-blue-400 dark:hover:border-blue-500 transition-colors cursor-pointer">
                                                     <span className="text-white font-semibold text-lg">
                                                         {(report.reporter?.name || report.reporter?.username || 'U').charAt(0).toUpperCase()}
                                                     </span>
                                                 </div>
                                             )}
+                                            </button>
                                         </div>
 
                                         {/* Content */}
                                         <div className="flex-1 min-w-0">
                                             {/* Reporter Name & ID */}
                                             <div className="flex items-center gap-2 flex-wrap mb-2">
-                                                <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (report.reporter) {
+                                                            setSelectedUserProfile(report.reporter);
+                                                            setShowProfileModal(true);
+                                                        }
+                                                    }}
+                                                    className="text-base font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors focus:outline-none focus:underline"
+                                                    title={t('modal.viewProfile') || 'View Profile'}
+                                                >
                                                     {report.reporter?.first_name && report.reporter?.last_name 
                                                         ? `${report.reporter.first_name} ${report.reporter.last_name}`
                                                         : report.reporter?.name || report.reporter?.username || t('modal.anonymous')}
-                                                </h3>
+                                                </button>
                                                 <span className="text-xs font-mono text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">
                                                     ID: {report.reporter?.user_id || t('modal.notAvailable')}
                                                 </span>
@@ -1072,7 +1099,10 @@ export default function AdminPage() {
                                             {selectedReport.photos.map((photo, index) => (
                                                 <button
                                                     key={index}
-                                                    onClick={() => setPreviewImage(photo)}
+                                                    onClick={() => {
+                                                        setPreviewImages(selectedReport.photos);
+                                                        setPreviewIndex(index);
+                                                    }}
                                                     className="group relative"
                                                 >
                                                     <img
@@ -1750,31 +1780,6 @@ export default function AdminPage() {
                                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                                     {t('modal.confirmStatusChangeFrom')} <span className="font-semibold">{t(`status.${selectedReport.status}`)}</span> {t('modal.confirmStatusChangeTo')} <span className="font-semibold">{t(`status.${newStatus}`)}</span>?
                                 </p>
-                                <div className="flex items-center justify-center gap-2 mt-3">
-                                    <span className="text-xs text-gray-500 dark:text-gray-400">{t('modal.reportId')}:</span>
-                                    <code className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-700 dark:text-gray-300 font-mono">
-                                        {selectedReport.id}
-                                    </code>
-                                    <button
-                                        onClick={() => {
-                                            navigator.clipboard.writeText(selectedReport.id);
-                                            setCopiedReportId(true);
-                                            setTimeout(() => setCopiedReportId(false), 2000);
-                                        }}
-                                        className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
-                                        title={copiedReportId ? t('modal.copied') : t('modal.copyId')}
-                                    >
-                                        {copiedReportId ? (
-                                            <svg className="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                            </svg>
-                                        ) : (
-                                            <svg className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                            </svg>
-                                        )}
-                                    </button>
-                                </div>
                             </div>
                             
                             {/* Show rejection reason field if changing to rejected */}
@@ -1831,39 +1836,261 @@ export default function AdminPage() {
                 </div>
             )}
 
-            {/* Image Preview Modal */}
-            {previewImage && (
+            {/* Image Gallery Modal */}
+            {previewImages.length > 0 && (
                 <div 
                     className="fixed inset-0 z-[60] flex items-center justify-center p-4"
-                    onClick={() => setPreviewImage(null)}
+                    onClick={() => setPreviewImages([])}
+                    onKeyDown={(e) => {
+                        if (e.key === 'ArrowLeft') {
+                            setPreviewIndex(prev => prev > 0 ? prev - 1 : previewImages.length - 1);
+                        } else if (e.key === 'ArrowRight') {
+                            setPreviewIndex(prev => prev < previewImages.length - 1 ? prev + 1 : 0);
+                        } else if (e.key === 'Escape') {
+                            setPreviewImages([]);
+                        }
+                    }}
+                    tabIndex={0}
+                    ref={(el) => el?.focus()}
                 >
                     {/* Backdrop */}
                     <div className="absolute inset-0 bg-gray-900/95 backdrop-blur-sm" />
                     
                     {/* Close Button */}
                     <button
-                        onClick={() => setPreviewImage(null)}
+                        onClick={() => setPreviewImages([])}
                         className="absolute top-4 right-4 z-20 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
                     >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
+
+                    {/* Image Counter */}
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 px-3 py-1.5 bg-black/50 backdrop-blur-sm rounded-full text-white text-sm font-medium">
+                        {previewIndex + 1} / {previewImages.length}
+                    </div>
+
+                    {/* Previous Button */}
+                    {previewImages.length > 1 && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setPreviewIndex(prev => prev > 0 ? prev - 1 : previewImages.length - 1);
+                            }}
+                            className="absolute left-4 z-20 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                    )}
+
+                    {/* Next Button */}
+                    {previewImages.length > 1 && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setPreviewIndex(prev => prev < previewImages.length - 1 ? prev + 1 : 0);
+                            }}
+                            className="absolute right-4 z-20 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    )}
                     
-                    {/* Image Container */}
+                    {/* Image Container with Touch Support */}
                     <div 
-                        className="relative z-10 bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-2xl max-w-[90vw] max-h-[90vh]"
+                        className="relative z-10 bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-2xl max-w-[90vw] max-h-[90vh] touch-pan-y"
                         onClick={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => {
+                            const touch = e.touches[0];
+                            e.currentTarget.dataset.touchStartX = touch.clientX;
+                        }}
+                        onTouchEnd={(e) => {
+                            const touchStartX = parseFloat(e.currentTarget.dataset.touchStartX);
+                            const touchEndX = e.changedTouches[0].clientX;
+                            const diff = touchStartX - touchEndX;
+                            if (Math.abs(diff) > 50) {
+                                if (diff > 0) {
+                                    setPreviewIndex(prev => prev < previewImages.length - 1 ? prev + 1 : 0);
+                                } else {
+                                    setPreviewIndex(prev => prev > 0 ? prev - 1 : previewImages.length - 1);
+                                }
+                            }
+                        }}
                     >
                         <img
-                            src={previewImage}
-                            alt="Preview"
+                            src={previewImages[previewIndex]}
+                            alt={`Preview ${previewIndex + 1}`}
                             className="max-w-full max-h-[85vh] object-contain rounded-xl"
                             onError={(e) => {
                                 e.target.src = '/icons/user-placeholder.svg';
                                 e.target.className = 'w-64 h-64 object-contain rounded-xl bg-gray-100 dark:bg-gray-700 p-8';
                             }}
                         />
+                    </div>
+
+                    {/* Dot Indicators */}
+                    {previewImages.length > 1 && (
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+                            {previewImages.map((_, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setPreviewIndex(idx);
+                                    }}
+                                    className={`w-2 h-2 rounded-full transition-all ${idx === previewIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/75'}`}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* User Profile Modal */}
+            {showProfileModal && selectedUserProfile && (
+                <div className="fixed inset-0 z-[70] overflow-y-auto">
+                    <div className="flex items-center justify-center min-h-screen px-4 py-8">
+                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setShowProfileModal(false)} />
+                        <div className="relative bg-white dark:bg-[#101828] rounded-2xl shadow-2xl max-w-md w-full mx-auto z-10 overflow-hidden border border-gray-200 dark:border-gray-700/50">
+                            {/* Modal Header with gradient */}
+                            <div className="relative px-6 py-8 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600">
+                                {/* Decorative pattern */}
+                                <div className="absolute inset-0 opacity-10">
+                                    <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                                        <pattern id="profileGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+                                            <circle cx="1" cy="1" r="1" fill="white"/>
+                                        </pattern>
+                                        <rect width="100" height="100" fill="url(#profileGrid)"/>
+                                    </svg>
+                                </div>
+                                
+                                {/* Close button */}
+                                <button
+                                    onClick={() => setShowProfileModal(false)}
+                                    className="absolute top-4 right-4 p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+                                >
+                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+
+                                {/* Profile Picture */}
+                                <div className="flex flex-col items-center">
+                                    {selectedUserProfile.profile_picture ? (
+                                        <img 
+                                            src={selectedUserProfile.profile_picture} 
+                                            alt={selectedUserProfile.name || 'User'}
+                                            className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
+                                        />
+                                    ) : (
+                                        <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-4 border-white/50 shadow-lg">
+                                            <span className="text-white font-bold text-3xl">
+                                                {(selectedUserProfile.name || selectedUserProfile.username || 'U').charAt(0).toUpperCase()}
+                                            </span>
+                                        </div>
+                                    )}
+                                    <h3 className="mt-4 text-xl font-bold text-white">
+                                        {selectedUserProfile.first_name && selectedUserProfile.last_name 
+                                            ? `${selectedUserProfile.first_name} ${selectedUserProfile.last_name}`
+                                            : selectedUserProfile.name || selectedUserProfile.username || t('modal.anonymous')}
+                                    </h3>
+                                    {selectedUserProfile.username && (
+                                        <p className="text-white/80 text-sm">@{selectedUserProfile.username}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Profile Details */}
+                            <div className="px-6 py-5 space-y-4">
+                                {/* User ID */}
+                                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[#1D2939] rounded-lg border border-gray-100 dark:border-gray-700/30">
+                                    <div className="p-2 bg-blue-100 dark:bg-blue-500/20 rounded-lg">
+                                        <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                                        </svg>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t('modal.userId') || 'User ID'}</p>
+                                        <p className="text-sm font-mono text-gray-900 dark:text-white truncate">{selectedUserProfile.user_id || selectedUserProfile.auth_id || t('modal.notAvailable')}</p>
+                                    </div>
+                                </div>
+
+                                {/* Email */}
+                                {selectedUserProfile.email && (
+                                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[#1D2939] rounded-lg border border-gray-100 dark:border-gray-700/30">
+                                        <div className="p-2 bg-green-100 dark:bg-green-500/20 rounded-lg">
+                                            <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t('modal.email') || 'Email'}</p>
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-sm text-gray-900 dark:text-white truncate">{selectedUserProfile.email}</p>
+                                                {selectedUserProfile.email_verified && (
+                                                    <span className="flex-shrink-0 text-green-500" title={t('modal.verified') || 'Verified'}>
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Phone */}
+                                {selectedUserProfile.phone && (
+                                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[#1D2939] rounded-lg border border-gray-100 dark:border-gray-700/30">
+                                        <div className="p-2 bg-purple-100 dark:bg-purple-500/20 rounded-lg">
+                                            <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                            </svg>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t('modal.phone') || 'Phone'}</p>
+                                            <p className="text-sm text-gray-900 dark:text-white" dir="ltr">{selectedUserProfile.phone}</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Member Since */}
+                                {selectedUserProfile.created_at && (
+                                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[#1D2939] rounded-lg border border-gray-100 dark:border-gray-700/30">
+                                        <div className="p-2 bg-amber-100 dark:bg-amber-500/20 rounded-lg">
+                                            <svg className="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t('modal.memberSince') || 'Member Since'}</p>
+                                            <p className="text-sm text-gray-900 dark:text-white">
+                                                {new Date(selectedUserProfile.created_at).toLocaleDateString(locale === 'ar' ? 'ar-MA-u-nu-latn' : 'en-US', {
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric'
+                                                })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Modal Footer */}
+                            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700/50 bg-gray-50 dark:bg-[#1D2939]">
+                                <button
+                                    onClick={() => setShowProfileModal(false)}
+                                    className="w-full px-4 py-2.5 bg-gray-100 dark:bg-[#344054] text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors border border-gray-200 dark:border-gray-600/30"
+                                >
+                                    {t('modal.close') || 'Close'}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

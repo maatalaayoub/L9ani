@@ -228,7 +228,7 @@ export async function GET(request) {
                 if (report.user_id) {
                     const { data: profileData, error: profileError } = await supabaseAdmin
                         .from('profiles')
-                        .select('user_id, username, first_name, last_name, avatar_url')
+                        .select('user_id, auth_user_id, username, first_name, last_name, avatar_url, email, phone, created_at, email_verified')
                         .eq('auth_user_id', report.user_id)
                         .maybeSingle();
                     
@@ -251,7 +251,11 @@ export async function GET(request) {
                         name: userProfile ? ([userProfile.first_name, userProfile.last_name].filter(Boolean).join(' ') || userProfile.username) : null,
                         first_name: userProfile?.first_name || null,
                         last_name: userProfile?.last_name || null,
-                        profile_picture: userProfile?.avatar_url || null
+                        profile_picture: userProfile?.avatar_url || null,
+                        email: userProfile?.email || null,
+                        phone: userProfile?.phone || null,
+                        created_at: userProfile?.created_at || null,
+                        email_verified: userProfile?.email_verified || false
                     }
                 };
             })

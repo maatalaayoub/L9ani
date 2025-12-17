@@ -167,7 +167,13 @@
         "noPhotosAvailable": "لا توجد صور متاحة",
         "reportedBy": "أبلغ بواسطة",
         "anonymous": "مجهول",
-        "notAvailable": "غير متوفر"
+        "notAvailable": "غير متوفر",
+        "viewProfile": "عرض الملف الشخصي",
+        "userId": "معرف المستخدم",
+        "email": "البريد الإلكتروني",
+        "phone": "الهاتف",
+        "memberSince": "عضو منذ",
+        "verified": "موثق"
     },
     
     "pagination": {

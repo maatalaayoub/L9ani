@@ -110,7 +110,8 @@ export default function MyReport() {
     const [loginDialogTab, setLoginDialogTab] = useState('login');
     const [selectedReport, setSelectedReport] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
-    const [previewImage, setPreviewImage] = useState(null);
+    const [previewImages, setPreviewImages] = useState([]);
+    const [previewIndex, setPreviewIndex] = useState(0);
     
     // Edit modal state
     const [showEditModal, setShowEditModal] = useState(false);
@@ -234,7 +235,7 @@ export default function MyReport() {
     const formatDate = (dateString) => {
         if (!dateString) return '-';
         const date = new Date(dateString);
-        return date.toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US', {
+        return date.toLocaleDateString(locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
@@ -656,7 +657,12 @@ export default function MyReport() {
                                         {/* Photo */}
                                         <div className="flex-shrink-0">
                                             <button
-                                                onClick={() => report.photos?.[0] && setPreviewImage(report.photos[0])}
+                                                onClick={() => {
+                                                    if (report.photos?.length > 0) {
+                                                        setPreviewImages(report.photos);
+                                                        setPreviewIndex(0);
+                                                    }
+                                                }}
                                                 className="relative group cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg overflow-hidden"
                                                 disabled={!report.photos?.[0]}
                                             >
@@ -729,7 +735,7 @@ export default function MyReport() {
                                                     <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                                     </svg>
-                                                    {new Date(report.created_at).toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                    {new Date(report.created_at).toLocaleDateString(locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                                 </span>
                                             </div>
                                         </div>
@@ -886,7 +892,10 @@ export default function MyReport() {
                                             {selectedReport.photos.map((photo, index) => (
                                                 <button
                                                     key={index}
-                                                    onClick={() => setPreviewImage(photo)}
+                                                    onClick={() => {
+                                                        setPreviewImages(selectedReport.photos);
+                                                        setPreviewIndex(index);
+                                                    }}
                                                     className="group relative"
                                                 >
                                                     <img
@@ -1223,36 +1232,114 @@ export default function MyReport() {
                 </div>
             )}
 
-            {/* Image Preview Modal */}
-            {previewImage && (
+            {/* Image Gallery Modal */}
+            {previewImages.length > 0 && (
                 <div 
                     className="fixed inset-0 z-[110] flex items-center justify-center p-4"
-                    onClick={() => setPreviewImage(null)}
+                    onClick={() => setPreviewImages([])}
+                    onKeyDown={(e) => {
+                        if (e.key === 'ArrowLeft') {
+                            setPreviewIndex(prev => prev > 0 ? prev - 1 : previewImages.length - 1);
+                        } else if (e.key === 'ArrowRight') {
+                            setPreviewIndex(prev => prev < previewImages.length - 1 ? prev + 1 : 0);
+                        } else if (e.key === 'Escape') {
+                            setPreviewImages([]);
+                        }
+                    }}
+                    tabIndex={0}
+                    ref={(el) => el?.focus()}
                 >
                     {/* Backdrop */}
                     <div className="absolute inset-0 bg-gray-900/95 backdrop-blur-sm" />
                     
                     {/* Close Button */}
                     <button
-                        onClick={() => setPreviewImage(null)}
+                        onClick={() => setPreviewImages([])}
                         className="absolute top-4 right-4 z-20 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
                     >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
+
+                    {/* Image Counter */}
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 px-3 py-1.5 bg-black/50 backdrop-blur-sm rounded-full text-white text-sm font-medium">
+                        {previewIndex + 1} / {previewImages.length}
+                    </div>
+
+                    {/* Previous Button */}
+                    {previewImages.length > 1 && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setPreviewIndex(prev => prev > 0 ? prev - 1 : previewImages.length - 1);
+                            }}
+                            className="absolute left-4 z-20 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                    )}
+
+                    {/* Next Button */}
+                    {previewImages.length > 1 && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setPreviewIndex(prev => prev < previewImages.length - 1 ? prev + 1 : 0);
+                            }}
+                            className="absolute right-4 z-20 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    )}
                     
-                    {/* Image Container */}
+                    {/* Image Container with Touch Support */}
                     <div 
-                        className="relative z-10 bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-2xl max-w-[90vw] max-h-[90vh]"
+                        className="relative z-10 bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-2xl max-w-[90vw] max-h-[90vh] touch-pan-y"
                         onClick={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => {
+                            const touch = e.touches[0];
+                            e.currentTarget.dataset.touchStartX = touch.clientX;
+                        }}
+                        onTouchEnd={(e) => {
+                            const touchStartX = parseFloat(e.currentTarget.dataset.touchStartX);
+                            const touchEndX = e.changedTouches[0].clientX;
+                            const diff = touchStartX - touchEndX;
+                            if (Math.abs(diff) > 50) {
+                                if (diff > 0) {
+                                    setPreviewIndex(prev => prev < previewImages.length - 1 ? prev + 1 : 0);
+                                } else {
+                                    setPreviewIndex(prev => prev > 0 ? prev - 1 : previewImages.length - 1);
+                                }
+                            }
+                        }}
                     >
                         <img
-                            src={previewImage}
-                            alt="Preview"
+                            src={previewImages[previewIndex]}
+                            alt={`Preview ${previewIndex + 1}`}
                             className="max-w-full max-h-[85vh] object-contain rounded-xl"
                         />
                     </div>
+
+                    {/* Dot Indicators */}
+                    {previewImages.length > 1 && (
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+                            {previewImages.map((_, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setPreviewIndex(idx);
+                                    }}
+                                    className={`w-2 h-2 rounded-full transition-all ${idx === previewIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/75'}`}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -1269,9 +1356,31 @@ export default function MyReport() {
                                         <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                                             {editingReport.status === 'rejected' ? (t('edit.titleResubmit') || 'Edit & Resubmit Report') : (t('edit.title') || 'Edit Report')}
                                         </h3>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                            {t('modal.reportId')}: <span className="font-mono text-xs bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded">{editingReport.id?.slice(0, 8)}...</span>
-                                        </p>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className="text-sm text-gray-500 dark:text-gray-400">{t('modal.reportId')}:</span>
+                                            <code className="text-xs bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded text-gray-700 dark:text-gray-300 font-mono">
+                                                {editingReport.id}
+                                            </code>
+                                            <button
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(editingReport.id);
+                                                    setCopiedReportId(true);
+                                                    setTimeout(() => setCopiedReportId(false), 2000);
+                                                }}
+                                                className="p-1 hover:bg-gray-300 dark:hover:bg-gray-600 rounded transition-colors"
+                                                title={copiedReportId ? (t('modal.copied') || 'Copied!') : (t('modal.copyId') || 'Copy ID')}
+                                            >
+                                                {copiedReportId ? (
+                                                    <svg className="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                ) : (
+                                                    <svg className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                    </svg>
+                                                )}
+                                            </button>
+                                        </div>
                                     </div>
                                     <button
                                         onClick={() => !editLoading && setShowEditModal(false)}
@@ -1863,7 +1972,7 @@ export default function MyReport() {
                                         {deletingReport.first_name} {deletingReport.last_name}
                                     </p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                        {deletingReport.city} • {new Date(deletingReport.created_at).toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US')}
+                                        {deletingReport.city} • {new Date(deletingReport.created_at).toLocaleDateString(locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US')}
                                     </p>
                                 </div>
 

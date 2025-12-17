@@ -239,6 +239,9 @@ export function AuthProvider({ children }) {
                 const createController = new AbortController();
                 const createTimeoutId = setTimeout(() => createController.abort(), 15000); // 15s timeout
                 
+                // Ensure phone number has + prefix if provided
+                const phoneNumber = metadata.phoneNumber ? (metadata.phoneNumber.startsWith('+') ? metadata.phoneNumber : `+${metadata.phoneNumber}`) : null;
+                
                 const createResponse = await fetch('/api/user/profile', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -252,7 +255,7 @@ export function AuthProvider({ children }) {
                         // Email signup users have already accepted terms during registration
                         termsAccepted: hasPasswordSignup ? true : false,
                         hasPassword: hasPasswordSignup,
-                        phone: metadata.phoneNumber || null
+                        phone: phoneNumber
                     }),
                 });
                 

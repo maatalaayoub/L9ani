@@ -167,7 +167,13 @@
         "noPhotosAvailable": "No photos available",
         "reportedBy": "Reported by",
         "anonymous": "Anonymous",
-        "notAvailable": "N/A"
+        "notAvailable": "N/A",
+        "viewProfile": "View Profile",
+        "userId": "User ID",
+        "email": "Email",
+        "phone": "Phone",
+        "memberSince": "Member Since",
+        "verified": "Verified"
     },
     
     "pagination": {

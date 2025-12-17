@@ -338,7 +338,7 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
                                 firstName: firstName || '',
                                 lastName: lastName || '',
                                 username: username,
-                                phone: phoneNumber || '',
+                                phone: phoneNumber ? (phoneNumber.startsWith('+') ? phoneNumber : `+${phoneNumber}`) : '',
                                 hasPassword: true,
                                 termsAccepted: true,
                                 isEmailSignup: true  // Flag for email signup to generate verification code

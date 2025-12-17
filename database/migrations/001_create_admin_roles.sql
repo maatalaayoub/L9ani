@@ -123,30 +123,31 @@ CREATE POLICY "Service role can manage admin_users" ON admin_users
 -- =====================================================
 
 -- Function to check if a user is admin
+-- SET search_path = '' prevents search_path injection attacks
 CREATE OR REPLACE FUNCTION is_admin(user_id UUID)
 RETURNS BOOLEAN AS $$
 BEGIN
     RETURN EXISTS (
-        SELECT 1 FROM admin_users 
+        SELECT 1 FROM public.admin_users 
         WHERE auth_user_id = user_id 
         AND is_active = true
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- =====================================================
 -- 6. Create triggers for updated_at
 -- =====================================================
 
 -- Create updated_at trigger function
-
+-- SET search_path = '' prevents search_path injection attacks
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SET search_path = '';
 
 -- Add triggers for updated_at on all tables
 DROP TRIGGER IF EXISTS update_admin_users_updated_at ON admin_users;

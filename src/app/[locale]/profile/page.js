@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
-import { useTranslations } from "@/context/LanguageContext";
+import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import LoginDialog from '@/components/LoginDialog';
@@ -15,6 +15,7 @@ export default function ProfilePage() {
     const router = useRouter();
     const t = useTranslations('profile');
     const tCommon = useTranslations('common');
+    const { locale } = useLanguage();
 
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -176,6 +177,9 @@ export default function ProfilePage() {
         setError('');
 
         try {
+            // Ensure phone number has + prefix if provided
+            const formattedPhone = formData.phone ? (formData.phone.startsWith('+') ? formData.phone : `+${formData.phone}`) : null;
+
             // Update the existing profile (don't use upsert, just update)
             const { data: updatedProfile, error } = await supabase
                 .from('profiles')
@@ -183,7 +187,7 @@ export default function ProfilePage() {
                     username: formData.username,
                     first_name: formData.first_name,
                     last_name: formData.last_name,
-                    phone: formData.phone,
+                    phone: formattedPhone,
                     avatar_url: formData.avatar_url
                 })
                 .eq('auth_user_id', user.id)
@@ -1027,7 +1031,7 @@ export default function ProfilePage() {
                                     </div>
                                 ) : (
                                     <p className="text-gray-900 dark:text-gray-400 font-medium text-start" dir="ltr">
-                                        {formData.phone ? `+${formData.phone}` : t('notSet')}
+                                        {formData.phone || t('notSet')}
                                     </p>
                                 )}
                             </div>
@@ -1095,7 +1099,7 @@ export default function ProfilePage() {
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-800">
                                     <span className="text-gray-500 dark:text-gray-400 text-sm">{t('labels.memberSince')}</span>
-                                    <span className="text-gray-900 dark:text-white font-medium text-sm">{new Date(user.created_at).toLocaleDateString()}</span>
+                                    <span className="text-gray-900 dark:text-white font-medium text-sm">{new Date(user.created_at).toLocaleDateString(locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US')}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2">
                                     <span className={`text-sm ${isAdmin ? 'text-amber-600 dark:text-amber-400' : 'text-gray-500 dark:text-gray-400'}`}>{t('labels.plan')}</span>
