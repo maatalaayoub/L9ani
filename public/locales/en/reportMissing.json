@@ -79,9 +79,11 @@
         "city": "City",
         "lastKnownLocation": "Last Known Location",
         "additionalInfo": "Additional Details",
-        "mapLocation": "Mark Location on Map",
+        "mapLocation": "Select Last Known Location on Map",
+        "mapLocationRequired": "Click on the map to mark where the item was last seen",
         "coordinates": "Coordinates",
-        "mapHint": "Click on the map to mark the last known location",
+        "mapHint": "Click on the map to mark the exact last known location - this will auto-fill the address field",
+        "myLocation": "My Location",
         
         "petName": "Pet Name",
         "petType": "Pet Type",
@@ -117,6 +119,8 @@
         "lastName": "Enter last name or surname",
         "healthDetails": "Describe any physical or mental health conditions...",
         "city": "e.g., Casablanca",
+        "selectCity": "Select a city...",
+        "searchCity": "Search for a city...",
         "lastKnownLocation": "e.g., Near Central Market, downtown area",
         "additionalInfo": "Describe distinguishing features, time last seen, circumstances...",
         
@@ -152,6 +156,7 @@
         "selectGender": "Select gender",
         "male": "Male",
         "female": "Female",
+        "addNewCity": "Add another city",
         "health": {
             "healthy": "Healthy",
             "physical": "Physical Condition",

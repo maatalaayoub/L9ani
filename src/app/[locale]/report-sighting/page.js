@@ -8,6 +8,8 @@ import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import LoginDialog from '@/components/LoginDialog';
+import SelectDropdown from '@/components/SelectDropdown';
+import { getCitiesForDropdown } from '@/data/moroccanCities';
 
 // Dynamically import MapPicker to avoid SSR issues with Leaflet
 const MapPicker = dynamic(() => import('@/components/MapPicker'), {
@@ -35,17 +37,46 @@ export default function ReportSightingPage() {
     const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
     const [loginDialogTab, setLoginDialogTab] = useState('login');
 
+    const [reportType, setReportType] = useState('');
+
     const [formData, setFormData] = useState({
+        // Person fields
         firstName: '',
         lastName: '',
-        phone: '',
-        email: '',
+        // Pet fields
+        petType: '',
+        petBreed: '',
+        petColor: '',
+        petSize: '',
+        petCollar: '',
+        // Document fields
+        documentType: '',
+        documentNumber: '',
+        ownerName: '',
+        // Electronics fields
+        deviceType: '',
+        deviceBrand: '',
+        deviceModel: '',
+        deviceColor: '',
+        // Vehicle fields
+        vehicleType: '',
+        vehicleBrand: '',
+        vehicleModel: '',
+        vehicleColor: '',
+        licensePlate: '',
+        // Other item fields
+        itemName: '',
+        itemDescription: '',
+        // Common fields
         city: '',
         locationDescription: '',
         coordinates: { lat: null, lng: null },
         additionalInfo: '',
+        // Reporter fields
         reporterFirstName: '',
-        reporterLastName: ''
+        reporterLastName: '',
+        phone: '',
+        email: ''
     });
 
     const [photos, setPhotos] = useState([]);
@@ -55,7 +86,32 @@ export default function ReportSightingPage() {
 
     // Get the first validation error (in order of priority)
     const getFirstValidationError = () => {
+        if (!reportType) return t('validation.reportType');
+        
+        // Photos are required
         if (photos.length === 0) return t('validation.photo');
+        
+        // Type-specific validation
+        switch (reportType) {
+            case 'pet':
+                if (!formData.petType) return t('validation.petType');
+                break;
+            case 'document':
+                if (!formData.documentType) return t('validation.documentType');
+                break;
+            case 'electronics':
+                if (!formData.deviceType) return t('validation.deviceType');
+                if (!formData.deviceBrand) return t('validation.deviceBrand');
+                break;
+            case 'vehicle':
+                if (!formData.vehicleType) return t('validation.vehicleType');
+                if (!formData.vehicleBrand) return t('validation.vehicleBrand');
+                break;
+            case 'other':
+                if (!formData.itemName.trim()) return t('validation.itemName');
+                break;
+        }
+
         if (!formData.phone.trim()) return t('validation.phone');
         if (!formData.city.trim()) return t('validation.city');
         if (!formData.locationDescription.trim()) return t('validation.locationDescription');
@@ -63,10 +119,12 @@ export default function ReportSightingPage() {
         return null;
     };
 
-    const handleLocationSelect = (coords) => {
+    const handleLocationSelect = (locationData) => {
         setFormData(prev => ({
             ...prev,
-            coordinates: coords
+            coordinates: { lat: locationData.lat, lng: locationData.lng },
+            // Auto-fill location description with detailed address (city selection is manual)
+            locationDescription: locationData.address || prev.locationDescription
         }));
     };
 
@@ -240,6 +298,149 @@ export default function ReportSightingPage() {
                     </div>
                 </div>
 
+                {/* Type Selection */}
+                <div className="mb-8">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('types.selectType')}</h2>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        {/* Person */}
+                        <button
+                            type="button"
+                            onClick={() => setReportType('person')}
+                            className={`flex flex-col items-center gap-3 p-5 rounded-xl border-2 transition-all ${
+                                reportType === 'person'
+                                    ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 shadow-md'
+                                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
+                            }`}
+                        >
+                            <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
+                                reportType === 'person' ? 'bg-orange-100 dark:bg-orange-900/40' : 'bg-gray-100 dark:bg-gray-800'
+                            }`}>
+                                <svg className={`w-7 h-7 ${reportType === 'person' ? 'text-orange-600 dark:text-orange-400' : 'text-gray-500 dark:text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </div>
+                            <span className={`text-sm font-medium ${reportType === 'person' ? 'text-orange-700 dark:text-orange-300' : 'text-gray-700 dark:text-gray-300'}`}>
+                                {t('types.person.title')}
+                            </span>
+                        </button>
+
+                        {/* Pet */}
+                        <button
+                            type="button"
+                            onClick={() => setReportType('pet')}
+                            className={`flex flex-col items-center gap-3 p-5 rounded-xl border-2 transition-all ${
+                                reportType === 'pet'
+                                    ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 shadow-md'
+                                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
+                            }`}
+                        >
+                            <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
+                                reportType === 'pet' ? 'bg-orange-100 dark:bg-orange-900/40' : 'bg-gray-100 dark:bg-gray-800'
+                            }`}>
+                                <svg className={`w-7 h-7 ${reportType === 'pet' ? 'text-orange-600 dark:text-orange-400' : 'text-gray-500 dark:text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 19c-4 0-7-2-7-5 0-2 2-4 4-4 1.5 0 2.5 1 3 2 .5-1 1.5-2 3-2 2 0 4 2 4 4 0 3-3 5-7 5z" />
+                                    <circle cx="7" cy="8" r="2" strokeWidth="1.5" />
+                                    <circle cx="17" cy="8" r="2" strokeWidth="1.5" />
+                                    <circle cx="10" cy="5" r="1.5" strokeWidth="1.5" />
+                                    <circle cx="14" cy="5" r="1.5" strokeWidth="1.5" />
+                                </svg>
+                            </div>
+                            <span className={`text-sm font-medium ${reportType === 'pet' ? 'text-orange-700 dark:text-orange-300' : 'text-gray-700 dark:text-gray-300'}`}>
+                                {t('types.pet.title')}
+                            </span>
+                        </button>
+
+                        {/* Documents */}
+                        <button
+                            type="button"
+                            onClick={() => setReportType('document')}
+                            className={`flex flex-col items-center gap-3 p-5 rounded-xl border-2 transition-all ${
+                                reportType === 'document'
+                                    ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 shadow-md'
+                                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
+                            }`}
+                        >
+                            <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
+                                reportType === 'document' ? 'bg-orange-100 dark:bg-orange-900/40' : 'bg-gray-100 dark:bg-gray-800'
+                            }`}>
+                                <svg className={`w-7 h-7 ${reportType === 'document' ? 'text-orange-600 dark:text-orange-400' : 'text-gray-500 dark:text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>
+                            <span className={`text-sm font-medium ${reportType === 'document' ? 'text-orange-700 dark:text-orange-300' : 'text-gray-700 dark:text-gray-300'}`}>
+                                {t('types.documents.title')}
+                            </span>
+                        </button>
+
+                        {/* Electronics */}
+                        <button
+                            type="button"
+                            onClick={() => setReportType('electronics')}
+                            className={`flex flex-col items-center gap-3 p-5 rounded-xl border-2 transition-all ${
+                                reportType === 'electronics'
+                                    ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 shadow-md'
+                                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
+                            }`}
+                        >
+                            <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
+                                reportType === 'electronics' ? 'bg-orange-100 dark:bg-orange-900/40' : 'bg-gray-100 dark:bg-gray-800'
+                            }`}>
+                                <svg className={`w-7 h-7 ${reportType === 'electronics' ? 'text-orange-600 dark:text-orange-400' : 'text-gray-500 dark:text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <span className={`text-sm font-medium ${reportType === 'electronics' ? 'text-orange-700 dark:text-orange-300' : 'text-gray-700 dark:text-gray-300'}`}>
+                                {t('types.electronics.title')}
+                            </span>
+                        </button>
+
+                        {/* Vehicle */}
+                        <button
+                            type="button"
+                            onClick={() => setReportType('vehicle')}
+                            className={`flex flex-col items-center gap-3 p-5 rounded-xl border-2 transition-all ${
+                                reportType === 'vehicle'
+                                    ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 shadow-md'
+                                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
+                            }`}
+                        >
+                            <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
+                                reportType === 'vehicle' ? 'bg-orange-100 dark:bg-orange-900/40' : 'bg-gray-100 dark:bg-gray-800'
+                            }`}>
+                                <svg className={`w-7 h-7 ${reportType === 'vehicle' ? 'text-orange-600 dark:text-orange-400' : 'text-gray-500 dark:text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+                                </svg>
+                            </div>
+                            <span className={`text-sm font-medium ${reportType === 'vehicle' ? 'text-orange-700 dark:text-orange-300' : 'text-gray-700 dark:text-gray-300'}`}>
+                                {t('types.vehicle.title')}
+                            </span>
+                        </button>
+
+                        {/* Other */}
+                        <button
+                            type="button"
+                            onClick={() => setReportType('other')}
+                            className={`flex flex-col items-center gap-3 p-5 rounded-xl border-2 transition-all ${
+                                reportType === 'other'
+                                    ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 shadow-md'
+                                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
+                            }`}
+                        >
+                            <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
+                                reportType === 'other' ? 'bg-orange-100 dark:bg-orange-900/40' : 'bg-gray-100 dark:bg-gray-800'
+                            }`}>
+                                <svg className={`w-7 h-7 ${reportType === 'other' ? 'text-orange-600 dark:text-orange-400' : 'text-gray-500 dark:text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                </svg>
+                            </div>
+                            <span className={`text-sm font-medium ${reportType === 'other' ? 'text-orange-700 dark:text-orange-300' : 'text-gray-700 dark:text-gray-300'}`}>
+                                {t('types.other.title')}
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
                 {/* Notifications */}
                 {message && (
                     <div className="mb-6 flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
@@ -254,6 +455,9 @@ export default function ReportSightingPage() {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
 
+                    {/* Only show form if type is selected */}
+                    {reportType && (
+                    <>
                     {/* Section 1: Photo Upload */}
                     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-gray-100 dark:border-gray-800">
@@ -323,7 +527,7 @@ export default function ReportSightingPage() {
                     </div>
 
                     {/* Section 2: Location Information */}
-                    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
                         <div className="p-6 border-b border-gray-100 dark:border-gray-800">
                             <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                                 <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -343,6 +547,7 @@ export default function ReportSightingPage() {
                                 <MapPicker 
                                     onLocationSelect={handleLocationSelect}
                                     initialCoordinates={formData.coordinates}
+                                    myLocationLabel={t('fields.myLocation')}
                                 />
                                 {formData.coordinates.lat && (
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
@@ -360,18 +565,19 @@ export default function ReportSightingPage() {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                 {/* City */}
-                                <div>
+                                <div className="relative z-50">
                                     <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                                         {t('fields.city')} <span className="text-red-500">*</span>
                                     </label>
-                                    <input
-                                        type="text"
-                                        name="city"
+                                    <SelectDropdown
                                         value={formData.city}
-                                        onChange={handleChange}
-                                        dir={isRTL ? 'rtl' : 'ltr'}
-                                        className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
-                                        placeholder={t('placeholders.city')}
+                                        onChange={(value) => setFormData(prev => ({ ...prev, city: value }))}
+                                        options={getCitiesForDropdown(locale)}
+                                        placeholder={t('placeholders.selectCity')}
+                                        searchPlaceholder={t('placeholders.searchCity')}
+                                        isRTL={isRTL}
+                                        allowCustom={true}
+                                        customLabel={t('options.addNewCity')}
                                     />
                                 </div>
 
@@ -394,7 +600,8 @@ export default function ReportSightingPage() {
                         </div>
                     </div>
 
-                    {/* Section 3: Person Details (Very Important if known) */}
+                    {/* Section 3: Type-Specific Details */}
+                    {reportType === 'person' && (
                     <div className="bg-white dark:bg-gray-900 rounded-xl border-2 border-orange-200 dark:border-orange-900/50 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-orange-100 dark:border-orange-900/30 bg-orange-50/50 dark:bg-orange-900/10">
                             <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -453,6 +660,261 @@ export default function ReportSightingPage() {
                             </div>
                         </div>
                     </div>
+                    )}
+
+                    {/* Pet Details */}
+                    {reportType === 'pet' && (
+                        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 19c-4 0-7-2-7-5 0-2 2-4 4-4 1.5 0 2.5 1 3 2 .5-1 1.5-2 3-2 2 0 4 2 4 4 0 3-3 5-7 5z" />
+                                    </svg>
+                                    {t('sections.petDetails.title')}
+                                </h2>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('sections.petDetails.description')}</p>
+                            </div>
+                            <div className="p-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    {/* Pet Type */}
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                            {t('fields.petType')} <span className="text-red-500">*</span>
+                                        </label>
+                                        <select
+                                            name="petType"
+                                            value={formData.petType}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                                        >
+                                            <option value="">{t('placeholders.petType')}</option>
+                                            <option value="dog">{t('options.petTypes.dog')}</option>
+                                            <option value="cat">{t('options.petTypes.cat')}</option>
+                                            <option value="bird">{t('options.petTypes.bird')}</option>
+                                            <option value="other">{t('options.petTypes.other')}</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Breed */}
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                            {t('fields.petBreed')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="petBreed"
+                                            value={formData.petBreed}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                                            placeholder={t('placeholders.petBreed')}
+                                        />
+                                    </div>
+
+                                    {/* Color */}
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                            {t('fields.petColor')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="petColor"
+                                            value={formData.petColor}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                                            placeholder={t('placeholders.petColor')}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Document Details */}
+                    {reportType === 'document' && (
+                        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    {t('sections.documentDetails.title')}
+                                </h2>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('sections.documentDetails.description')}</p>
+                            </div>
+                            <div className="p-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    {/* Document Type */}
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                            {t('fields.documentType')} <span className="text-red-500">*</span>
+                                        </label>
+                                        <select
+                                            name="documentType"
+                                            value={formData.documentType}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                                        >
+                                            <option value="">{t('placeholders.documentType')}</option>
+                                            <option value="nationalId">{t('options.documentTypes.nationalId')}</option>
+                                            <option value="passport">{t('options.documentTypes.passport')}</option>
+                                            <option value="driverLicense">{t('options.documentTypes.driverLicense')}</option>
+                                            <option value="other">{t('options.documentTypes.other')}</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Owner Name */}
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                            {t('fields.ownerName')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="ownerName"
+                                            value={formData.ownerName}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                                            placeholder={t('placeholders.ownerName')}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Electronics Details */}
+                    {reportType === 'electronics' && (
+                        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                    </svg>
+                                    {t('sections.electronicsDetails.title')}
+                                </h2>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('sections.electronicsDetails.description')}</p>
+                            </div>
+                            <div className="p-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    {/* Device Type */}
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                            {t('fields.deviceType')} <span className="text-red-500">*</span>
+                                        </label>
+                                        <select
+                                            name="deviceType"
+                                            value={formData.deviceType}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                                        >
+                                            <option value="">{t('placeholders.deviceType')}</option>
+                                            <option value="phone">{t('options.deviceTypes.phone')}</option>
+                                            <option value="laptop">{t('options.deviceTypes.laptop')}</option>
+                                            <option value="tablet">{t('options.deviceTypes.tablet')}</option>
+                                            <option value="other">{t('options.deviceTypes.other')}</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Brand */}
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                            {t('fields.deviceBrand')} <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="deviceBrand"
+                                            value={formData.deviceBrand}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                                            placeholder={t('placeholders.deviceBrand')}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Vehicle Details */}
+                    {reportType === 'vehicle' && (
+                        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+                                    </svg>
+                                    {t('sections.vehicleDetails.title')}
+                                </h2>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('sections.vehicleDetails.description')}</p>
+                            </div>
+                            <div className="p-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    {/* Vehicle Type */}
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                            {t('fields.vehicleType')} <span className="text-red-500">*</span>
+                                        </label>
+                                        <select
+                                            name="vehicleType"
+                                            value={formData.vehicleType}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                                        >
+                                            <option value="">{t('placeholders.vehicleType')}</option>
+                                            <option value="car">{t('options.vehicleTypes.car')}</option>
+                                            <option value="motorcycle">{t('options.vehicleTypes.motorcycle')}</option>
+                                            <option value="bicycle">{t('options.vehicleTypes.bicycle')}</option>
+                                            <option value="other">{t('options.vehicleTypes.other')}</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Brand */}
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                            {t('fields.vehicleBrand')} <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="vehicleBrand"
+                                            value={formData.vehicleBrand}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                                            placeholder={t('placeholders.vehicleBrand')}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Other Item Details */}
+                    {reportType === 'other' && (
+                        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                    </svg>
+                                    {t('sections.otherDetails.title')}
+                                </h2>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('sections.otherDetails.description')}</p>
+                            </div>
+                            <div className="p-6">
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                        {t('fields.itemName')} <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="itemName"
+                                        value={formData.itemName}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                                        placeholder={t('placeholders.itemName')}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Section 4: Your Contact Information (All in one block) */}
                     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
@@ -654,6 +1116,8 @@ export default function ReportSightingPage() {
                             )}
                         </button>
                     </div>
+                    </>
+                    )}
 
                 </form>
             </div>

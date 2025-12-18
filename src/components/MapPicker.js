@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 // Color presets for markers
 const colorPresets = {
@@ -18,13 +18,169 @@ const colorPresets = {
     }
 };
 
-export default function MapPicker({ onLocationSelect, initialCoordinates, markerColor = 'orange' }) {
+// Reverse geocoding function using Nominatim API
+const reverseGeocode = async (lat, lng) => {
+    try {
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1&accept-language=en,ar`,
+            {
+                headers: {
+                    'User-Agent': 'L9ani-App/1.0'
+                }
+            }
+        );
+        
+        if (!response.ok) return null;
+        
+        const data = await response.json();
+        const address = data.address || {};
+        
+        // Build detailed address (neighborhood, street, etc.)
+        const addressParts = [];
+        
+        if (address.neighbourhood || address.suburb) {
+            addressParts.push(address.neighbourhood || address.suburb);
+        }
+        if (address.road || address.street) {
+            addressParts.push(address.road || address.street);
+        }
+        if (address.house_number) {
+            addressParts.push(address.house_number);
+        }
+        if (address.hamlet || address.village) {
+            if (!addressParts.includes(address.hamlet) && !addressParts.includes(address.village)) {
+                addressParts.push(address.hamlet || address.village);
+            }
+        }
+        if (address.quarter) {
+            addressParts.push(address.quarter);
+        }
+        
+        // If no detailed parts, use the display name but remove city/country parts
+        let detailedAddress = addressParts.join(', ');
+        if (!detailedAddress && data.display_name) {
+            // Use first parts of display_name (usually more specific)
+            const parts = data.display_name.split(', ');
+            detailedAddress = parts.slice(0, Math.min(3, parts.length - 2)).join(', ');
+        }
+        
+        return {
+            address: detailedAddress,
+            fullAddress: data.display_name || ''
+        };
+    } catch (error) {
+        console.error('Reverse geocoding error:', error);
+        return null;
+    }
+};
+
+export default function MapPicker({ onLocationSelect, initialCoordinates, markerColor = 'orange', myLocationLabel = 'My Location' }) {
     const mapContainerRef = useRef(null);
     const mapRef = useRef(null);
     const markerRef = useRef(null);
+    const leafletRef = useRef(null);
+    const customIconRef = useRef(null);
     const [isReady, setIsReady] = useState(false);
+    const [isLocating, setIsLocating] = useState(false);
+    const [locationError, setLocationError] = useState(null);
     
     const colors = colorPresets[markerColor] || colorPresets.orange;
+
+    // Handle location selection (extracted for reuse)
+    const handleMarkerPlacement = useCallback(async (lat, lng) => {
+        const geoData = await reverseGeocode(lat, lng);
+        onLocationSelect?.({
+            lat: lat.toFixed(6),
+            lng: lng.toFixed(6),
+            address: geoData?.address || '',
+            fullAddress: geoData?.fullAddress || ''
+        });
+    }, [onLocationSelect]);
+
+    // Function to get current location
+    const handleGetMyLocation = useCallback(() => {
+        // Clear previous errors
+        setLocationError(null);
+        
+        if (!navigator.geolocation) {
+            setLocationError('Geolocation is not supported by your browser');
+            console.error('Geolocation is not supported');
+            return;
+        }
+
+        // Check if we're on HTTPS or localhost
+        const isSecure = window.location.protocol === 'https:' || 
+                         window.location.hostname === 'localhost' || 
+                         window.location.hostname === '127.0.0.1';
+        
+        if (!isSecure) {
+            setLocationError('Location access requires HTTPS');
+            console.error('Geolocation requires HTTPS');
+            return;
+        }
+
+        setIsLocating(true);
+        
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude, accuracy } = position.coords;
+                console.log('Location obtained:', { latitude, longitude, accuracy });
+                
+                const map = mapRef.current;
+                const L = leafletRef.current;
+                const customIcon = customIconRef.current;
+
+                if (map && L && customIcon) {
+                    // Move map to current location with appropriate zoom based on accuracy
+                    const zoomLevel = accuracy < 100 ? 17 : accuracy < 500 ? 15 : 13;
+                    map.setView([latitude, longitude], zoomLevel);
+
+                    // Add or move marker
+                    if (markerRef.current) {
+                        markerRef.current.setLatLng([latitude, longitude]);
+                    } else {
+                        markerRef.current = L.marker([latitude, longitude], {
+                            icon: customIcon,
+                            draggable: true
+                        }).addTo(map);
+
+                        markerRef.current.on('dragend', async (e) => {
+                            const pos = e.target.getLatLng();
+                            await handleMarkerPlacement(pos.lat, pos.lng);
+                        });
+                    }
+
+                    // Trigger location select callback
+                    await handleMarkerPlacement(latitude, longitude);
+                }
+                setIsLocating(false);
+            },
+            (error) => {
+                console.error('Geolocation error:', error);
+                setIsLocating(false);
+                
+                // Provide user-friendly error messages
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        setLocationError('Location access denied. Please enable location in your browser settings.');
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        setLocationError('Location information unavailable. Please try again.');
+                        break;
+                    case error.TIMEOUT:
+                        setLocationError('Location request timed out. Please try again.');
+                        break;
+                    default:
+                        setLocationError('Unable to get your location. Please try again.');
+                }
+            },
+            { 
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0
+            }
+        );
+    }, [handleMarkerPlacement]);
 
     useEffect(() => {
         // Only run on client
@@ -82,6 +238,8 @@ export default function MapPicker({ onLocationSelect, initialCoordinates, marker
                 });
 
                 mapRef.current = map;
+                leafletRef.current = L;
+                customIconRef.current = customIcon;
 
                 // Add tile layer - OpenStreetMap
                 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -96,17 +254,20 @@ export default function MapPicker({ onLocationSelect, initialCoordinates, marker
                         { icon: customIcon, draggable: true }
                     ).addTo(map);
 
-                    markerRef.current.on('dragend', (e) => {
+                    markerRef.current.on('dragend', async (e) => {
                         const pos = e.target.getLatLng();
+                        const geoData = await reverseGeocode(pos.lat, pos.lng);
                         onLocationSelect?.({
                             lat: pos.lat.toFixed(6),
-                            lng: pos.lng.toFixed(6)
+                            lng: pos.lng.toFixed(6),
+                            address: geoData?.address || '',
+                            fullAddress: geoData?.fullAddress || ''
                         });
                     });
                 }
 
                 // Handle click to add/move marker
-                map.on('click', (e) => {
+                map.on('click', async (e) => {
                     const { lat, lng } = e.latlng;
 
                     if (markerRef.current) {
@@ -117,18 +278,26 @@ export default function MapPicker({ onLocationSelect, initialCoordinates, marker
                             draggable: true
                         }).addTo(map);
 
-                        markerRef.current.on('dragend', (e) => {
+                        markerRef.current.on('dragend', async (e) => {
                             const pos = e.target.getLatLng();
+                            const geoData = await reverseGeocode(pos.lat, pos.lng);
                             onLocationSelect?.({
                                 lat: pos.lat.toFixed(6),
-                                lng: pos.lng.toFixed(6)
+                                lng: pos.lng.toFixed(6),
+                                address: geoData?.address || '',
+                                fullAddress: geoData?.fullAddress || ''
                             });
                         });
                     }
 
+                    // Perform reverse geocoding
+                    const geoData = await reverseGeocode(lat, lng);
+                    
                     onLocationSelect?.({
                         lat: lat.toFixed(6),
-                        lng: lng.toFixed(6)
+                        lng: lng.toFixed(6),
+                        address: geoData?.address || '',
+                        fullAddress: geoData?.fullAddress || ''
                     });
                 });
 
@@ -170,6 +339,56 @@ export default function MapPicker({ onLocationSelect, initialCoordinates, marker
                 className="w-full h-full z-0"
                 style={{ background: '#e5e7eb' }}
             />
+            {/* My Location Button */}
+            {isReady && (
+                <button
+                    type="button"
+                    onClick={handleGetMyLocation}
+                    disabled={isLocating}
+                    className={`
+                        absolute top-3 right-3 z-[1000] 
+                        flex items-center gap-2 px-3 py-2 
+                        bg-white dark:bg-gray-800 
+                        border border-gray-200 dark:border-gray-600 
+                        rounded-lg shadow-md 
+                        text-sm font-medium text-gray-700 dark:text-gray-200
+                        hover:bg-gray-50 dark:hover:bg-gray-700 
+                        transition-all duration-200
+                        disabled:opacity-50 disabled:cursor-not-allowed
+                    `}
+                    title={myLocationLabel}
+                >
+                    {isLocating ? (
+                        <div className={`animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-${markerColor === 'blue' ? 'blue' : 'orange'}-500`}></div>
+                    ) : (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    )}
+                    <span className="hidden sm:inline">{myLocationLabel}</span>
+                </button>
+            )}
+            {/* Location Error Message */}
+            {locationError && (
+                <div className="absolute top-16 right-3 z-[1000] max-w-[200px] sm:max-w-[280px] px-3 py-2 bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-700 rounded-lg shadow-md">
+                    <div className="flex items-start gap-2">
+                        <svg className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p className="text-xs text-red-600 dark:text-red-300">{locationError}</p>
+                        <button 
+                            type="button"
+                            onClick={() => setLocationError(null)}
+                            className="flex-shrink-0 text-red-400 hover:text-red-600"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            )}
             {!isReady && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800">
                     <div className={`animate-spin rounded-full h-8 w-8 border-b-2 ${colors.spinner} mb-3`}></div>

@@ -1,26 +1,77 @@
 {
     "title": "Report a Sighting",
-    "subtitle": "Have you seen someone who might be missing? Your report could help reunite them with their family.",
+    "subtitle": "Have you found something or seen someone who might be missing? Your report could help reunite them with their owner or family.",
     "backToHome": "Back to Home",
     "optional": "Optional",
     "veryImportant": "Very Important",
     
-    "heroTitle": "Your Observation Could Save a Life",
-    "heroDescription": "If you've seen someone who appears lost, confused, or matches a missing person report, please share the details below. Every piece of information matters.",
+    "heroTitle": "Your Observation Could Make a Difference",
+    "heroDescription": "If you've found a lost item, pet, or seen someone who appears lost or matches a missing person report, please share the details below. Every piece of information matters.",
+
+    "types": {
+        "selectType": "What did you find or see?",
+        "selectTypeDescription": "Select the type of sighting to show relevant fields",
+        "person": {
+            "title": "Person",
+            "description": "Seen someone who might be missing"
+        },
+        "pet": {
+            "title": "Pet",
+            "description": "Found a lost cat, dog, or animal"
+        },
+        "documents": {
+            "title": "Document",
+            "description": "Found ID card, passport, or papers"
+        },
+        "electronics": {
+            "title": "Electronics",
+            "description": "Found phone, laptop, or device"
+        },
+        "vehicle": {
+            "title": "Vehicle",
+            "description": "Found abandoned vehicle"
+        },
+        "other": {
+            "title": "Other",
+            "description": "Found keys, bags, or other items"
+        }
+    },
 
     "sections": {
         "photos": {
-            "title": "Photos of the Person",
-            "description": "Upload clear photos of the person you've seen (up to 5 photos)"
+            "title": "Photos",
+            "description": "Upload clear photos to help with identification (up to 5 photos)",
+            "uploadButton": "Click to upload photos",
+            "hint": "Upload up to 5 photos (JPG, PNG)"
         },
         "location": {
             "title": "Sighting Location",
-            "description": "Where did you see this person? Mark the location on the map or describe it"
+            "description": "Where did you find/see this? Mark the location on the map or describe it"
         },
         "personDetails": {
             "title": "Person's Name",
             "description": "Did they tell you their name? This information is crucial for identification!",
             "importanceNote": "If the person mentioned their name, please provide it - it greatly helps in matching with missing person reports"
+        },
+        "petDetails": {
+            "title": "Pet Details",
+            "description": "Describe the pet you found"
+        },
+        "documentDetails": {
+            "title": "Document Details",
+            "description": "Provide information about the document you found"
+        },
+        "electronicsDetails": {
+            "title": "Device Details",
+            "description": "Describe the device you found"
+        },
+        "vehicleDetails": {
+            "title": "Vehicle Details",
+            "description": "Describe the vehicle you found"
+        },
+        "otherDetails": {
+            "title": "Item Details",
+            "description": "Describe the item you found"
         },
         "contact": {
             "title": "Your Contact Information",
@@ -31,15 +82,16 @@
         },
         "additionalInfo": {
             "title": "Additional Information",
-            "description": "Any other details about your encounter or conversation"
+            "description": "Any other details about your find or encounter"
         }
     },
 
     "fields": {
         "mapLocation": "Pin Location on Map",
         "coordinates": "Coordinates",
-        "mapHint": "Click on the map to mark where you saw the person. You can drag the marker to adjust.",
+        "mapHint": "Click on the map to mark where you found/saw the item. You can drag the marker to adjust.",
         "mapMobileHint": "Use two fingers to move the map",
+        "myLocation": "My Location",
         "city": "City",
         "locationDescription": "Location Description",
         "firstName": "First Name",
@@ -47,11 +99,37 @@
         "reporterFirstName": "Your First Name",
         "reporterLastName": "Your Last Name",
         "phone": "Your Phone Number",
-        "email": "Your Email"
+        "email": "Your Email",
+        
+        "petType": "Pet Type",
+        "petBreed": "Breed (if known)",
+        "petColor": "Color/Markings",
+        "petSize": "Size",
+        "petCollar": "Has Collar/Tag?",
+        
+        "documentType": "Document Type",
+        "documentNumber": "Document Number (if visible)",
+        "ownerName": "Owner Name (if visible)",
+        
+        "deviceType": "Device Type",
+        "deviceBrand": "Brand",
+        "deviceModel": "Model (if known)",
+        "deviceColor": "Color",
+        
+        "vehicleType": "Vehicle Type",
+        "vehicleBrand": "Brand",
+        "vehicleModel": "Model",
+        "vehicleColor": "Color",
+        "licensePlate": "License Plate (if visible)",
+        
+        "itemName": "Item Name/Type",
+        "itemDescription": "Item Description"
     },
 
     "placeholders": {
         "city": "e.g., Casablanca",
+        "selectCity": "Select a city...",
+        "searchCity": "Search for a city...",
         "locationDescription": "e.g., Near the central market on Mohammed V street",
         "firstName": "Enter first name if they told you",
         "lastName": "Enter last name if they told you",
@@ -59,7 +137,126 @@
         "reporterLastName": "Enter your last name",
         "phone": "+212 6XX XXX XXX",
         "email": "your.email@example.com",
-        "additionalInfo": "Describe your encounter with this person. Did they say anything? How did they appear? Were they alone or with someone? Any distinguishing features you noticed?"
+        "additionalInfo": "Describe your encounter or how you found this item. Any additional details that might help identify the owner.",
+        
+        "petBreed": "e.g., German Shepherd, Persian",
+        "petColor": "e.g., Brown with white spots",
+        
+        "documentNumber": "Enter visible document number",
+        "ownerName": "Name on the document",
+        
+        "deviceModel": "e.g., iPhone 15, Galaxy S24",
+        
+        "vehicleModel": "e.g., Corolla, Civic",
+        "licensePlate": "e.g., 12345-A-67",
+        
+        "itemName": "e.g., Black leather wallet, set of keys",
+        "itemDescription": "Describe the item in detail..."
+    },
+
+    "options": {
+        "addNewCity": "Add another city",
+        "petTypes": {
+            "dog": "Dog",
+            "cat": "Cat",
+            "bird": "Bird",
+            "other": "Other"
+        },
+        "petSizes": {
+            "small": "Small",
+            "medium": "Medium",
+            "large": "Large"
+        },
+        "petCollar": {
+            "yes": "Yes, has collar/tag",
+            "no": "No collar/tag",
+            "unknown": "Not sure"
+        },
+        "documentTypes": {
+            "nationalId": "National ID Card (CIN)",
+            "passport": "Passport",
+            "driverLicense": "Driver's License",
+            "residenceCard": "Residence Card",
+            "birthCertificate": "Birth Certificate",
+            "diploma": "Diploma/Certificate",
+            "other": "Other Document"
+        },
+        "deviceTypes": {
+            "phone": "Mobile Phone",
+            "laptop": "Laptop",
+            "tablet": "Tablet",
+            "camera": "Camera",
+            "smartwatch": "Smartwatch",
+            "earbuds": "Earbuds/Headphones",
+            "other": "Other Device"
+        },
+        "deviceBrands": {
+            "apple": "Apple",
+            "samsung": "Samsung",
+            "huawei": "Huawei",
+            "xiaomi": "Xiaomi",
+            "oppo": "OPPO",
+            "vivo": "Vivo",
+            "realme": "Realme",
+            "oneplus": "OnePlus",
+            "google": "Google",
+            "sony": "Sony",
+            "lg": "LG",
+            "nokia": "Nokia",
+            "motorola": "Motorola",
+            "asus": "ASUS",
+            "lenovo": "Lenovo",
+            "hp": "HP",
+            "dell": "Dell",
+            "acer": "Acer",
+            "microsoft": "Microsoft",
+            "other": "Other Brand"
+        },
+        "vehicleTypes": {
+            "car": "Car",
+            "motorcycle": "Motorcycle",
+            "bicycle": "Bicycle",
+            "scooter": "Scooter",
+            "other": "Other Vehicle"
+        },
+        "vehicleBrands": {
+            "toyota": "Toyota",
+            "honda": "Honda",
+            "nissan": "Nissan",
+            "hyundai": "Hyundai",
+            "kia": "KIA",
+            "mercedes": "Mercedes-Benz",
+            "bmw": "BMW",
+            "audi": "Audi",
+            "volkswagen": "Volkswagen",
+            "ford": "Ford",
+            "chevrolet": "Chevrolet",
+            "peugeot": "Peugeot",
+            "renault": "Renault",
+            "dacia": "Dacia",
+            "fiat": "Fiat",
+            "citroen": "Citroën",
+            "suzuki": "Suzuki",
+            "mazda": "Mazda",
+            "mitsubishi": "Mitsubishi",
+            "other": "Other Brand"
+        },
+        "colors": {
+            "black": "Black",
+            "white": "White",
+            "silver": "Silver",
+            "gray": "Gray",
+            "red": "Red",
+            "blue": "Blue",
+            "green": "Green",
+            "yellow": "Yellow",
+            "orange": "Orange",
+            "brown": "Brown",
+            "gold": "Gold",
+            "pink": "Pink",
+            "purple": "Purple",
+            "other": "Other Color"
+        }
     },
 
     "buttons": {
@@ -69,19 +266,28 @@
 
     "errors": {
         "maxPhotos": "You can upload a maximum of 5 photos",
-        "photoRequired": "Please upload at least one photo of the person you've seen",
+        "photoRequired": "Please upload at least one photo",
         "phoneRequired": "Phone number is required so we can contact you",
         "locationRequired": "Please provide the city and location description",
         "submitFailed": "Failed to submit the report. Please try again.",
-        "legalConfirmationRequired": "You must confirm the above statement to submit the report."
+        "legalConfirmationRequired": "You must confirm the above statement to submit the report.",
+        "typeRequired": "Please select what you found or saw"
     },
 
     "validation": {
+        "reportType": "Please select what you found or saw",
         "photo": "At least one photo is required",
         "phone": "Phone number is required",
         "city": "City is required",
         "locationDescription": "Location description is required",
-        "legalConfirmation": "You must agree to the legal confirmation"
+        "legalConfirmation": "You must agree to the legal confirmation",
+        "petType": "Pet type is required",
+        "documentType": "Document type is required",
+        "deviceType": "Device type is required",
+        "deviceBrand": "Device brand is required",
+        "vehicleType": "Vehicle type is required",
+        "vehicleBrand": "Vehicle brand is required",
+        "itemName": "Item name is required"
     },
 
     "success": {
@@ -90,8 +296,8 @@
 
     "reward": {
         "title": "🎁 Potential Reward",
-        "description": "If your sighting report helps reunite a missing person with their family, and the photo you uploaded matches a wanted person, you may be eligible to receive a reward. Your contribution could make a real difference!"
+        "description": "If your sighting report helps reunite a lost item or person with their owner/family, you may be eligible to receive a reward. Your contribution could make a real difference!"
     },
 
-    "legalConfirmation": "I confirm that the information provided is true and that providing information about people who are not missing, for the purpose of defamation or any other reason, is prohibited and may expose me to legal action."
+    "legalConfirmation": "I confirm that the information provided is true and accurate. I understand that providing false information is prohibited and may result in legal action."
 }

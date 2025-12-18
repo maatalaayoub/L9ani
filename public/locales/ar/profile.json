@@ -101,6 +101,22 @@
     "success": {
         "profileUpdated": "تم تحديث الملف الشخصي بنجاح!"
     },
+    "profilePicture": {
+        "uploadTitle": "ارفع صورتك",
+        "uploadButton": "رفع صورة",
+        "removeButton": "إزالة",
+        "uploading": "جارٍ الرفع...",
+        "hint": "JPG، PNG، WebP أو GIF. الحد الأقصى 5 ميجابايت.",
+        "orChooseAvatar": "أو اختر صورة رمزية",
+        "success": "تم تحديث صورة الملف الشخصي!",
+        "removed": "تم إزالة صورة الملف الشخصي!",
+        "errors": {
+            "uploadFailed": "فشل رفع الصورة. حاول مرة أخرى.",
+            "removeFailed": "فشل إزالة الصورة. حاول مرة أخرى.",
+            "invalidType": "نوع ملف غير صالح. مسموح فقط بـ JPEG، PNG، WebP، و GIF.",
+            "tooLarge": "الملف كبير جداً. الحد الأقصى 5 ميجابايت."
+        }
+    },
     "verify": {
         "button": "تحقق",
         "title": "تفقد بريدك الإلكتروني",

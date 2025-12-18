@@ -7,6 +7,7 @@ import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import dynamic from 'next/dynamic';
 import LoginDialog from '@/components/LoginDialog';
 import SelectDropdown from '@/components/SelectDropdown';
+import { getCitiesForDropdown } from '@/data/moroccanCities';
 
 // Dynamically import MapPicker to avoid SSR issues with Leaflet
 const MapPicker = dynamic(() => import('@/components/MapPicker'), {
@@ -265,10 +266,12 @@ export default function ReportMissingPage() {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleLocationSelect = (coords) => {
+    const handleLocationSelect = (locationData) => {
         setFormData(prev => ({
             ...prev,
-            coordinates: coords
+            coordinates: { lat: locationData.lat, lng: locationData.lng },
+            // Auto-fill last known location with detailed address (city selection is manual)
+            lastKnownLocation: locationData.address || prev.lastKnownLocation
         }));
     };
 
@@ -1381,7 +1384,7 @@ export default function ReportMissingPage() {
                     )}
 
                     {/* Section 4: Location Information */}
-                    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
                         <div className="p-6 border-b border-gray-100 dark:border-gray-800">
                             <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                                 <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1401,6 +1404,7 @@ export default function ReportMissingPage() {
                                     onLocationSelect={handleLocationSelect}
                                     initialCoordinates={formData.coordinates}
                                     markerColor="blue"
+                                    myLocationLabel={t('fields.myLocation')}
                                 />
                                 {formData.coordinates.lat && (
                                     <p className={`text-xs text-gray-500 dark:text-gray-400 mt-2 ${isRTL ? 'text-right' : 'text-left'}`}>
@@ -1412,18 +1416,19 @@ export default function ReportMissingPage() {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                 {/* City */}
-                                <div>
+                                <div className="relative z-50">
                                     <label className={`block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
                                         {t('fields.city')} <span className="text-red-500">*</span>
                                     </label>
-                                    <input
-                                        type="text"
-                                        name="city"
+                                    <SelectDropdown
                                         value={formData.city}
-                                        onChange={handleChange}
-                                        dir={isRTL ? 'rtl' : 'ltr'}
-                                        className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
-                                        placeholder={t('placeholders.city')}
+                                        onChange={(value) => setFormData(prev => ({ ...prev, city: value }))}
+                                        options={getCitiesForDropdown(locale)}
+                                        placeholder={t('placeholders.selectCity')}
+                                        searchPlaceholder={t('placeholders.searchCity')}
+                                        isRTL={isRTL}
+                                        allowCustom={true}
+                                        customLabel={t('options.addNewCity')}
                                     />
                                 </div>
 

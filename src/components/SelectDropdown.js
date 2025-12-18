@@ -142,16 +142,15 @@ export default function SelectDropdown({
       {/* Dropdown Panel */}
       {isOpen && (
         <div className={`
-          absolute z-50 w-full mt-2 py-2 rounded-xl
+          absolute z-[9999] w-full mt-2 rounded-xl
           bg-white dark:bg-zinc-800 
           border border-zinc-200 dark:border-zinc-700
           shadow-xl shadow-zinc-200/50 dark:shadow-zinc-900/50
-          max-h-[300px] overflow-hidden
           ${isRTL ? 'right-0' : 'left-0'}
         `}>
           {/* Search Input */}
           {options.length > 5 && !isCustomMode && (
-            <div className="px-3 pb-2">
+            <div className="px-3 py-2">
               <div className="relative">
                 <Search className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 ${isRTL ? 'right-3' : 'left-3'}`} />
                 <input
@@ -177,7 +176,7 @@ export default function SelectDropdown({
 
           {/* Custom Input Mode */}
           {isCustomMode && (
-            <div className="px-3 pb-2">
+            <div className="px-3 py-2">
               <div className="flex gap-2">
                 <input
                   ref={customInputRef}
@@ -221,7 +220,7 @@ export default function SelectDropdown({
 
           {/* Options List */}
           {!isCustomMode && (
-            <div className="max-h-[220px] overflow-y-auto">
+            <div className="max-h-[250px] overflow-y-auto py-1">
               {filteredOptions.length === 0 ? (
                 <div className="px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400 text-center">
                   {searchQuery ? 'No results found' : 'No options available'}

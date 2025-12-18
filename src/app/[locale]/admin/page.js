@@ -1381,40 +1381,6 @@ export default function AdminPage() {
                                     </div>
                                 </div>
 
-                                {/* Reporter Information */}
-                                <div className="mb-4 bg-white dark:bg-[#1D2939] rounded-lg p-3 border border-gray-200 dark:border-gray-600/30">
-                                    <h4 className="text-xs font-semibold text-violet-700 dark:text-violet-400 mb-2 flex items-center gap-2">
-                                        <div className="p-1 bg-violet-100 dark:bg-violet-500/20 rounded">
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                        </div>
-                                        {t('modal.reporterInfo')}
-                                    </h4>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {(selectedReport.reporter_first_name || selectedReport.reporter_last_name) && (
-                                            <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
-                                                <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.reporterName')}</p>
-                                                <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                                                    {selectedReport.reporter_first_name} {selectedReport.reporter_last_name}
-                                                </p>
-                                            </div>
-                                        )}
-                                        {selectedReport.reporter_phone && (
-                                            <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
-                                                <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.reporterPhone')}</p>
-                                                <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedReport.reporter_phone}</p>
-                                            </div>
-                                        )}
-                                        {selectedReport.reporter_email && (
-                                            <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20 col-span-2">
-                                                <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.reporterEmail')}</p>
-                                                <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedReport.reporter_email}</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
                                 {/* Additional Information */}
                                 {selectedReport.additional_info && (
                                     <div className="mb-4 bg-white dark:bg-[#1D2939] rounded-lg p-3 border border-gray-200 dark:border-gray-600/30">

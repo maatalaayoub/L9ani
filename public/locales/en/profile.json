@@ -101,6 +101,22 @@
     "success": {
         "profileUpdated": "Profile updated successfully!"
     },
+    "profilePicture": {
+        "uploadTitle": "Upload Your Photo",
+        "uploadButton": "Upload Photo",
+        "removeButton": "Remove",
+        "uploading": "Uploading...",
+        "hint": "JPG, PNG, WebP or GIF. Max 5MB.",
+        "orChooseAvatar": "Or choose an avatar",
+        "success": "Profile picture updated!",
+        "removed": "Profile picture removed!",
+        "errors": {
+            "uploadFailed": "Failed to upload photo. Please try again.",
+            "removeFailed": "Failed to remove photo. Please try again.",
+            "invalidType": "Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed.",
+            "tooLarge": "File too large. Maximum size is 5MB."
+        }
+    },
     "verify": {
         "button": "Verify",
         "title": "Check your email",

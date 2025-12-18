@@ -311,6 +311,21 @@ function HomePageContent() {
                             </p>
                         </div>
 
+                        {/* Pets & Animals */}
+                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-pink-200 dark:hover:border-pink-800 hover:-translate-y-1">
+                            <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                                {t('categories.pets.title')}
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {t('categories.pets.description')}
+                            </p>
+                        </div>
+
                         {/* Documents & IDs */}
                         <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 hover:-translate-y-1">
                             <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
@@ -353,21 +368,6 @@ function HomePageContent() {
                             </h3>
                             <p className="text-sm text-gray-600 dark:text-gray-400">
                                 {t('categories.keys.description')}
-                            </p>
-                        </div>
-
-                        {/* Pets & Animals */}
-                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-pink-200 dark:hover:border-pink-800 hover:-translate-y-1">
-                            <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                </svg>
-                            </div>
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-                                {t('categories.pets.title')}
-                            </h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                {t('categories.pets.description')}
                             </p>
                         </div>
 

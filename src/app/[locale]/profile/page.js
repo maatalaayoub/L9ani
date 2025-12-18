@@ -9,6 +9,7 @@ import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import LoginDialog from '@/components/LoginDialog';
+import Image from 'next/image';
 
 export default function ProfilePage() {
     const { user, profile, isAuthLoading, logout } = useAuth();
@@ -22,6 +23,11 @@ export default function ProfilePage() {
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const [showAvatarSelector, setShowAvatarSelector] = useState(false);
+
+    // Profile picture upload state
+    const profilePictureInputRef = useRef(null);
+    const [isUploadingPicture, setIsUploadingPicture] = useState(false);
+    const [uploadError, setUploadError] = useState('');
 
     // Email verification state
     const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
@@ -116,6 +122,85 @@ export default function ProfilePage() {
         '/avatars/avatar5.png',
         '/avatars/avatar6.png'
     ];
+
+    // Handle profile picture upload
+    const handleProfilePictureUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploadError('');
+        setIsUploadingPicture(true);
+
+        try {
+            const formDataUpload = new FormData();
+            formDataUpload.append('file', file);
+            formDataUpload.append('userId', user.id);
+
+            const response = await fetch('/api/user/upload-profile-picture', {
+                method: 'POST',
+                body: formDataUpload,
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || t('profilePicture.errors.uploadFailed'));
+            }
+
+            // Update form data with new URL
+            setFormData(prev => ({ ...prev, avatar_url: result.url }));
+            setShowAvatarSelector(false);
+
+            // Show success message
+            setMessage(t('profilePicture.success'));
+            setTimeout(() => setMessage(''), 3000);
+
+        } catch (err) {
+            console.error('Profile picture upload error:', err);
+            setUploadError(err.message || t('profilePicture.errors.uploadFailed'));
+        } finally {
+            setIsUploadingPicture(false);
+            // Reset file input
+            if (profilePictureInputRef.current) {
+                profilePictureInputRef.current.value = '';
+            }
+        }
+    };
+
+    // Handle remove profile picture
+    const handleRemoveProfilePicture = async () => {
+        setUploadError('');
+        setIsUploadingPicture(true);
+
+        try {
+            const response = await fetch(`/api/user/upload-profile-picture?userId=${user.id}`, {
+                method: 'DELETE',
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || t('profilePicture.errors.removeFailed'));
+            }
+
+            // Clear avatar URL
+            setFormData(prev => ({ ...prev, avatar_url: '' }));
+            setShowAvatarSelector(false);
+
+            // Show success message
+            setMessage(t('profilePicture.removed'));
+            setTimeout(() => setMessage(''), 3000);
+
+        } catch (err) {
+            console.error('Profile picture remove error:', err);
+            setUploadError(err.message || t('profilePicture.errors.removeFailed'));
+        } finally {
+            setIsUploadingPicture(false);
+        }
+    };
+
+    // Check if current avatar is a custom upload (not a preset)
+    const isCustomAvatar = formData.avatar_url && !PRESET_AVATARS.includes(formData.avatar_url);
 
     useEffect(() => {
         if (!isAuthLoading && !user) {
@@ -884,6 +969,74 @@ export default function ProfilePage() {
                         {/* Avatar Selector Panel */}
                         {isEditing && showAvatarSelector && (
                             <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+                                {/* Upload Error */}
+                                {uploadError && (
+                                    <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                        <p className="text-sm text-red-600 dark:text-red-400">{uploadError}</p>
+                                    </div>
+                                )}
+
+                                {/* Upload Custom Photo Section */}
+                                <div className="mb-6">
+                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">{t('profilePicture.uploadTitle')}</p>
+                                    <div className="flex items-center gap-4">
+                                        {/* Hidden file input */}
+                                        <input
+                                            ref={profilePictureInputRef}
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp,image/gif"
+                                            onChange={handleProfilePictureUpload}
+                                            className="hidden"
+                                        />
+                                        
+                                        {/* Upload button */}
+                                        <button
+                                            type="button"
+                                            onClick={() => profilePictureInputRef.current?.click()}
+                                            disabled={isUploadingPicture}
+                                            className="flex items-center gap-2 px-4 py-2.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {isUploadingPicture ? (
+                                                <>
+                                                    <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                                                    <span className="text-sm font-medium">{t('profilePicture.uploading')}</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                    </svg>
+                                                    <span className="text-sm font-medium">{t('profilePicture.uploadButton')}</span>
+                                                </>
+                                            )}
+                                        </button>
+
+                                        {/* Remove button - only show if custom avatar is set */}
+                                        {isCustomAvatar && (
+                                            <button
+                                                type="button"
+                                                onClick={handleRemoveProfilePicture}
+                                                disabled={isUploadingPicture}
+                                                className="flex items-center gap-2 px-4 py-2.5 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                                <span className="text-sm font-medium">{t('profilePicture.removeButton')}</span>
+                                            </button>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">{t('profilePicture.hint')}</p>
+                                </div>
+
+                                {/* Divider */}
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
+                                    <span className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wider">{t('profilePicture.orChooseAvatar')}</span>
+                                    <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
+                                </div>
+
+                                {/* Preset Avatars */}
                                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">{t('chooseAvatar')}</p>
                                 <div className="flex gap-3 overflow-x-auto py-2 px-1">
                                     {PRESET_AVATARS.map((src, idx) => (
