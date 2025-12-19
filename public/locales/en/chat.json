@@ -1,0 +1,95 @@
+{
+    "title": "L9ani Assistant",
+    "subtitle": "Here to help you",
+    "toggle": "Open chat",
+    "close": "Close chat",
+    "minimize": "Minimize chat",
+    "placeholder": "Type a message...",
+    "send": "Send",
+    "typing": "Typing...",
+    "online": "Online",
+    "offline": "Offline",
+    "newMessage": "New message",
+    "welcome": {
+        "greeting": "Hello",
+        "intro": "I'm your L9ani assistant. I can help you:",
+        "options": {
+            "report": "Report something missing",
+            "search": "Search existing reports",
+            "status": "Check your report status",
+            "navigate": "Navigate the platform"
+        },
+        "prompt": "How can I help you today?"
+    },
+    "quickReplies": {
+        "reportMissing": "Report missing",
+        "searchReports": "Search reports",
+        "checkStatus": "Check status",
+        "help": "Help",
+        "person": "Person",
+        "pet": "Pet",
+        "document": "Document",
+        "vehicle": "Vehicle",
+        "electronics": "Electronics",
+        "other": "Other",
+        "cancel": "Cancel",
+        "skip": "Skip",
+        "done": "Done"
+    },
+    "responses": {
+        "greeting": "Hello! How can I help you today?",
+        "createReport": "I'll help you create a report. What type would you like?",
+        "searchReports": "What are you looking for? Describe it naturally.",
+        "checkStatus": "Let me check your report status...",
+        "platformHelp": "I can help you with the platform. What do you need?",
+        "emergency": "If this is an emergency, please contact authorities immediately!",
+        "unknown": "I'm not sure I understood. Could you rephrase that?",
+        "error": "Sorry, I'm having trouble right now. Please try again.",
+        "cancel": "No problem! I've cancelled the current operation. What would you like to do instead?",
+        "thanks": "You're welcome! Is there anything else I can help you with?",
+        "goodbye": "Goodbye! Take care and good luck!",
+        "foundItem": "That's great that you found something! You can report the found item or search to see if someone is looking for it."
+    },
+    "reportCreation": {
+        "progress": "Step {current}/{total}",
+        "askOptional": "Would you like to add more details?",
+        "complete": "Perfect! I'll take you to the form now.",
+        "goToForm": "Go to Form",
+        "addMore": "Add more details",
+        "cancelTip": "Type 'cancel' anytime to start over"
+    },
+    "search": {
+        "searching": "Searching...",
+        "found": "I found {count} report(s) matching your search:",
+        "noResults": "I couldn't find any matching reports.",
+        "tryAgain": "Try a different search",
+        "viewAll": "View all reports"
+    },
+    "status": {
+        "pending": "Pending review",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "found": "Found!",
+        "closed": "Closed",
+        "noReports": "You don't have any reports yet."
+    },
+    "feedback": {
+        "wasHelpful": "Was this helpful?",
+        "yes": "Yes",
+        "no": "No",
+        "thankYou": "Thank you for your feedback!"
+    },
+    "emergency": {
+        "title": "Emergency Contacts",
+        "police": "Police: 19",
+        "emergency": "Emergency: 15",
+        "ambulance": "Ambulance: 141",
+        "warning": "If this is an emergency, contact authorities immediately!"
+    },
+    "accessibility": {
+        "chatButton": "Open chat assistant",
+        "sendMessage": "Send message",
+        "closeChat": "Close chat",
+        "minimizeChat": "Minimize chat"
+    }
+}

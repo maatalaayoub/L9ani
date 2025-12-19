@@ -93,6 +93,100 @@ export default function ReportMissingPage() {
     const [agreedToLegal, setAgreedToLegal] = useState(false);
     const [currentWarning, setCurrentWarning] = useState('');
 
+    // Load prefill data from chatbot (if redirected from chat)
+    useEffect(() => {
+        try {
+            const prefillData = sessionStorage.getItem('reportPrefill');
+            if (prefillData) {
+                const { type, data } = JSON.parse(prefillData);
+                console.log('[ReportMissing] Loading prefill data:', { type, data });
+                
+                // Set report type
+                if (type) {
+                    setReportType(type);
+                }
+                
+                // Map chatbot field names to form field names based on report type
+                if (data && typeof data === 'object') {
+                    // Base field mapping (common fields)
+                    const baseFieldMapping = {
+                        firstName: 'firstName',
+                        lastName: 'lastName',
+                        city: 'city',
+                        lastKnownLocation: 'lastKnownLocation',
+                        additionalInfo: 'additionalInfo'
+                    };
+                    
+                    // Type-specific field mappings
+                    const typeSpecificMappings = {
+                        person: {
+                            dateOfBirth: 'dateOfBirth',
+                            gender: 'gender',
+                            healthStatus: 'healthStatus',
+                            healthDetails: 'healthDetails'
+                        },
+                        pet: {
+                            petName: 'petName',
+                            petType: 'petType',
+                            breed: 'petBreed',
+                            color: 'petColor',
+                            size: 'petSize'
+                        },
+                        document: {
+                            documentType: 'documentType',
+                            documentNumber: 'documentNumber',
+                            ownerName: 'ownerName',
+                            issuingAuthority: 'documentIssuer'
+                        },
+                        electronics: {
+                            deviceType: 'deviceType',
+                            brand: 'deviceBrand',
+                            model: 'deviceModel',
+                            color: 'deviceColor',
+                            serialNumber: 'serialNumber'
+                        },
+                        vehicle: {
+                            vehicleType: 'vehicleType',
+                            brand: 'vehicleBrand',
+                            model: 'vehicleModel',
+                            color: 'vehicleColor',
+                            year: 'vehicleYear',
+                            licensePlate: 'licensePlate'
+                        },
+                        other: {
+                            itemName: 'itemName',
+                            itemDescription: 'itemDescription'
+                        }
+                    };
+                    
+                    // Combine base mapping with type-specific mapping
+                    const fieldMapping = {
+                        ...baseFieldMapping,
+                        ...(typeSpecificMappings[type] || {})
+                    };
+                    
+                    setFormData(prev => {
+                        const newData = { ...prev };
+                        for (const [chatbotKey, value] of Object.entries(data)) {
+                            // Use mapping if exists, otherwise use same key
+                            const formKey = fieldMapping[chatbotKey] || chatbotKey;
+                            if (formKey in prev && value) {
+                                newData[formKey] = value;
+                            }
+                        }
+                        console.log('[ReportMissing] Mapped form data:', newData);
+                        return newData;
+                    });
+                }
+                
+                // Clear the prefill data after loading
+                sessionStorage.removeItem('reportPrefill');
+            }
+        } catch (err) {
+            console.error('[ReportMissing] Error loading prefill data:', err);
+        }
+    }, []);
+
     // Get the first validation error (in order of priority)
     const getFirstValidationError = () => {
         if (!reportType) return t('errors.typeRequired');
@@ -259,6 +353,80 @@ export default function ReportMissingPage() {
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Load prefill data from sessionStorage (from chatbot)
+    useEffect(() => {
+        try {
+            const prefillData = sessionStorage.getItem('reportPrefill');
+            if (prefillData) {
+                const parsed = JSON.parse(prefillData);
+                console.log('[ReportMissing] Loading prefill data:', parsed);
+                
+                // Set the report type
+                if (parsed.type) {
+                    setReportType(parsed.type);
+                }
+                
+                // Map chatbot field names to form field names and set form data
+                if (parsed.data) {
+                    const fieldMapping = {
+                        // Person fields
+                        firstName: 'firstName',
+                        lastName: 'lastName',
+                        dateOfBirth: 'dateOfBirth',
+                        gender: 'gender',
+                        healthStatus: 'healthStatus',
+                        healthDetails: 'healthDetails',
+                        // Pet fields
+                        petName: 'petName',
+                        petType: 'petType',
+                        breed: 'petBreed',
+                        color: 'petColor',
+                        size: 'petSize',
+                        // Document fields
+                        documentType: 'documentType',
+                        documentNumber: 'documentNumber',
+                        issuingAuthority: 'documentIssuer',
+                        ownerName: 'ownerName',
+                        // Electronics fields
+                        deviceType: 'deviceType',
+                        brand: 'deviceBrand',
+                        model: 'deviceModel',
+                        serialNumber: 'serialNumber',
+                        // Vehicle fields
+                        vehicleType: 'vehicleType',
+                        vehicleBrand: 'vehicleBrand',
+                        vehicleModel: 'vehicleModel',
+                        vehicleColor: 'vehicleColor',
+                        year: 'vehicleYear',
+                        licensePlate: 'licensePlate',
+                        // Other fields
+                        itemName: 'itemName',
+                        itemDescription: 'itemDescription',
+                        // Common fields
+                        city: 'city',
+                        lastKnownLocation: 'lastKnownLocation',
+                        additionalInfo: 'additionalInfo'
+                    };
+                    
+                    setFormData(prev => {
+                        const newData = { ...prev };
+                        for (const [chatbotKey, formKey] of Object.entries(fieldMapping)) {
+                            if (parsed.data[chatbotKey]) {
+                                newData[formKey] = parsed.data[chatbotKey];
+                            }
+                        }
+                        return newData;
+                    });
+                }
+                
+                // Clear the prefill data after loading
+                sessionStorage.removeItem('reportPrefill');
+            }
+        } catch (error) {
+            console.error('[ReportMissing] Error loading prefill data:', error);
+        }
     }, []);
 
     const handleChange = (e) => {

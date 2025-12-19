@@ -286,6 +286,9 @@ export function AuthProvider({ children }) {
             // Handle abort errors (timeout)
             if (error.name === 'AbortError') {
                 console.warn('[Profile] Request timed out, using cached profile if available');
+            } else if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+                // Network error - common during development or when server is starting
+                console.warn('[Profile] Network error (server may be starting), using cached profile if available');
             } else {
                 console.error('[Profile] Exception:', error.message || error);
             }
@@ -588,6 +591,24 @@ export function AuthProvider({ children }) {
         await checkAdminStatus(user.id, token);
     };
 
+    // Get access token for API calls
+    const getAccessToken = async () => {
+        try {
+            // First try to get from Supabase session (most reliable)
+            if (supabase) {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session?.access_token) {
+                    return session.access_token;
+                }
+            }
+            // Fall back to localStorage
+            return localStorage.getItem('supabase_token');
+        } catch (error) {
+            console.error('[Auth] Error getting access token:', error);
+            return localStorage.getItem('supabase_token');
+        }
+    };
+
     return (
         <AuthContext.Provider value={{
             isSearchFocused,
@@ -603,7 +624,9 @@ export function AuthProvider({ children }) {
             isAdmin,
             adminRole,
             isAdminChecked,
-            refreshAdminStatus
+            refreshAdminStatus,
+            // Token access for API calls
+            getAccessToken
         }}>
             {children}
         </AuthContext.Provider>
