@@ -29,9 +29,20 @@ html {
   transition: none;
 }
 
+/* Prevent margin/padding transitions during scroll/layout to avoid jitter */
 * {
   transition-property: margin, padding;
   transition-duration: 0ms;
+}
+
+/* Allow smooth hover transitions for cards and interactive elements */
+.group,
+.group > *,
+[class*="hover:"],
+[class*="transition"] {
+  transition-property: transform, opacity, background-color, border-color, color, box-shadow, filter;
+  transition-duration: 300ms;
+  transition-timing-function: ease-out;
 }
 
 /* Prevent layout shift during locale change */

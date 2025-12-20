@@ -216,7 +216,7 @@ function HomePageContent() {
                             className="relative group"
                         >
                             <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur opacity-0 group-hover:opacity-25 transition duration-500"></div>
-                            <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 h-full">
+                            <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 h-full transition-transform duration-300 ease-out group-hover:-translate-y-1">
                                 <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/30">
                                     <span className="text-2xl font-bold text-white">1</span>
                                 </div>
@@ -236,7 +236,7 @@ function HomePageContent() {
                             className="relative group"
                         >
                             <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl blur opacity-0 group-hover:opacity-25 transition duration-500"></div>
-                            <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 h-full">
+                            <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 h-full transition-transform duration-300 ease-out group-hover:-translate-y-1">
                                 <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-purple-500/30">
                                     <span className="text-2xl font-bold text-white">2</span>
                                 </div>
@@ -256,7 +256,7 @@ function HomePageContent() {
                             className="relative group"
                         >
                             <div className="absolute -inset-1 bg-gradient-to-r from-green-600 to-teal-600 rounded-2xl blur opacity-0 group-hover:opacity-25 transition duration-500"></div>
-                            <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 h-full">
+                            <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 h-full transition-transform duration-300 ease-out group-hover:-translate-y-1">
                                 <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-green-500/30">
                                     <span className="text-2xl font-bold text-white">3</span>
                                 </div>
@@ -297,8 +297,8 @@ function HomePageContent() {
                         className="grid grid-cols-2 sm:grid-cols-3 gap-4 md:gap-6"
                     >
                         {/* Missing Persons */}
-                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-red-200 dark:hover:border-red-800 hover:-translate-y-1">
-                            <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 ease-out border border-gray-100 dark:border-gray-700 hover:border-red-200 dark:hover:border-red-800 hover:-translate-y-1">
+                            <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 ease-out">
                                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                 </svg>
@@ -312,8 +312,8 @@ function HomePageContent() {
                         </div>
 
                         {/* Pets & Animals */}
-                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-pink-200 dark:hover:border-pink-800 hover:-translate-y-1">
-                            <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 ease-out border border-gray-100 dark:border-gray-700 hover:border-pink-200 dark:hover:border-pink-800 hover:-translate-y-1">
+                            <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 ease-out">
                                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                 </svg>
@@ -327,8 +327,8 @@ function HomePageContent() {
                         </div>
 
                         {/* Documents & IDs */}
-                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 hover:-translate-y-1">
-                            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 ease-out border border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 hover:-translate-y-1">
+                            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 ease-out">
                                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
                                 </svg>
@@ -342,8 +342,8 @@ function HomePageContent() {
                         </div>
 
                         {/* Electronics */}
-                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-purple-200 dark:hover:border-purple-800 hover:-translate-y-1">
-                            <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 ease-out border border-gray-100 dark:border-gray-700 hover:border-purple-200 dark:hover:border-purple-800 hover:-translate-y-1">
+                            <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 ease-out">
                                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                 </svg>
@@ -357,8 +357,8 @@ function HomePageContent() {
                         </div>
 
                         {/* Keys & Accessories */}
-                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-amber-200 dark:hover:border-amber-800 hover:-translate-y-1">
-                            <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 ease-out border border-gray-100 dark:border-gray-700 hover:border-amber-200 dark:hover:border-amber-800 hover:-translate-y-1">
+                            <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 ease-out">
                                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                                 </svg>
@@ -372,8 +372,8 @@ function HomePageContent() {
                         </div>
 
                         {/* Other Items */}
-                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:-translate-y-1">
-                            <div className="w-14 h-14 bg-gradient-to-br from-gray-500 to-gray-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 ease-out border border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:-translate-y-1">
+                            <div className="w-14 h-14 bg-gradient-to-br from-gray-500 to-gray-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 ease-out">
                                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                                 </svg>
@@ -472,10 +472,10 @@ function HomePageContent() {
                             <div className="relative bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-3xl p-8 sm:p-10 shadow-2xl">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div 
-                                        className="group bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg border border-white/10" 
+                                        className="group bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center transition-all duration-300 ease-out hover:scale-105 border border-white/10" 
                                         style={animations.scale(featuresIllustrationVisible)}
                                     >
-                                        <div className="w-14 h-14 mx-auto mb-3 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                        <div className="w-14 h-14 mx-auto mb-3 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ease-out">
                                             <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                             </svg>
@@ -483,10 +483,10 @@ function HomePageContent() {
                                         <div className="text-white font-semibold text-sm">{t('features.card1')}</div>
                                     </div>
                                     <div 
-                                        className="group bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg border border-white/10" 
+                                        className="group bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center transition-all duration-300 ease-out hover:scale-105 border border-white/10" 
                                         style={{ ...animations.scale(featuresIllustrationVisible), transitionDelay: '0.1s' }}
                                     >
-                                        <div className="w-14 h-14 mx-auto mb-3 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                        <div className="w-14 h-14 mx-auto mb-3 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ease-out">
                                             <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                             </svg>
@@ -494,10 +494,10 @@ function HomePageContent() {
                                         <div className="text-white font-semibold text-sm">{t('features.card2')}</div>
                                     </div>
                                     <div 
-                                        className="group bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg border border-white/10" 
+                                        className="group bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center transition-all duration-300 ease-out hover:scale-105 border border-white/10" 
                                         style={{ ...animations.scale(featuresIllustrationVisible), transitionDelay: '0.2s' }}
                                     >
-                                        <div className="w-14 h-14 mx-auto mb-3 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                        <div className="w-14 h-14 mx-auto mb-3 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ease-out">
                                             <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -506,10 +506,10 @@ function HomePageContent() {
                                         <div className="text-white font-semibold text-sm">{t('features.card3')}</div>
                                     </div>
                                     <div 
-                                        className="group bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center transition-all duration-300 hover:scale-105 hover:shadow-lg border border-white/10" 
+                                        className="group bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center transition-all duration-300 ease-out hover:scale-105 border border-white/10" 
                                         style={{ ...animations.scale(featuresIllustrationVisible), transitionDelay: '0.3s' }}
                                     >
-                                        <div className="w-14 h-14 mx-auto mb-3 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                        <div className="w-14 h-14 mx-auto mb-3 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ease-out">
                                             <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                             </svg>
@@ -548,7 +548,7 @@ function HomePageContent() {
                         <div
                             ref={testimonial1Ref}
                             style={animations.staggerChild(testimonial1Visible, 0)}
-                            className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8"
+                            className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 transition-transform duration-300 ease-out hover:-translate-y-1"
                         >
                             <div className="flex items-center gap-1 mb-4">
                                 {[...Array(5)].map((_, i) => (
@@ -573,7 +573,7 @@ function HomePageContent() {
                         <div
                             ref={testimonial2Ref}
                             style={animations.staggerChild(testimonial2Visible, 0.15)}
-                            className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8"
+                            className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 transition-transform duration-300 ease-out hover:-translate-y-1"
                         >
                             <div className="flex items-center gap-1 mb-4">
                                 {[...Array(5)].map((_, i) => (
@@ -598,7 +598,7 @@ function HomePageContent() {
                         <div
                             ref={testimonial3Ref}
                             style={animations.staggerChild(testimonial3Visible, 0.3)}
-                            className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8"
+                            className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 transition-transform duration-300 ease-out hover:-translate-y-1"
                         >
                             <div className="flex items-center gap-1 mb-4">
                                 {[...Array(5)].map((_, i) => (
