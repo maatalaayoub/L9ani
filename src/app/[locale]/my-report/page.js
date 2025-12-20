@@ -1284,6 +1284,42 @@ export default function MyReport() {
                                     </div>
                                 )}
 
+                                {/* Reporter Contact Information */}
+                                {(selectedReport.reporter_first_name || selectedReport.reporter_last_name || selectedReport.reporter_phone || selectedReport.reporter_email) && (
+                                    <div className="mb-4 bg-white dark:bg-[#1D2939] rounded-lg p-3 border border-gray-200 dark:border-gray-600/30">
+                                        <h4 className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 mb-2 flex items-center gap-2">
+                                            <div className="p-1 bg-indigo-100 dark:bg-indigo-500/20 rounded">
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                                </svg>
+                                            </div>
+                                            {t('modal.reporterContact') || 'Your Contact Information'}
+                                        </h4>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {(selectedReport.reporter_first_name || selectedReport.reporter_last_name) && (
+                                                <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20 col-span-2">
+                                                    <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.reporterName') || 'Name'}</p>
+                                                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                                                        {[selectedReport.reporter_first_name, selectedReport.reporter_last_name].filter(Boolean).join(' ') || '-'}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {selectedReport.reporter_phone && (
+                                                <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
+                                                    <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.reporterPhone') || 'Phone'}</p>
+                                                    <p className="text-sm font-semibold text-gray-900 dark:text-white" dir="ltr">{selectedReport.reporter_phone}</p>
+                                                </div>
+                                            )}
+                                            {selectedReport.reporter_email && (
+                                                <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
+                                                    <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.reporterEmail') || 'Email'}</p>
+                                                    <p className="text-sm font-semibold text-gray-900 dark:text-white" dir="ltr">{selectedReport.reporter_email}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Report Status & Dates */}
                                 <div className="bg-white dark:bg-[#1D2939] rounded-lg p-3 border border-gray-200 dark:border-gray-600/30">
                                     <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">

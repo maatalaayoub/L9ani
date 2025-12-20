@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
@@ -23,7 +23,7 @@ const MapPicker = dynamic(() => import('@/components/MapPicker'), {
 });
 
 export default function ReportSightingPage() {
-    const { user, isAuthLoading } = useAuth();
+    const { user, isAuthLoading, getAccessToken, profile } = useAuth();
     const router = useRouter();
     const t = useTranslations('reportSighting');
     const tCommon = useTranslations('common');
@@ -88,6 +88,19 @@ export default function ReportSightingPage() {
     const [photoPreviews, setPhotoPreviews] = useState([]);
     const [agreedToLegal, setAgreedToLegal] = useState(false);
     const [currentWarning, setCurrentWarning] = useState('');
+
+    // Auto-fill reporter info from user profile
+    useEffect(() => {
+        if (profile || user) {
+            setFormData(prev => ({
+                ...prev,
+                reporterFirstName: profile?.first_name || '',
+                reporterLastName: profile?.last_name || '',
+                phone: profile?.phone || '',
+                email: user?.email || profile?.email || ''
+            }));
+        }
+    }, [profile, user]);
 
     // Get the first validation error (in order of priority)
     const getFirstValidationError = () => {
@@ -186,8 +199,9 @@ export default function ReportSightingPage() {
         setUploadProgress(0);
 
         try {
-            // Get auth token from localStorage
-            const token = localStorage.getItem('supabase_token');
+            // Get auth token using the auth context's getAccessToken (handles refresh)
+            const token = await getAccessToken();
+            console.log('[Sighting Submit] Token exists:', !!token, 'Length:', token?.length);
             if (!token) {
                 setError(t('errors.notLoggedIn') || 'You must be logged in to submit a report');
                 setLoading(false);
@@ -290,13 +304,17 @@ export default function ReportSightingPage() {
                     
                     try {
                         const response = JSON.parse(xhr.responseText);
+                        console.log('[Sighting Submit] Response status:', xhr.status, 'Response:', response);
                         if (xhr.status >= 200 && xhr.status < 300) {
                             setUploadProgress(100);
                             resolve(response);
                         } else {
+                            // Log the specific error for debugging
+                            console.error('[Sighting Submit] Error response:', xhr.status, response);
                             reject(new Error(response.error || 'Failed to submit report'));
                         }
                     } catch (e) {
+                        console.error('[Sighting Submit] Parse error:', e, 'Response text:', xhr.responseText);
                         reject(new Error('Failed to parse response'));
                     }
                 });
@@ -1051,7 +1069,31 @@ export default function ReportSightingPage() {
                         </div>
                     )}
 
-                    {/* Section 4: Your Contact Information (All in one block) */}
+                    {/* Section 4: Additional Information */}
+                    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                        <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {t('sections.additionalInfo.title')}
+                            </h2>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('sections.additionalInfo.description')}</p>
+                        </div>
+                        <div className="p-6">
+                            <textarea
+                                name="additionalInfo"
+                                value={formData.additionalInfo}
+                                onChange={handleChange}
+                                dir={isRTL ? 'rtl' : 'ltr'}
+                                rows={5}
+                                className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all resize-none ${isRTL ? 'text-right' : 'text-left'}`}
+                                placeholder={t('placeholders.additionalInfo')}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Section 5: Your Contact Information (All in one block) */}
                     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-gray-100 dark:border-gray-800">
                             <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -1073,38 +1115,38 @@ export default function ReportSightingPage() {
                                     <span className="text-sm font-medium text-blue-700 dark:text-blue-300">{t('sections.contact.yourDetails')}</span>
                                 </div>
 
-                                {/* Name Fields */}
+                                {/* Name Fields - Auto-filled from profile */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     {/* Reporter First Name */}
                                     <div>
                                         <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">
-                                            {t('fields.reporterFirstName')} <span className="text-blue-500">★</span>
-                                            <span className="text-xs font-normal text-blue-500 normal-case tracking-normal ms-1">({t('sections.contact.importantIfProvided')})</span>
+                                            {t('fields.reporterFirstName')}
+                                            <span className="text-xs font-normal text-gray-400 normal-case tracking-normal ms-1">({t('sections.contact.fromAccount')})</span>
                                         </label>
                                         <input
                                             type="text"
                                             name="reporterFirstName"
                                             value={formData.reporterFirstName}
-                                            onChange={handleChange}
+                                            readOnly
+                                            disabled
                                             dir={isRTL ? 'rtl' : 'ltr'}
-                                            className={`w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
-                                            placeholder={t('placeholders.reporterFirstName')}
+                                            className={`w-full px-4 py-2.5 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-300 cursor-not-allowed ${isRTL ? 'text-right' : 'text-left'}`}
                                         />
                                     </div>
                                     {/* Reporter Last Name */}
                                     <div>
                                         <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">
-                                            {t('fields.reporterLastName')} <span className="text-blue-500">★</span>
-                                            <span className="text-xs font-normal text-blue-500 normal-case tracking-normal ms-1">({t('sections.contact.importantIfProvided')})</span>
+                                            {t('fields.reporterLastName')}
+                                            <span className="text-xs font-normal text-gray-400 normal-case tracking-normal ms-1">({t('sections.contact.fromAccount')})</span>
                                         </label>
                                         <input
                                             type="text"
                                             name="reporterLastName"
                                             value={formData.reporterLastName}
-                                            onChange={handleChange}
+                                            readOnly
+                                            disabled
                                             dir={isRTL ? 'rtl' : 'ltr'}
-                                            className={`w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isRTL ? 'text-right' : 'text-left'}`}
-                                            placeholder={t('placeholders.reporterLastName')}
+                                            className={`w-full px-4 py-2.5 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-300 cursor-not-allowed ${isRTL ? 'text-right' : 'text-left'}`}
                                         />
                                     </div>
                                 </div>
@@ -1148,31 +1190,7 @@ export default function ReportSightingPage() {
                         </div>
                     </div>
 
-                    {/* Section 5: Additional Information */}
-                    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-                        <div className="p-6 border-b border-gray-100 dark:border-gray-800">
-                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                {t('sections.additionalInfo.title')}
-                            </h2>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('sections.additionalInfo.description')}</p>
-                        </div>
-                        <div className="p-6">
-                            <textarea
-                                name="additionalInfo"
-                                value={formData.additionalInfo}
-                                onChange={handleChange}
-                                dir={isRTL ? 'rtl' : 'ltr'}
-                                rows={5}
-                                className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all resize-none ${isRTL ? 'text-right' : 'text-left'}`}
-                                placeholder={t('placeholders.additionalInfo')}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Reward Notice - After Additional Info */}
+                    {/* Reward Notice - After Contact Info */}
                     <div className="p-5 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200 dark:border-green-900/30">
                         <div className="flex items-start gap-4">
                             <div className="flex-shrink-0 w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">

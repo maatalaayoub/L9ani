@@ -117,6 +117,12 @@ export async function POST(request) {
         }
 
         // STEP 1: Insert the main report record
+        // Get reporter contact information
+        const reporterFirstName = formData.get('reporterFirstName') || null;
+        const reporterLastName = formData.get('reporterLastName') || null;
+        const reporterPhone = formData.get('reporterPhone') || null;
+        const reporterEmail = formData.get('reporterEmail') || null;
+
         const reportData = {
             user_id: user.id,
             report_type: reportType,
@@ -125,7 +131,11 @@ export async function POST(request) {
             coordinates: coordinates,
             additional_info: additionalInfo,
             photos: photoUrls.length > 0 ? photoUrls : null,
-            status: 'pending'
+            status: 'pending',
+            reporter_first_name: reporterFirstName,
+            reporter_last_name: reporterLastName,
+            reporter_phone: reporterPhone,
+            reporter_email: reporterEmail
         };
 
         console.log('[API Reports] Inserting main report:', { ...reportData, photos: photoUrls.length + ' photos' });

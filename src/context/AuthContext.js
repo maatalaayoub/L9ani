@@ -596,9 +596,27 @@ export function AuthProvider({ children }) {
         try {
             // First try to get from Supabase session (most reliable)
             if (supabase) {
-                const { data: { session } } = await supabase.auth.getSession();
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (error) {
+                    console.error('[Auth] Error getting session:', error);
+                }
                 if (session?.access_token) {
+                    // Also update localStorage with the latest token
+                    localStorage.setItem('supabase_token', session.access_token);
                     return session.access_token;
+                }
+                
+                // Try to refresh the session if we have a user but no valid session
+                if (user) {
+                    console.log('[Auth] No session found, attempting refresh...');
+                    const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+                    if (refreshData?.session?.access_token) {
+                        localStorage.setItem('supabase_token', refreshData.session.access_token);
+                        return refreshData.session.access_token;
+                    }
+                    if (refreshError) {
+                        console.error('[Auth] Error refreshing session:', refreshError);
+                    }
                 }
             }
             // Fall back to localStorage

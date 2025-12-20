@@ -78,7 +78,8 @@
             "description": "حتى نتمكن من المتابعة معك بشأن المشاهدة",
             "yourName": "اسمك",
             "yourDetails": "معلوماتك",
-            "importantIfProvided": "مهم إذا تم تقديمه"
+            "importantIfProvided": "مهم إذا تم تقديمه",
+            "fromAccount": "من حسابك"
         },
         "additionalInfo": {
             "title": "معلومات إضافية",

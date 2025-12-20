@@ -78,7 +78,8 @@
             "description": "So we can follow up with you about the sighting",
             "yourName": "Your Name",
             "yourDetails": "Your Details",
-            "importantIfProvided": "Important if provided"
+            "importantIfProvided": "Important if provided",
+            "fromAccount": "From your account"
         },
         "additionalInfo": {
             "title": "Additional Information",

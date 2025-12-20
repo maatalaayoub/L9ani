@@ -139,6 +139,7 @@
         "reporterInfo": "معلومات المُبلِّغ",
         "reporterId": "معرف المُبلِّغ",
         "reporterName": "اسم المُبلِّغ",
+        "reporterContact": "معلومات اتصال المُبلِّغ",
         "reporterPhone": "رقم الهاتف",
         "reporterEmail": "البريد الإلكتروني",
         "contactInfo": "معلومات الاتصال",

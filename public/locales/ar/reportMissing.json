@@ -63,6 +63,13 @@
         "location": {
             "title": "معلومات الموقع"
         },
+        "contact": {
+            "title": "معلومات الاتصال الخاصة بك",
+            "description": "حتى نتمكن من المتابعة معك بشأن البلاغ",
+            "yourDetails": "بياناتك",
+            "importantIfProvided": "مهم إذا تم تقديمه",
+            "fromAccount": "من حسابك"
+        },
         "additionalInfo": {
             "title": "معلومات إضافية",
             "description": "أي تفاصيل أخرى قد تساعد في التعرف"
@@ -110,7 +117,12 @@
         "licensePlate": "رقم اللوحة",
         
         "itemName": "اسم الشيء",
-        "itemDescription": "وصف الشيء"
+        "itemDescription": "وصف الشيء",
+        
+        "reporterFirstName": "اسمك الأول",
+        "reporterLastName": "اسم عائلتك",
+        "reporterPhone": "رقم هاتفك",
+        "reporterEmail": "بريدك الإلكتروني"
     },
 
     "placeholders": {
@@ -148,7 +160,12 @@
         "licensePlate": "مثال: 12345-أ-67",
         
         "itemName": "مثال: محفظة جلدية سوداء",
-        "itemDescription": "صف الشيء بالتفصيل..."
+        "itemDescription": "صف الشيء بالتفصيل...",
+        
+        "reporterFirstName": "أدخل اسمك الأول",
+        "reporterLastName": "أدخل اسم عائلتك",
+        "reporterPhone": "+212 6XX XXX XXX",
+        "reporterEmail": "your.email@example.com"
     },
 
     "options": {
@@ -288,6 +305,7 @@
         "lastName": "اللقب مطلوب",
         "city": "المدينة مطلوبة",
         "lastKnownLocation": "آخر موقع معروف مطلوب",
+        "reporterPhone": "رقم الهاتف مطلوب",
         "legalConfirmation": "يجب الموافقة على الإقرار القانوني",
         "petName": "اسم الحيوان الأليف مطلوب",
         "petType": "نوع الحيوان مطلوب",
@@ -298,6 +316,8 @@
         "vehicleBrand": "ماركة المركبة مطلوبة",
         "itemName": "اسم الشيء مطلوب"
     },
+
+    "optional": "اختياري",
 
     "success": {
         "reportSubmitted": "تم إرسال البلاغ بنجاح!",

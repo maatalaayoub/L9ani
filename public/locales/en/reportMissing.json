@@ -63,6 +63,13 @@
         "location": {
             "title": "Location Information"
         },
+        "contact": {
+            "title": "Your Contact Information",
+            "description": "So we can follow up with you about the report",
+            "yourDetails": "Your Details",
+            "importantIfProvided": "Important if provided",
+            "fromAccount": "From your account"
+        },
         "additionalInfo": {
             "title": "Additional Information",
             "description": "Any other details that could help identify this item"
@@ -111,7 +118,12 @@
         "licensePlate": "License Plate",
         
         "itemName": "Item Name",
-        "itemDescription": "Item Description"
+        "itemDescription": "Item Description",
+        
+        "reporterFirstName": "Your First Name",
+        "reporterLastName": "Your Last Name",
+        "reporterPhone": "Your Phone Number",
+        "reporterEmail": "Your Email"
     },
 
     "placeholders": {
@@ -149,7 +161,12 @@
         "licensePlate": "e.g., 12345-A-67",
         
         "itemName": "e.g., Black leather wallet",
-        "itemDescription": "Describe the item in detail..."
+        "itemDescription": "Describe the item in detail...",
+        
+        "reporterFirstName": "Enter your first name",
+        "reporterLastName": "Enter your last name",
+        "reporterPhone": "+212 6XX XXX XXX",
+        "reporterEmail": "your.email@example.com"
     },
 
     "options": {
@@ -289,6 +306,7 @@
         "lastName": "Last name is required",
         "city": "City is required",
         "lastKnownLocation": "Last known location is required",
+        "reporterPhone": "Phone number is required",
         "legalConfirmation": "You must agree to the legal confirmation",
         "petName": "Pet name is required",
         "petType": "Pet type is required",
@@ -299,6 +317,8 @@
         "vehicleBrand": "Vehicle brand is required",
         "itemName": "Item name is required"
     },
+
+    "optional": "Optional",
 
     "success": {
         "reportSubmitted": "Report submitted successfully!",

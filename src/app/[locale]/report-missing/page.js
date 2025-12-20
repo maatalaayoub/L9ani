@@ -21,7 +21,7 @@ const MapPicker = dynamic(() => import('@/components/MapPicker'), {
 });
 
 export default function ReportMissingPage() {
-    const { user, isAuthLoading } = useAuth();
+    const { user, isAuthLoading, getAccessToken, profile } = useAuth();
     const router = useRouter();
     const t = useTranslations('reportMissing');
     const tCommon = useTranslations('common');
@@ -85,13 +85,31 @@ export default function ReportMissingPage() {
         city: '',
         lastKnownLocation: '',
         coordinates: { lat: null, lng: null },
-        additionalInfo: ''
+        additionalInfo: '',
+        // Reporter fields
+        reporterFirstName: '',
+        reporterLastName: '',
+        reporterPhone: '',
+        reporterEmail: ''
     });
 
     const [photos, setPhotos] = useState([]);
     const [photoPreviews, setPhotoPreviews] = useState([]);
     const [agreedToLegal, setAgreedToLegal] = useState(false);
     const [currentWarning, setCurrentWarning] = useState('');
+
+    // Auto-fill reporter info from user profile
+    useEffect(() => {
+        if (profile || user) {
+            setFormData(prev => ({
+                ...prev,
+                reporterFirstName: profile?.first_name || '',
+                reporterLastName: profile?.last_name || '',
+                reporterPhone: profile?.phone || '',
+                reporterEmail: user?.email || profile?.email || ''
+            }));
+        }
+    }, [profile, user]);
 
     // Load prefill data from chatbot (if redirected from chat)
     useEffect(() => {
@@ -224,6 +242,7 @@ export default function ReportMissingPage() {
         
         if (!formData.city.trim()) return t('validation.city');
         if (!formData.lastKnownLocation.trim()) return t('validation.lastKnownLocation');
+        if (!formData.reporterPhone.trim()) return t('validation.reporterPhone');
         if (!agreedToLegal) return t('validation.legalConfirmation');
         return null;
     };
@@ -491,8 +510,8 @@ export default function ReportMissingPage() {
         setUploadProgress(0);
 
         try {
-            // Get auth token
-            const token = localStorage.getItem('supabase_token');
+            // Get auth token using the auth context's getAccessToken (handles refresh)
+            const token = await getAccessToken();
             if (!token) {
                 setError(t('errors.notLoggedIn') || 'You must be logged in to submit a report');
                 setLoading(false);
@@ -555,6 +574,20 @@ export default function ReportMissingPage() {
             }
             if (formData.coordinates?.lat && formData.coordinates?.lng) {
                 submitData.append('coordinates', JSON.stringify(formData.coordinates));
+            }
+
+            // Reporter contact information
+            if (formData.reporterFirstName) {
+                submitData.append('reporterFirstName', formData.reporterFirstName);
+            }
+            if (formData.reporterLastName) {
+                submitData.append('reporterLastName', formData.reporterLastName);
+            }
+            if (formData.reporterPhone) {
+                submitData.append('reporterPhone', formData.reporterPhone);
+            }
+            if (formData.reporterEmail) {
+                submitData.append('reporterEmail', formData.reporterEmail);
             }
 
             // Add photos
@@ -1636,6 +1669,103 @@ export default function ReportMissingPage() {
                                 className={`w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none ${isRTL ? 'text-right' : 'text-left'}`}
                                 placeholder={t('placeholders.additionalInfo')}
                             />
+                        </div>
+                    </div>
+
+                    {/* Section 6: Your Contact Information */}
+                    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                        <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                </svg>
+                                {t('sections.contact.title')}
+                            </h2>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('sections.contact.description')}</p>
+                        </div>
+                        <div className="p-6">
+                            {/* All contact fields in one cohesive block */}
+                            <div className="p-5 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-900/30 space-y-5">
+                                {/* Header */}
+                                <div className="flex items-center gap-2">
+                                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    <span className="text-sm font-medium text-blue-700 dark:text-blue-300">{t('sections.contact.yourDetails')}</span>
+                                </div>
+
+                                {/* Name Fields - Auto-filled from profile */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {/* Reporter First Name */}
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                            {t('fields.reporterFirstName')}
+                                            <span className="text-xs font-normal text-gray-400 normal-case tracking-normal ms-1">({t('sections.contact.fromAccount')})</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="reporterFirstName"
+                                            value={formData.reporterFirstName}
+                                            readOnly
+                                            disabled
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-300 cursor-not-allowed ${isRTL ? 'text-right' : 'text-left'}`}
+                                        />
+                                    </div>
+                                    {/* Reporter Last Name */}
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                            {t('fields.reporterLastName')}
+                                            <span className="text-xs font-normal text-gray-400 normal-case tracking-normal ms-1">({t('sections.contact.fromAccount')})</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="reporterLastName"
+                                            value={formData.reporterLastName}
+                                            readOnly
+                                            disabled
+                                            dir={isRTL ? 'rtl' : 'ltr'}
+                                            className={`w-full px-4 py-2.5 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-300 cursor-not-allowed ${isRTL ? 'text-right' : 'text-left'}`}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Phone and Email */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {/* Phone */}
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                            {t('fields.reporterPhone')} <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            name="reporterPhone"
+                                            value={formData.reporterPhone}
+                                            onChange={handleChange}
+                                            dir="ltr"
+                                            className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-left"
+                                            placeholder={t('placeholders.reporterPhone')}
+                                        />
+                                    </div>
+
+                                    {/* Email */}
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                            {t('fields.reporterEmail')}
+                                            <span className="text-xs font-normal text-gray-400 ms-2">({t('optional')})</span>
+                                        </label>
+                                        <input
+                                            type="email"
+                                            name="reporterEmail"
+                                            value={formData.reporterEmail}
+                                            onChange={handleChange}
+                                            dir="ltr"
+                                            className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-left"
+                                            placeholder={t('placeholders.reporterEmail')}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
