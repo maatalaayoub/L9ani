@@ -161,10 +161,546 @@ export default function MyReport() {
     // Copy Report ID state
     const [copiedReportId, setCopiedReportId] = useState(false);
     
+    // Options dropdown menu state
+    const [openMenuId, setOpenMenuId] = useState(null);
+    
     const t = useTranslations('myreport');
     const tCommon = useTranslations('common');
     const { locale } = useLanguage();
     const isRTL = locale === 'ar';
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (openMenuId && !e.target.closest('.options-menu-container')) {
+                setOpenMenuId(null);
+            }
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [openMenuId]);
+
+    // Share report function
+    const handleShare = async (report, platform) => {
+        const reportName = getReportDisplayName(report, activeTab === 'sighting');
+        const reportType = activeTab === 'sighting' ? t('tabs.sighting') : t('tabs.missing');
+        const shareText = `${reportType}: ${reportName} - ${report.city || ''}`;
+        const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+        
+        switch (platform) {
+            case 'facebook':
+                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`, '_blank', 'width=600,height=400');
+                break;
+            case 'twitter':
+                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank', 'width=600,height=400');
+                break;
+            case 'whatsapp':
+                window.open(`https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`, '_blank');
+                break;
+            case 'copy':
+                try {
+                    await navigator.clipboard.writeText(shareUrl);
+                    alert(t('options.linkCopied') || 'Link copied!');
+                } catch (err) {
+                    console.error('Failed to copy:', err);
+                }
+                break;
+        }
+        setOpenMenuId(null);
+    };
+
+    // Print report function - Creates a professional poster/flyer for street distribution
+    const handlePrint = (report) => {
+        const reportName = getReportDisplayName(report, activeTab === 'sighting');
+        const isSighting = activeTab === 'sighting';
+        const reportTypeLabel = isSighting ? (t('tabs.sighting') || 'Sighting Report') : (t('tabs.missing') || 'Missing Report');
+        const mainPhoto = report.photos && report.photos.length > 0 ? report.photos[0] : null;
+        const reportUrl = `${window.location.origin}/${locale}/report/${report.id}`;
+        
+        // Generate QR Code using a public API
+        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(reportUrl)}&bgcolor=ffffff&color=1f2937&margin=0`;
+        
+        // Get type-specific details
+        let typeDetails = '';
+        if (report.details) {
+            switch (report.report_type) {
+                case 'person':
+                    if (report.details.gender) typeDetails += `${isRTL ? 'الجنس' : 'Gender'}: ${report.details.gender} | `;
+                    if (report.details.approximate_age || report.date_of_birth) typeDetails += `${isRTL ? 'العمر' : 'Age'}: ${report.details.approximate_age || report.date_of_birth || '-'} | `;
+                    break;
+                case 'pet':
+                    if (report.details.pet_type) typeDetails += `${isRTL ? 'النوع' : 'Type'}: ${report.details.pet_type} | `;
+                    if (report.details.breed) typeDetails += `${isRTL ? 'السلالة' : 'Breed'}: ${report.details.breed} | `;
+                    if (report.details.color || report.details.pet_color) typeDetails += `${isRTL ? 'اللون' : 'Color'}: ${report.details.color || report.details.pet_color} | `;
+                    break;
+                case 'document':
+                    if (report.details.document_type) typeDetails += `${isRTL ? 'نوع الوثيقة' : 'Document'}: ${report.details.document_type} | `;
+                    break;
+                case 'electronics':
+                    if (report.details.device_type) typeDetails += `${isRTL ? 'الجهاز' : 'Device'}: ${report.details.device_type} | `;
+                    if (report.details.brand) typeDetails += `${isRTL ? 'العلامة' : 'Brand'}: ${report.details.brand} | `;
+                    break;
+                case 'vehicle':
+                    if (report.details.vehicle_type) typeDetails += `${isRTL ? 'نوع المركبة' : 'Vehicle'}: ${report.details.vehicle_type} | `;
+                    if (report.details.brand) typeDetails += `${isRTL ? 'العلامة' : 'Brand'}: ${report.details.brand} | `;
+                    if (report.details.color || report.details.vehicle_color) typeDetails += `${isRTL ? 'اللون' : 'Color'}: ${report.details.color || report.details.vehicle_color} | `;
+                    break;
+            }
+        }
+        if (typeDetails.endsWith(' | ')) typeDetails = typeDetails.slice(0, -3);
+        
+        const headerText = isSighting 
+            ? (isRTL ? 'تم العثور عليه' : 'FOUND')
+            : (isRTL ? 'مفقود' : 'MISSING');
+        
+        const headerColor = isSighting ? '#059669' : '#dc2626';
+        const headerBg = isSighting ? '#ecfdf5' : '#fef2f2';
+        
+        const printContent = `
+            <!DOCTYPE html>
+            <html dir="${isRTL ? 'rtl' : 'ltr'}" lang="${locale}">
+            <head>
+                <meta charset="UTF-8">
+                <title>${reportName} - L9ani</title>
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap');
+                    
+                    /* Remove browser header/footer (date, URL, page number) */
+                    @page {
+                        margin: 0;
+                    }
+                    
+                    @media print {
+                        html, body {
+                            margin: 0;
+                            padding: 0;
+                        }
+                    }
+                    
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    
+                    body { 
+                        font-family: ${isRTL ? "'Tajawal', 'Arial'" : "'Inter', 'Arial'"}, sans-serif;
+                        background: #f8fafc;
+                        min-height: 100vh;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        padding: 20px;
+                    }
+                    
+                    .poster {
+                        width: 100%;
+                        max-width: 600px;
+                        background: #ffffff;
+                        border-radius: 24px;
+                        overflow: hidden;
+                        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+                    }
+                    
+                    /* Header Banner */
+                    .header-banner {
+                        background: linear-gradient(180deg, ${isSighting ? '#ecfdf5' : '#fff5f5'} 0%, #ffffff 70%);
+                        padding: 18px 24px 18px;
+                        position: relative;
+                    }
+                    
+                    /* underline removed */
+                    
+                    .header-content {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+                    
+                    .header-left {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                    }
+                    
+                    .status-badge {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 8px;
+                        background: ${isSighting ? '#059669' : '#dc2626'};
+                        color: #ffffff;
+                        font-size: 24px;
+                        font-weight: 800;
+                        padding: 12px 20px;
+                        border-radius: 18px;
+                        border: 2px solid ${isSighting ? '#047857' : '#b91c1c'};
+                        letter-spacing: 0.8px;
+                        text-transform: uppercase;
+                        box-shadow: 0 8px 20px ${isSighting ? 'rgba(5,150,105,0.25)' : 'rgba(220,38,38,0.25)'};
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                    
+                    .status-badge .status-icon {
+                        width: 22px;
+                        height: 22px;
+                    }
+                    
+                    .logo {
+                        display: flex;
+                        align-items: center;
+                    }
+                    
+                    .logo svg {
+                        height: 36px;
+                        width: auto;
+                    }
+                    
+                    /* Photo Section */
+                    .photo-section {
+                        padding: 24px;
+                        display: flex;
+                        justify-content: center;
+                    }
+                    
+                    .photo-container {
+                        position: relative;
+                        width: 100%;
+                        max-width: 400px;
+                    }
+                    
+                    .main-photo {
+                        width: 100%;
+                        aspect-ratio: 1;
+                        object-fit: cover;
+                        border-radius: 20px;
+                        box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.2);
+                    }
+                    
+                    .no-photo {
+                        width: 100%;
+                        aspect-ratio: 1;
+                        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+                        border-radius: 20px;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        color: #94a3b8;
+                    }
+                    
+                    .no-photo svg {
+                        width: 80px;
+                        height: 80px;
+                        margin-bottom: 16px;
+                    }
+                    
+                    .no-photo span {
+                        font-size: 18px;
+                        font-weight: 500;
+                    }
+                    
+                    /* Info Section */
+                    .info-section {
+                        padding: 0 24px 20px;
+                    }
+                    
+                    .name-title {
+                        text-align: center;
+                        font-size: 36px;
+                        font-weight: 800;
+                        color: #0f172a;
+                        margin-bottom: 16px;
+                        line-height: 1.2;
+                        text-transform: capitalize;
+                    }
+                    
+                    .type-badge {
+                        display: flex;
+                        justify-content: center;
+                        margin-bottom: 16px;
+                    }
+                    
+                    .type-badge span {
+                        background: #f1f5f9;
+                        color: #475569;
+                        padding: 6px 16px;
+                        border-radius: 50px;
+                        font-size: 14px;
+                        font-weight: 600;
+                    }
+                    
+                    .details-grid {
+                        display: grid;
+                        grid-template-columns: repeat(2, 1fr);
+                        gap: 12px;
+                        margin-bottom: 16px;
+                    }
+                    
+                    .detail-card {
+                        background: #f8fafc;
+                        border-radius: 12px;
+                        padding: 14px 16px;
+                        border: 1px solid #e2e8f0;
+                    }
+                    
+                    .detail-card.full-width {
+                        grid-column: span 2;
+                    }
+                    
+                    .detail-label {
+                        font-size: 11px;
+                        font-weight: 600;
+                        color: #64748b;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                        margin-bottom: 4px;
+                    }
+                    
+                    .detail-value {
+                        font-size: 16px;
+                        font-weight: 600;
+                        color: #1e293b;
+                    }
+                    
+                    .type-details {
+                        text-align: center;
+                        font-size: 14px;
+                        color: #64748b;
+                        margin-bottom: 16px;
+                        padding: 12px;
+                        background: #fefce8;
+                        border-radius: 10px;
+                        border: 1px dashed #facc15;
+                    }
+                    
+                    /* Contact Section */
+                    .contact-section {
+                        background: #f1f5f9;
+                        border-radius: 12px;
+                        padding: 16px 24px;
+                        text-align: center;
+                        color: #0f172a;
+                        margin: 16px 24px;
+                    }
+                    
+                    .contact-title {
+                        font-size: 13px;
+                        font-weight: 600;
+                        color: #475569;
+                        margin-bottom: 6px;
+                    }
+                    
+                    .contact-phone {
+                        font-size: 28px;
+                        font-weight: 800;
+                        letter-spacing: 1px;
+                        line-height: 1.3;
+                        color: #0f172a;
+                        direction: ltr;
+                    }
+                    
+                    /* Footer Section */
+                    .footer-section {
+                        padding: 20px 24px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: flex-end;
+                        background: #f8fafc;
+                        border-top: 1px solid #e2e8f0;
+                    }
+                    
+                    .footer-info {
+                        flex: 1;
+                    }
+                    
+                    .report-id {
+                        font-size: 11px;
+                        color: #94a3b8;
+                        margin-bottom: 4px;
+                    }
+                    
+                    .report-id-value {
+                        font-size: 12px;
+                        font-weight: 600;
+                        color: #64748b;
+                        font-family: monospace;
+                        word-break: break-all;
+                    }
+                    
+                    .scan-text {
+                        font-size: 11px;
+                        color: #64748b;
+                        margin-top: 8px;
+                    }
+                    
+                    .qr-section {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                    }
+                    
+                    .qr-code {
+                        width: 100px;
+                        height: 100px;
+                        border-radius: 12px;
+                        border: 3px solid #e2e8f0;
+                        background: white;
+                        padding: 4px;
+                    }
+                    
+                    .qr-label {
+                        font-size: 10px;
+                        color: #94a3b8;
+                        margin-top: 6px;
+                        text-align: center;
+                    }
+                    
+                    /* Print Styles */
+                    @media print {
+                        body {
+                            background: white;
+                            padding: 0;
+                        }
+                        
+                        .poster {
+                            max-width: 100%;
+                            box-shadow: none;
+                            border-radius: 0;
+                        }
+                        
+                        .main-photo {
+                            border-radius: 16px;
+                        }
+                        
+                        .qr-code,
+                        .status-badge,
+                        .header-banner::after,
+                        .logo svg {
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                    }
+                    
+                    @page {
+                        size: A4;
+                        margin: 10mm;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="poster">
+                    <!-- Header Banner -->
+                    <div class="header-banner">
+                        <div class="header-content">
+                            <div class="header-left">
+                                <div class="status-badge">
+                                    ${isSighting ? `
+                                        <svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                        </svg>
+                                    ` : `
+                                        <svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                        </svg>
+                                    `}
+                                    ${headerText}
+                                </div>
+                            </div>
+                            <div class="logo-container">
+                                <div class="logo">
+                                    <svg width="120" height="35" viewBox="0 0 180 50" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="25" cy="25" r="20" fill="#4A3FF6" opacity="0.1"/>
+                                        <circle cx="22" cy="22" r="10" fill="none" stroke="#4A3FF6" stroke-width="2.5"/>
+                                        <line x1="29" y1="29" x2="36" y2="36" stroke="#4A3FF6" stroke-width="2.5" stroke-linecap="round"/>
+                                        <circle cx="22" cy="20" r="3" fill="#4A3FF6"/>
+                                        <path d="M 22 24 Q 18 24 17 27 L 27 27 Q 26 24 22 24 Z" fill="#4A3FF6"/>
+                                        <text x="48" y="32" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="#4A3FF6">
+                                            L9ani<tspan font-weight="400" opacity="0.7">.ma</tspan>
+                                        </text>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Photo Section -->
+                    <div class="photo-section">
+                        <div class="photo-container">
+                            ${mainPhoto ? `
+                                <img src="${mainPhoto}" alt="${reportName}" class="main-photo" />
+                            ` : `
+                                <div class="no-photo">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span>${isRTL ? 'لا توجد صورة' : 'No Photo Available'}</span>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                    
+                    <!-- Info Section -->
+                    <div class="info-section">
+                        <h1 class="name-title">${reportName}</h1>
+                        
+                        <div class="details-grid">
+                            <div class="detail-card">
+                                <div class="detail-label">${isRTL ? 'المدينة' : 'City'}</div>
+                                <div class="detail-value">${report.city || '-'}</div>
+                            </div>
+                            <div class="detail-card">
+                                <div class="detail-label">${isRTL ? 'التاريخ' : 'Date'}</div>
+                                <div class="detail-value">${new Date(report.created_at).toLocaleDateString(locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                            </div>
+                            ${report.location_description ? `
+                                <div class="detail-card full-width">
+                                    <div class="detail-label">${isRTL ? 'آخر موقع معروف' : 'Last Known Location'}</div>
+                                    <div class="detail-value">${report.location_description}</div>
+                                </div>
+                            ` : ''}
+                            ${report.additional_info ? `
+                                <div class="detail-card full-width">
+                                    <div class="detail-label">${isRTL ? 'معلومات إضافية' : 'Additional Info'}</div>
+                                    <div class="detail-value">${report.additional_info}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    
+                    <!-- Contact Section -->
+                    ${report.reporter_phone ? `
+                        <div class="contact-section">
+                            <div class="contact-title">${isRTL ? 'للتواصل اتصل على' : 'If found, please contact'}</div>
+                            <div class="contact-phone">${report.reporter_phone}</div>
+                        </div>
+                    ` : ''}
+                    
+                    <!-- Footer Section with QR Code -->
+                    <div class="footer-section">
+                        <div class="footer-info">
+                            <div class="report-id">${isRTL ? 'معرف البلاغ' : 'Report ID'}</div>
+                            <div class="report-id-value">${report.id}</div>
+                            <div class="scan-text">${isRTL ? 'امسح رمز QR للمزيد من التفاصيل' : 'Scan QR code for more details'}</div>
+                        </div>
+                        <div class="qr-section">
+                            <img src="${qrCodeUrl}" alt="QR Code" class="qr-code" />
+                            <div class="qr-label">l9ani.ma</div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `;
+        
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        printWindow.onload = () => {
+            // Small delay to ensure QR code and images are loaded
+            setTimeout(() => {
+                printWindow.print();
+            }, 500);
+        };
+        setOpenMenuId(null);
+    };
 
     useEffect(() => {
         if (user) {
@@ -901,6 +1437,85 @@ export default function MyReport() {
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                         </button>
+                                        
+                                        {/* Options Menu (Share & Print) */}
+                                        <div className="relative options-menu-container">
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setOpenMenuId(openMenuId === report.id ? null : report.id);
+                                                }}
+                                                className="inline-flex items-center justify-center p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
+                                                title={t('options.title') || 'More options'}
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                                </svg>
+                                            </button>
+                                            
+                                            {/* Dropdown Menu */}
+                                            {openMenuId === report.id && (
+                                                <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} bottom-full mb-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50`}>
+                                                    {/* Share submenu header */}
+                                                    <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-700">
+                                                        {t('options.share') || 'Share'}
+                                                    </div>
+                                                    
+                                                    <button
+                                                        onClick={() => handleShare(report, 'facebook')}
+                                                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                                                    >
+                                                        <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                                                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                                        </svg>
+                                                        Facebook
+                                                    </button>
+                                                    
+                                                    <button
+                                                        onClick={() => handleShare(report, 'twitter')}
+                                                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                                                    >
+                                                        <svg className="w-4 h-4 text-gray-900 dark:text-white" fill="currentColor" viewBox="0 0 24 24">
+                                                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                                        </svg>
+                                                        X (Twitter)
+                                                    </button>
+                                                    
+                                                    <button
+                                                        onClick={() => handleShare(report, 'whatsapp')}
+                                                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                                                    >
+                                                        <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                                                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                                                        </svg>
+                                                        WhatsApp
+                                                    </button>
+                                                    
+                                                    <button
+                                                        onClick={() => handleShare(report, 'copy')}
+                                                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                                                    >
+                                                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                        </svg>
+                                                        {t('options.copyLink') || 'Copy Link'}
+                                                    </button>
+                                                    
+                                                    <div className="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+                                                    
+                                                    {/* Print option */}
+                                                    <button
+                                                        onClick={() => handlePrint(report)}
+                                                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                                                    >
+                                                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                                        </svg>
+                                                        {t('options.print') || 'Print Report'}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>

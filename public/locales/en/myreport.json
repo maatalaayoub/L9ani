@@ -5,6 +5,13 @@
         "missing": "Missing Reports",
         "sighting": "Sighting Reports"
     },
+    "options": {
+        "title": "More options",
+        "share": "Share",
+        "copyLink": "Copy Link",
+        "linkCopied": "Link copied to clipboard!",
+        "print": "Print Report"
+    },
     "noReports": {
         "title": "No Reports Yet",
         "description": "You haven't created any reports yet. Create a report to get started.",
