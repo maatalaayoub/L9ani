@@ -10,7 +10,8 @@
         "share": "مشاركة",
         "copyLink": "نسخ الرابط",
         "linkCopied": "تم نسخ الرابط!",
-        "print": "طباعة البلاغ"
+        "print": "طباعة البلاغ",
+        "downloadPdf": "تحميل كـ PDF"
     },
     "noReports": {
         "title": "لا توجد بلاغات بعد",

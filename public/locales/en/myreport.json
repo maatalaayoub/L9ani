@@ -10,7 +10,8 @@
         "share": "Share",
         "copyLink": "Copy Link",
         "linkCopied": "Link copied to clipboard!",
-        "print": "Print Report"
+        "print": "Print Report",
+        "downloadPdf": "Download as PDF"
     },
     "noReports": {
         "title": "No Reports Yet",

@@ -295,7 +295,6 @@ export default function MyReport() {
                         background: #ffffff;
                         border-radius: 24px;
                         overflow: hidden;
-                        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
                     }
                     
                     /* Header Banner */
@@ -342,14 +341,19 @@ export default function MyReport() {
                         height: 22px;
                     }
                     
+                    .logo-container {
+                        direction: ltr;
+                    }
+                    
                     .logo {
                         display: flex;
                         align-items: center;
                     }
                     
                     .logo svg {
-                        height: 36px;
+                        height: 44px;
                         width: auto;
+                        direction: ltr;
                     }
                     
                     /* Photo Section */
@@ -398,7 +402,7 @@ export default function MyReport() {
                     
                     /* Info Section */
                     .info-section {
-                        padding: 0 24px 20px;
+                        padding: 0 24px 8px;
                     }
                     
                     .name-title {
@@ -429,8 +433,8 @@ export default function MyReport() {
                     .details-grid {
                         display: grid;
                         grid-template-columns: repeat(2, 1fr);
-                        gap: 12px;
-                        margin-bottom: 16px;
+                        gap: 10px;
+                        margin-bottom: 8px;
                     }
                     
                     .detail-card {
@@ -474,10 +478,10 @@ export default function MyReport() {
                     .contact-section {
                         background: #f1f5f9;
                         border-radius: 12px;
-                        padding: 16px 24px;
+                        padding: 12px 24px;
                         text-align: center;
                         color: #0f172a;
-                        margin: 16px 24px;
+                        margin: 8px 24px;
                     }
                     
                     .contact-title {
@@ -606,15 +610,25 @@ export default function MyReport() {
                             </div>
                             <div class="logo-container">
                                 <div class="logo">
-                                    <svg width="120" height="35" viewBox="0 0 180 50" xmlns="http://www.w3.org/2000/svg">
+                                    <svg width="140" height="40" viewBox="0 0 180 50" xmlns="http://www.w3.org/2000/svg">
+                                        <!-- Background circle for search icon -->
                                         <circle cx="25" cy="25" r="20" fill="#4A3FF6" opacity="0.1"/>
+                                        <!-- Search magnifying glass -->
                                         <circle cx="22" cy="22" r="10" fill="none" stroke="#4A3FF6" stroke-width="2.5"/>
                                         <line x1="29" y1="29" x2="36" y2="36" stroke="#4A3FF6" stroke-width="2.5" stroke-linecap="round"/>
+                                        <!-- Person icon inside magnifying glass -->
                                         <circle cx="22" cy="20" r="3" fill="#4A3FF6"/>
                                         <path d="M 22 24 Q 18 24 17 27 L 27 27 Q 26 24 22 24 Z" fill="#4A3FF6"/>
+                                        <!-- Text: Lqani.ma -->
                                         <text x="48" y="32" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="#4A3FF6">
-                                            L9ani<tspan font-weight="400" opacity="0.7">.ma</tspan>
+                                            Lqani<tspan font-weight="400" opacity="0.7">.ma</tspan>
                                         </text>
+                                        <!-- Decorative dots -->
+                                        <circle cx="45" cy="40" r="1.5" fill="#4A3FF6" opacity="0.5"/>
+                                        <circle cx="55" cy="42" r="1.5" fill="#4A3FF6" opacity="0.5"/>
+                                        <circle cx="65" cy="40" r="1.5" fill="#4A3FF6" opacity="0.5"/>
+                                        <line x1="45" y1="40" x2="55" y2="42" stroke="#4A3FF6" stroke-width="0.5" opacity="0.3"/>
+                                        <line x1="55" y1="42" x2="65" y2="40" stroke="#4A3FF6" stroke-width="0.5" opacity="0.3"/>
                                     </svg>
                                 </div>
                             </div>
@@ -698,6 +712,408 @@ export default function MyReport() {
             setTimeout(() => {
                 printWindow.print();
             }, 500);
+        };
+        setOpenMenuId(null);
+    };
+
+    // Download report as PDF - Uses same poster template but triggers save dialog
+    const handleDownloadPDF = (report) => {
+        const reportName = getReportDisplayName(report, activeTab === 'sighting');
+        const isSighting = activeTab === 'sighting';
+        const reportTypeLabel = isSighting ? (t('tabs.sighting') || 'Sighting Report') : (t('tabs.missing') || 'Missing Report');
+        const mainPhoto = report.photos && report.photos.length > 0 ? report.photos[0] : null;
+        const reportUrl = `${window.location.origin}/${locale}/report/${report.id}`;
+        
+        // Generate QR Code using a public API
+        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(reportUrl)}&bgcolor=ffffff&color=1f2937&margin=0`;
+        
+        // Status text
+        const headerText = isSighting 
+            ? (isRTL ? 'تمت المشاهدة' : 'FOUND') 
+            : (isRTL ? 'مفقود' : 'MISSING');
+        
+        // Create the same poster HTML but with PDF-specific styling
+        const pdfContent = `
+            <!DOCTYPE html>
+            <html dir="${isRTL ? 'rtl' : 'ltr'}" lang="${locale}">
+            <head>
+                <meta charset="UTF-8">
+                <title>${reportName} - L9ani</title>
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap');
+                    
+                    @page {
+                        size: A4;
+                        margin: 0;
+                    }
+                    
+                    @media print {
+                        html, body {
+                            margin: 0;
+                            padding: 0;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                    }
+                    
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    
+                    body { 
+                        font-family: ${isRTL ? "'Tajawal', 'Arial'" : "'Inter', 'Arial'"}, sans-serif;
+                        background: #ffffff;
+                        min-height: 100vh;
+                        display: flex;
+                        justify-content: center;
+                        align-items: flex-start;
+                        padding: 20px;
+                    }
+                    
+                    .poster {
+                        width: 100%;
+                        max-width: 600px;
+                        background: #ffffff;
+                        border-radius: 24px;
+                        overflow: hidden;
+                    }
+                    
+                    .header-banner {
+                        background: linear-gradient(180deg, ${isSighting ? '#ecfdf5' : '#fff5f5'} 0%, #ffffff 70%);
+                        padding: 18px 24px 18px;
+                        position: relative;
+                    }
+                    
+                    .header-content {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+                    
+                    .header-left {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                    }
+                    
+                    .status-badge {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 8px;
+                        background: ${isSighting ? '#059669' : '#dc2626'};
+                        color: #ffffff;
+                        font-size: 24px;
+                        font-weight: 800;
+                        padding: 12px 20px;
+                        border-radius: 18px;
+                        border: 2px solid ${isSighting ? '#047857' : '#b91c1c'};
+                        letter-spacing: 0.8px;
+                        text-transform: uppercase;
+                        box-shadow: 0 8px 20px ${isSighting ? 'rgba(5,150,105,0.25)' : 'rgba(220,38,38,0.25)'};
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                    
+                    .status-badge .status-icon {
+                        width: 22px;
+                        height: 22px;
+                    }
+                    
+                    .logo-container {
+                        direction: ltr;
+                    }
+                    
+                    .logo {
+                        display: flex;
+                        align-items: center;
+                    }
+                    
+                    .logo svg {
+                        height: 44px;
+                        width: auto;
+                        direction: ltr;
+                    }
+                    
+                    .photo-section {
+                        padding: 24px;
+                        display: flex;
+                        justify-content: center;
+                    }
+                    
+                    .photo-container {
+                        position: relative;
+                        width: 100%;
+                        max-width: 400px;
+                    }
+                    
+                    .main-photo {
+                        width: 100%;
+                        aspect-ratio: 1;
+                        object-fit: cover;
+                        border-radius: 20px;
+                        box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.2);
+                    }
+                    
+                    .no-photo {
+                        width: 100%;
+                        aspect-ratio: 1;
+                        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+                        border-radius: 20px;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        color: #94a3b8;
+                    }
+                    
+                    .no-photo svg {
+                        width: 80px;
+                        height: 80px;
+                        margin-bottom: 16px;
+                    }
+                    
+                    .no-photo span {
+                        font-size: 18px;
+                        font-weight: 500;
+                    }
+                    
+                    .info-section {
+                        padding: 0 24px 8px;
+                    }
+                    
+                    .name-title {
+                        text-align: center;
+                        font-size: 36px;
+                        font-weight: 800;
+                        color: #0f172a;
+                        margin-bottom: 16px;
+                        line-height: 1.2;
+                        text-transform: capitalize;
+                    }
+                    
+                    .details-grid {
+                        display: grid;
+                        grid-template-columns: repeat(2, 1fr);
+                        gap: 10px;
+                        margin-bottom: 8px;
+                    }
+                    
+                    .detail-card {
+                        background: #f8fafc;
+                        border-radius: 12px;
+                        padding: 14px 16px;
+                        border: 1px solid #e2e8f0;
+                    }
+                    
+                    .detail-card.full-width {
+                        grid-column: span 2;
+                    }
+                    
+                    .detail-label {
+                        font-size: 11px;
+                        font-weight: 600;
+                        color: #64748b;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                        margin-bottom: 4px;
+                    }
+                    
+                    .detail-value {
+                        font-size: 16px;
+                        font-weight: 600;
+                        color: #1e293b;
+                    }
+                    
+                    .contact-section {
+                        background: #f1f5f9;
+                        border-radius: 12px;
+                        padding: 12px 24px;
+                        text-align: center;
+                        color: #0f172a;
+                        margin: 8px 24px;
+                    }
+                    
+                    .contact-title {
+                        font-size: 13px;
+                        font-weight: 600;
+                        color: #475569;
+                        margin-bottom: 6px;
+                    }
+                    
+                    .contact-phone {
+                        font-size: 28px;
+                        font-weight: 800;
+                        letter-spacing: 1px;
+                        line-height: 1.3;
+                        color: #0f172a;
+                        direction: ltr;
+                    }
+                    
+                    .footer-section {
+                        padding: 20px 24px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: flex-end;
+                        background: #f8fafc;
+                        border-top: 1px solid #e2e8f0;
+                    }
+                    
+                    .footer-info {
+                        flex: 1;
+                    }
+                    
+                    .report-id {
+                        font-size: 11px;
+                        color: #94a3b8;
+                        margin-bottom: 4px;
+                    }
+                    
+                    .report-id-value {
+                        font-size: 12px;
+                        font-weight: 600;
+                        color: #64748b;
+                        font-family: monospace;
+                        word-break: break-all;
+                    }
+                    
+                    .scan-text {
+                        font-size: 11px;
+                        color: #64748b;
+                        margin-top: 8px;
+                    }
+                    
+                    .qr-section {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                    }
+                    
+                    .qr-code {
+                        width: 80px;
+                        height: 80px;
+                        border-radius: 8px;
+                    }
+                    
+                    .qr-label {
+                        font-size: 10px;
+                        font-weight: 600;
+                        color: #64748b;
+                        margin-top: 4px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="poster">
+                    <div class="header-banner">
+                        <div class="header-content">
+                            <div class="header-left">
+                                <div class="status-badge">
+                                    ${isSighting ? `
+                                        <svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                        </svg>
+                                    ` : `
+                                        <svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                        </svg>
+                                    `}
+                                    ${headerText}
+                                </div>
+                            </div>
+                            <div class="logo-container">
+                                <div class="logo">
+                                    <svg width="140" height="40" viewBox="0 0 180 50" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="25" cy="25" r="20" fill="#4A3FF6" opacity="0.1"/>
+                                        <circle cx="22" cy="22" r="10" fill="none" stroke="#4A3FF6" stroke-width="2.5"/>
+                                        <line x1="29" y1="29" x2="36" y2="36" stroke="#4A3FF6" stroke-width="2.5" stroke-linecap="round"/>
+                                        <circle cx="22" cy="20" r="3" fill="#4A3FF6"/>
+                                        <path d="M 22 24 Q 18 24 17 27 L 27 27 Q 26 24 22 24 Z" fill="#4A3FF6"/>
+                                        <text x="48" y="32" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="#4A3FF6">
+                                            Lqani<tspan font-weight="400" opacity="0.7">.ma</tspan>
+                                        </text>
+                                        <circle cx="45" cy="40" r="1.5" fill="#4A3FF6" opacity="0.5"/>
+                                        <circle cx="55" cy="42" r="1.5" fill="#4A3FF6" opacity="0.5"/>
+                                        <circle cx="65" cy="40" r="1.5" fill="#4A3FF6" opacity="0.5"/>
+                                        <line x1="45" y1="40" x2="55" y2="42" stroke="#4A3FF6" stroke-width="0.5" opacity="0.3"/>
+                                        <line x1="55" y1="42" x2="65" y2="40" stroke="#4A3FF6" stroke-width="0.5" opacity="0.3"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="photo-section">
+                        <div class="photo-container">
+                            ${mainPhoto ? `
+                                <img src="${mainPhoto}" alt="${reportName}" class="main-photo" />
+                            ` : `
+                                <div class="no-photo">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span>${isRTL ? 'لا توجد صورة' : 'No Photo Available'}</span>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h1 class="name-title">${reportName}</h1>
+                        
+                        <div class="details-grid">
+                            <div class="detail-card">
+                                <div class="detail-label">${isRTL ? 'المدينة' : 'City'}</div>
+                                <div class="detail-value">${report.city || '-'}</div>
+                            </div>
+                            <div class="detail-card">
+                                <div class="detail-label">${isRTL ? 'التاريخ' : 'Date'}</div>
+                                <div class="detail-value">${new Date(report.created_at).toLocaleDateString(locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                            </div>
+                            ${report.location_description ? `
+                                <div class="detail-card full-width">
+                                    <div class="detail-label">${isRTL ? 'آخر موقع معروف' : 'Last Known Location'}</div>
+                                    <div class="detail-value">${report.location_description}</div>
+                                </div>
+                            ` : ''}
+                            ${report.additional_info ? `
+                                <div class="detail-card full-width">
+                                    <div class="detail-label">${isRTL ? 'معلومات إضافية' : 'Additional Info'}</div>
+                                    <div class="detail-value">${report.additional_info}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    
+                    ${report.reporter_phone ? `
+                        <div class="contact-section">
+                            <div class="contact-title">${isRTL ? 'للتواصل اتصل على' : 'If found, please contact'}</div>
+                            <div class="contact-phone">${report.reporter_phone}</div>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="footer-section">
+                        <div class="footer-info">
+                            <div class="report-id">${isRTL ? 'معرف البلاغ' : 'Report ID'}</div>
+                            <div class="report-id-value">${report.id}</div>
+                            <div class="scan-text">${isRTL ? 'امسح رمز QR للمزيد من التفاصيل' : 'Scan QR code for more details'}</div>
+                        </div>
+                        <div class="qr-section">
+                            <img src="${qrCodeUrl}" alt="QR Code" class="qr-code" />
+                            <div class="qr-label">l9ani.ma</div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `;
+        
+        // Open in new window and trigger print dialog (user can select "Save as PDF")
+        const pdfWindow = window.open('', '_blank');
+        pdfWindow.document.write(pdfContent);
+        pdfWindow.document.close();
+        pdfWindow.onload = () => {
+            setTimeout(() => {
+                pdfWindow.print();
+            }, 600);
         };
         setOpenMenuId(null);
     };
@@ -1512,6 +1928,17 @@ export default function MyReport() {
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                                                         </svg>
                                                         {t('options.print') || 'Print Report'}
+                                                    </button>
+                                                    
+                                                    {/* Download PDF option */}
+                                                    <button
+                                                        onClick={() => handleDownloadPDF(report)}
+                                                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                                                    >
+                                                        <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                        </svg>
+                                                        {t('options.downloadPdf') || 'Download as PDF'}
                                                     </button>
                                                 </div>
                                             )}
