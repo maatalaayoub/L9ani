@@ -167,12 +167,15 @@ export default function AdminPage() {
         if (!user || !isAdmin) return;
 
         try {
+            // Determine which API endpoint to use based on active tab
+            const baseUrl = activeTab === 'sighting' ? '/api/admin/sighting-reports' : '/api/admin/reports';
+            
             // Fetch counts for each status
             const [totalRes, pendingRes, approvedRes, rejectedRes] = await Promise.all([
-                fetch(`/api/admin/reports?userId=${user.id}&type=${activeTab}&status=all&limit=1`),
-                fetch(`/api/admin/reports?userId=${user.id}&type=${activeTab}&status=pending&limit=1`),
-                fetch(`/api/admin/reports?userId=${user.id}&type=${activeTab}&status=approved&limit=1`),
-                fetch(`/api/admin/reports?userId=${user.id}&type=${activeTab}&status=rejected&limit=1`)
+                fetch(`${baseUrl}?userId=${user.id}&status=all&limit=1`),
+                fetch(`${baseUrl}?userId=${user.id}&status=pending&limit=1`),
+                fetch(`${baseUrl}?userId=${user.id}&status=approved&limit=1`),
+                fetch(`${baseUrl}?userId=${user.id}&status=rejected&limit=1`)
             ]);
 
             const [total, pending, approved, rejected] = await Promise.all([
@@ -205,9 +208,11 @@ export default function AdminPage() {
         setError('');
 
         try {
+            // Determine which API endpoint to use based on active tab
+            const baseUrl = activeTab === 'sighting' ? '/api/admin/sighting-reports' : '/api/admin/reports';
+            
             const params = new URLSearchParams({
                 userId: user.id,
-                type: activeTab,
                 status: statusFilter,
                 page: pagination.page.toString(),
                 limit: pagination.limit.toString()
@@ -219,7 +224,7 @@ export default function AdminPage() {
             }
 
             console.log('[Admin] Fetching reports with params:', params.toString());
-            const response = await fetch(`/api/admin/reports?${params}`);
+            const response = await fetch(`${baseUrl}?${params}`);
             
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
@@ -303,20 +308,24 @@ export default function AdminPage() {
 
     // Handle approve/reject actions
     const handleAction = async (action) => {
-        if (!selectedReport) return;
+        if (!selectedReport || !user) return;
 
         setActionLoading(true);
         setError('');
         setSuccessMessage('');
 
         try {
-            const response = await fetch('/api/admin/reports', {
+            // Determine which API endpoint to use based on active tab
+            const baseUrl = activeTab === 'sighting' ? '/api/admin/sighting-reports' : '/api/admin/reports';
+            
+            console.log('[Admin] handleAction - activeTab:', activeTab, 'baseUrl:', baseUrl, 'userId:', user.id);
+            
+            const response = await fetch(baseUrl, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     userId: user.id,
                     reportId: selectedReport.id,
-                    type: activeTab,
                     action,
                     rejectionReason: action === 'reject' ? rejectionReason : null
                 })
@@ -355,8 +364,11 @@ export default function AdminPage() {
         setError('');
 
         try {
+            // Determine which API endpoint to use based on active tab
+            const baseUrl = activeTab === 'sighting' ? '/api/admin/sighting-reports' : '/api/admin/reports';
+            
             const response = await fetch(
-                `/api/admin/reports?userId=${user.id}&reportId=${selectedReport.id}&type=${activeTab}`,
+                `${baseUrl}?userId=${user.id}&reportId=${selectedReport.id}`,
                 { method: 'DELETE' }
             );
 
@@ -392,8 +404,11 @@ export default function AdminPage() {
         setError('');
 
         try {
+            // Determine which API endpoint to use based on active tab
+            const baseUrl = activeTab === 'sighting' ? '/api/admin/sighting-reports' : '/api/admin/reports';
+            
             const action = newStatus === 'approved' ? 'approve' : 'reject';
-            const response = await fetch('/api/admin/reports', {
+            const response = await fetch(baseUrl, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -401,7 +416,6 @@ export default function AdminPage() {
                 body: JSON.stringify({
                     userId: user.id,
                     reportId: selectedReport.id,
-                    type: activeTab,
                     action: action,
                     rejectionReason: newStatus === 'rejected' ? rejectionReason : undefined
                 }),

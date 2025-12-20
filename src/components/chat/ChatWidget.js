@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useAuth } from '@/context/AuthContext';
 import { useRouter, usePathname } from 'next/navigation';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
@@ -22,9 +21,11 @@ import {
 export default function ChatWidget() {
   const locale = useLocale();
   const t = useTranslations('common');
-  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  
+  // Storage key for conversation persistence
+  const STORAGE_KEY = 'l9ani_chat_history';
   
   // Chat state
   const [isOpen, setIsOpen] = useState(false);
@@ -32,7 +33,6 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [quickReplies, setQuickReplies] = useState([]);
-  const [sessionId, setSessionId] = useState(null);
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
   const [conversationContext, setConversationContext] = useState({}); // Track conversation flow context
   
@@ -40,12 +40,38 @@ export default function ChatWidget() {
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
   
-  // Generate session ID
+  // Load conversation from localStorage on mount
   useEffect(() => {
-    if (!sessionId) {
-      setSessionId(`session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const { messages: savedMessages, quickReplies: savedReplies, context: savedContext } = JSON.parse(saved);
+        if (savedMessages && savedMessages.length > 0) {
+          setMessages(savedMessages);
+          setQuickReplies(savedReplies || []);
+          setConversationContext(savedContext || {});
+        }
+      }
+    } catch (error) {
+      console.error('Error loading chat history:', error);
     }
-  }, [sessionId]);
+  }, []);
+  
+  // Save conversation to localStorage whenever messages change
+  useEffect(() => {
+    if (messages.length > 0) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          messages,
+          quickReplies,
+          context: conversationContext,
+          timestamp: new Date().toISOString()
+        }));
+      } catch (error) {
+        console.error('Error saving chat history:', error);
+      }
+    }
+  }, [messages, quickReplies, conversationContext]);
   
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -65,7 +91,8 @@ export default function ChatWidget() {
   const sendMessage = useCallback(async (text, isUserMessage = true) => {
     if (!text.trim()) return;
     
-    // Add user message
+    // Add user message to local state
+    let updatedMessages = messages;
     if (isUserMessage) {
       const userMessage = {
         id: Date.now(),
@@ -73,7 +100,8 @@ export default function ChatWidget() {
         content: text,
         timestamp: new Date().toISOString()
       };
-      setMessages(prev => [...prev, userMessage]);
+      updatedMessages = [...messages, userMessage];
+      setMessages(updatedMessages);
     }
     
     setIsLoading(true);
@@ -85,25 +113,22 @@ export default function ChatWidget() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: text,
-          locale,
-          sessionId,
-          userId: user?.id,
-          context: conversationContext // Send conversation context to maintain flow
+          // Send conversation history for ChatGPT context (client-side only)
+          conversationHistory: updatedMessages.slice(-6)
         })
       });
       
       const data = await response.json();
       
-      if (data.error) {
-        throw new Error(data.error);
+      // Log API response for debugging
+      console.log('[ChatWidget] API response:', { success: data.success, hasError: !!data.error, hasResponse: !!data.response });
+      
+      // Check for HTTP errors (not API-level errors which include fallback responses)
+      if (!response.ok && !data.response) {
+        throw new Error(data.error || 'API request failed');
       }
       
-      // Update conversation context from response (for multi-turn conversations like report creation)
-      if (data.context !== undefined) {
-        setConversationContext(data.context || {});
-      }
-      
-      // Extract response content - handle both formats
+      // Extract response content
       // API returns: { response: { text: "...", quickReplies: [...] } }
       // Or sometimes: { response: "..." }
       const responseContent = typeof data.response === 'object' 
@@ -154,7 +179,7 @@ export default function ChatWidget() {
     } finally {
       setIsLoading(false);
     }
-  }, [locale, sessionId, user?.id, isMinimized, isOpen, conversationContext]);
+  }, [locale, isMinimized, isOpen, messages]);
   
   // Handle navigation - defined first since other handlers depend on it
   const handleNavigate = useCallback((path, prefillData = null) => {
@@ -180,48 +205,23 @@ export default function ChatWidget() {
   
   // Clear conversation - defined before handleAction since it depends on it
   const clearConversation = useCallback(() => {
-    // Generate new session ID
-    setSessionId(`session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+    // Clear from localStorage
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (error) {
+      console.error('Error clearing chat history:', error);
+    }
     
     // Clear messages, context, and reset
     setMessages([]);
     setQuickReplies([]);
     setConversationContext({}); // Reset conversation context
     
-    // Add fresh greeting
-    const greeting = locale === 'ar'
-      ? 'مرحباً! 👋 تم مسح المحادثة. كيف يمكنني مساعدتك؟'
-      : 'Hello! 👋 Conversation cleared. How can I help you?';
-    
-    const welcomeMessage = {
-      id: Date.now(),
-      type: 'bot',
-      content: greeting,
-      timestamp: new Date().toISOString()
-    };
-    
-    setMessages([welcomeMessage]);
-    
-    // Reset quick replies
-    setQuickReplies([
-      {
-        text: locale === 'ar' ? '📝 الإبلاغ عن مفقود' : '📝 Report Missing',
-        action: 'report_missing'
-      },
-      {
-        text: locale === 'ar' ? '👁️ الإبلاغ عن مشاهدة' : '👁️ Report Sighting',
-        action: 'report_sighting'
-      },
-      {
-        text: locale === 'ar' ? '🔍 البحث' : '🔍 Search',
-        action: 'search_reports'
-      },
-      {
-        text: locale === 'ar' ? '📋 بلاغاتي' : '📋 My Reports',
-        action: 'view_my_reports'
-      }
-    ]);
-  }, [locale]);
+    // Send greeting to get fresh response from chatbot
+    setTimeout(() => {
+      sendMessage(locale === 'ar' ? 'مرحبا' : 'Hello', false);
+    }, 100);
+  }, [locale, sendMessage]);
   
   // Handle actions from quick replies or bot responses
   const handleAction = useCallback((action, data) => {
@@ -293,6 +293,20 @@ export default function ChatWidget() {
   
   // Handle quick reply selection
   const handleQuickReply = useCallback((reply) => {
+    console.log('[ChatWidget] Quick reply clicked:', reply);
+    
+    // Handle 'navigate' action type (from new guidance chatbot)
+    if (reply.action === 'navigate' && reply.route) {
+      handleNavigate(reply.route, reply.data);
+      return;
+    }
+    
+    // Handle 'explain' action type (for how_it_works)
+    if (reply.action === 'explain') {
+      sendMessage(reply.text || (locale === 'ar' ? 'كيف يعمل الموقع' : 'How does it work'));
+      return;
+    }
+    
     // Check if it's an action or navigation
     if (reply.action) {
       handleAction(reply.action, reply.data);
@@ -305,7 +319,7 @@ export default function ChatWidget() {
       // Send the text as a message
       sendMessage(reply.text);
     }
-  }, [handleAction, handleNavigate, sendMessage]);
+  }, [handleAction, handleNavigate, sendMessage, locale]);
   
   // Toggle chat open/close
   const toggleChat = useCallback(() => {
@@ -316,44 +330,16 @@ export default function ChatWidget() {
       
       // Send initial greeting if no messages
       if (messages.length === 0) {
-        const greeting = locale === 'ar'
-          ? 'مرحباً! 👋 أنا مساعدك الذكي في منصة لقاني. كيف يمكنني مساعدتك اليوم؟'
-          : 'Hello! 👋 I\'m your smart assistant at L9ani. How can I help you today?';
-        
-        const welcomeMessage = {
-          id: Date.now(),
-          type: 'bot',
-          content: greeting,
-          timestamp: new Date().toISOString()
-        };
-        
-        setMessages([welcomeMessage]);
-        
-        // Set initial quick replies
-        setQuickReplies([
-          {
-            text: locale === 'ar' ? '📝 الإبلاغ عن مفقود' : '📝 Report Missing',
-            action: 'report_missing'
-          },
-          {
-            text: locale === 'ar' ? '👁️ الإبلاغ عن مشاهدة' : '👁️ Report Sighting',
-            action: 'report_sighting'
-          },
-          {
-            text: locale === 'ar' ? '🔍 البحث' : '🔍 Search',
-            action: 'search_reports'
-          },
-          {
-            text: locale === 'ar' ? '📋 بلاغاتي' : '📋 My Reports',
-            action: 'view_my_reports'
-          }
-        ]);
+        // Send a greeting message to get the proper response from the guidance chatbot
+        sendMessage(locale === 'ar' ? 'مرحبا' : 'Hello', false).then(() => {
+          // The chatbot will respond with proper greeting and quick replies
+        });
       }
     } else {
       setIsOpen(false);
       setIsMinimized(false);
     }
-  }, [isOpen, messages.length, locale]);
+  }, [isOpen, messages.length, locale, sendMessage]);
   
   // Minimize chat
   const minimizeChat = useCallback(() => {
@@ -371,11 +357,6 @@ export default function ChatWidget() {
     setIsOpen(false);
     setIsMinimized(false);
   }, []);
-  
-  // Don't render if not logged in
-  if (authLoading || !user) {
-    return null;
-  }
   
   const isRTL = locale === 'ar';
   
@@ -535,9 +516,11 @@ export default function ChatWidget() {
             <div ref={messagesEndRef} />
           </div>
           
-          {/* Quick Replies */}
+          {/* Quick Replies - Modern card style */}
           {quickReplies.length > 0 && !isLoading && (
-            <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+            <div className="px-3 py-3 border-t border-gray-100 dark:border-gray-800 
+              bg-gradient-to-b from-gray-50/80 to-white dark:from-gray-900/80 dark:to-gray-900
+              backdrop-blur-sm">
               <ChatQuickReplies 
                 replies={quickReplies} 
                 onSelect={handleQuickReply}
@@ -546,8 +529,8 @@ export default function ChatWidget() {
             </div>
           )}
           
-          {/* Input Area */}
-          <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+          {/* Input Area - Modern floating style */}
+          <div className="border-t border-gray-100 dark:border-gray-800">
             <ChatInput 
               onSend={sendMessage}
               disabled={isLoading}

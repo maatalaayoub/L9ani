@@ -59,10 +59,39 @@ const getReportTypeColors = (type) => {
     return colors[type] || colors.person;
 };
 
-// Helper to get display name for a report
-const getReportDisplayName = (report) => {
+// Helper to get display name for a report (works for both missing and sighting reports)
+const getReportDisplayName = (report, isSighting = false) => {
     const { report_type, details } = report;
     
+    // For sighting reports, different field names are used
+    if (isSighting) {
+        if (!details) {
+            return report_type === 'pet' ? 'Unknown Pet' : 'Unknown';
+        }
+        
+        switch (report_type) {
+            case 'person':
+                // Sighting person has first_name/last_name in details
+                return details.first_name && details.last_name 
+                    ? `${details.first_name} ${details.last_name}` 
+                    : details.first_name || details.last_name || 'Unknown';
+            case 'pet':
+                // Sighting pet has pet_type (not pet_name) - e.g., "Dog", "Cat"
+                return details.pet_type || 'Unknown Pet';
+            case 'document':
+                return details.document_type || 'Unknown Document';
+            case 'electronics':
+                return `${details.brand || ''} ${details.model || ''}`.trim() || details.device_type || 'Unknown Device';
+            case 'vehicle':
+                return `${details.brand || ''} ${details.model || ''}`.trim() || details.vehicle_type || 'Unknown Vehicle';
+            case 'other':
+                return details.item_name || 'Unknown Item';
+            default:
+                return 'Unknown';
+        }
+    }
+    
+    // For missing reports (original behavior)
     if (!report_type || report_type === 'person') {
         return report.first_name && report.last_name 
             ? `${report.first_name} ${report.last_name}` 
@@ -105,6 +134,8 @@ const getReportTypeLabel = (type, t) => {
 export default function MyReport() {
     const { user } = useAuth();
     const [reports, setReports] = useState([]);
+    const [sightingReports, setSightingReports] = useState([]);
+    const [activeTab, setActiveTab] = useState('missing'); // 'missing' or 'sighting'
     const [loading, setLoading] = useState(true);
     const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
     const [loginDialogTab, setLoginDialogTab] = useState('login');
@@ -200,30 +231,49 @@ export default function MyReport() {
             }
 
             console.log('[MyReport] Fetching reports...');
-            const response = await fetch('/api/reports/missing', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            const data = await response.json();
             
-            if (!response.ok) {
-                console.error('[MyReport] API error:', response.status, data);
-                if (response.status === 401) {
+            // Fetch both missing and sighting reports in parallel
+            const [missingResponse, sightingResponse] = await Promise.all([
+                fetch('/api/reports/missing', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }),
+                fetch('/api/reports/sighting', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+            ]);
+
+            const missingData = await missingResponse.json();
+            const sightingData = await sightingResponse.json();
+            
+            if (!missingResponse.ok) {
+                console.error('[MyReport] Missing API error:', missingResponse.status, missingData);
+                if (missingResponse.status === 401) {
                     // Token is invalid - clear it so user can re-login
                     localStorage.removeItem('supabase_token');
                     localStorage.removeItem('supabase_refresh_token');
                     console.log('[MyReport] Cleared invalid tokens');
                 }
                 setReports([]);
-                return;
+            } else {
+                console.log('[MyReport] Fetched', missingData.reports?.length || 0, 'missing reports');
+                setReports(missingData.reports || []);
             }
 
-            console.log('[MyReport] Fetched', data.reports?.length || 0, 'reports');
-            setReports(data.reports || []);
+            if (!sightingResponse.ok) {
+                console.error('[MyReport] Sighting API error:', sightingResponse.status, sightingData);
+                setSightingReports([]);
+            } else {
+                console.log('[MyReport] Fetched', sightingData.reports?.length || 0, 'sighting reports');
+                setSightingReports(sightingData.reports || []);
+            }
         } catch (error) {
             console.error('[MyReport] Error:', error);
             setReports([]);
@@ -466,7 +516,12 @@ export default function MyReport() {
                     break;
             }
 
-            const response = await fetch('/api/reports/missing', {
+            // Determine the API endpoint based on active tab (sighting vs missing)
+            const endpoint = activeTab === 'sighting' 
+                ? '/api/reports/sighting'
+                : '/api/reports/missing';
+
+            const response = await fetch(endpoint, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -533,7 +588,12 @@ export default function MyReport() {
                 return;
             }
 
-            const response = await fetch(`/api/reports/missing?reportId=${deletingReport.id}`, {
+            // Determine the API endpoint based on active tab (sighting vs missing)
+            const endpoint = activeTab === 'sighting' 
+                ? `/api/reports/sighting?reportId=${deletingReport.id}`
+                : `/api/reports/missing?reportId=${deletingReport.id}`;
+
+            const response = await fetch(endpoint, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -622,31 +682,78 @@ export default function MyReport() {
                     </p>
                 </div>
 
+                {/* Tabs */}
+                <div className="mb-6">
+                    <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl w-fit">
+                        <button
+                            onClick={() => setActiveTab('missing')}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                activeTab === 'missing'
+                                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                            }`}
+                        >
+                            <span className="flex items-center gap-2">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                {t('tabs.missing') || 'Missing Reports'}
+                                {reports.length > 0 && (
+                                    <span className="px-1.5 py-0.5 text-xs rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                                        {reports.length}
+                                    </span>
+                                )}
+                            </span>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('sighting')}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                activeTab === 'sighting'
+                                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                            }`}
+                        >
+                            <span className="flex items-center gap-2">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                {t('tabs.sighting') || 'Sighting Reports'}
+                                {sightingReports.length > 0 && (
+                                    <span className="px-1.5 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
+                                        {sightingReports.length}
+                                    </span>
+                                )}
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
                 {loading ? (
                     <div className="flex items-center justify-center py-20">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                     </div>
-                ) : reports.length === 0 ? (
+                ) : (activeTab === 'missing' ? reports : sightingReports).length === 0 ? (
                     <div className="bg-white dark:bg-gray-900 rounded-2xl p-12 text-center border border-gray-200 dark:border-gray-800">
                         <svg className="w-20 h-20 mx-auto text-gray-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                            {t('noReports.title')}
+                            {activeTab === 'missing' ? (t('noReports.title') || 'No missing reports') : (t('noReports.sightingTitle') || 'No sighting reports')}
                         </h2>
                         <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
-                            {t('noReports.description')}
+                            {activeTab === 'missing' ? (t('noReports.description') || 'You haven\'t submitted any missing reports yet.') : (t('noReports.sightingDescription') || 'You haven\'t submitted any sighting reports yet.')}
                         </p>
-                        <Link href="/report-missing" className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors">
+                        <Link href={activeTab === 'missing' ? "/report-missing" : "/report-sighting"} className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 4v16m8-8H4" />
                             </svg>
-                            {t('noReports.button')}
+                            {activeTab === 'missing' ? (t('noReports.button') || 'Report Missing') : (t('noReports.sightingButton') || 'Report Sighting')}
                         </Link>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        {reports.map((report) => (
+                        {(activeTab === 'missing' ? reports : sightingReports).map((report) => (
                             <div 
                                 key={report.id} 
                                 className="bg-white dark:bg-[#1D2939] rounded-xl border border-gray-200 dark:border-gray-700/50 hover:border-gray-300 dark:hover:border-gray-600 transition-all hover:shadow-lg"
@@ -670,7 +777,7 @@ export default function MyReport() {
                                                     {report.photos && report.photos.length > 0 ? (
                                                         <img
                                                             src={report.photos[0]}
-                                                            alt={getReportDisplayName(report)}
+                                                            alt={getReportDisplayName(report, activeTab === 'sighting')}
                                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                                                         />
                                                     ) : (
@@ -694,7 +801,7 @@ export default function MyReport() {
                                             {/* Title Row */}
                                             <div className="flex items-start justify-between gap-2 mb-2">
                                                 <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white truncate">
-                                                    {getReportDisplayName(report)}
+                                                    {getReportDisplayName(report, activeTab === 'sighting')}
                                                 </h3>
                                                 {/* Status Badge */}
                                                 <span className={`flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full ${
@@ -982,10 +1089,13 @@ export default function MyReport() {
                                         {/* Pet fields */}
                                         {selectedReport.report_type === 'pet' && selectedReport.details && (
                                             <>
-                                                <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
-                                                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.petName') || 'Pet Name'}</p>
-                                                    <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.details.pet_name || '-'}</p>
-                                                </div>
+                                                {/* For missing reports: show pet_name, for sighting reports: show pet_type as primary */}
+                                                {activeTab === 'missing' && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.petName') || 'Pet Name'}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.details.pet_name || '-'}</p>
+                                                    </div>
+                                                )}
                                                 {selectedReport.details.pet_type && (
                                                     <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
                                                         <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.petType') || 'Pet Type'}</p>
@@ -1002,6 +1112,19 @@ export default function MyReport() {
                                                     <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
                                                         <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.color') || 'Color'}</p>
                                                         <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.details.color}</p>
+                                                    </div>
+                                                )}
+                                                {/* Show additional sighting-specific fields */}
+                                                {activeTab === 'sighting' && selectedReport.details.size && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.size') || 'Size'}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white capitalize">{selectedReport.details.size}</p>
+                                                    </div>
+                                                )}
+                                                {activeTab === 'sighting' && selectedReport.details.has_collar !== undefined && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded-lg p-3 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.hasCollar') || 'Has Collar'}</p>
+                                                        <p className="text-base font-semibold text-gray-900 dark:text-white">{selectedReport.details.has_collar ? (t('yes') || 'Yes') : (t('no') || 'No')}</p>
                                                     </div>
                                                 )}
                                             </>

@@ -1,10 +1,17 @@
 {
     "title": "My Reports",
     "subtitle": "View and manage your missing item reports",
+    "tabs": {
+        "missing": "Missing Reports",
+        "sighting": "Sighting Reports"
+    },
     "noReports": {
         "title": "No Reports Yet",
         "description": "You haven't created any reports yet. Create a report to get started.",
-        "button": "Create New Report"
+        "button": "Create New Report",
+        "sightingTitle": "No Sighting Reports Yet",
+        "sightingDescription": "You haven't submitted any sighting reports yet. Help others by reporting a sighting.",
+        "sightingButton": "Report a Sighting"
     },
     "reportTypes": {
         "person": "Person",

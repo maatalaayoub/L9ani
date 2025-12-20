@@ -30,12 +30,17 @@ export default function ReportSightingPage() {
     const { locale } = useLanguage();
     const isRTL = locale === 'ar';
     const fileInputRef = useRef(null);
+    const xhrRef = useRef(null);
 
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
     const [loginDialogTab, setLoginDialogTab] = useState('login');
+    
+    // Upload progress state
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [isUploading, setIsUploading] = useState(false);
 
     const [reportType, setReportType] = useState('');
 
@@ -163,6 +168,7 @@ export default function ReportSightingPage() {
         e.preventDefault();
 
         setMessage('');
+        setError('');
 
         // Check for validation errors one at a time
         const firstError = getFirstValidationError();
@@ -173,28 +179,161 @@ export default function ReportSightingPage() {
 
         // All validations passed, clear warning and proceed
         setCurrentWarning('');
+        setError('');
+        setMessage('');
         setLoading(true);
+        setIsUploading(true);
+        setUploadProgress(0);
 
         try {
-            // TODO: Implement actual submission logic
-            // 1. Upload photos to storage
-            // 2. Save sighting report to database
-            // 3. Trigger AI matching against missing persons
+            // Get auth token from localStorage
+            const token = localStorage.getItem('supabase_token');
+            if (!token) {
+                setError(t('errors.notLoggedIn') || 'You must be logged in to submit a report');
+                setLoading(false);
+                setIsUploading(false);
+                return;
+            }
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Build FormData for the API
+            const submitFormData = new FormData();
+            
+            // Add report type
+            submitFormData.append('reportType', reportType);
+            
+            // Add common fields
+            submitFormData.append('city', formData.city);
+            submitFormData.append('locationDescription', formData.locationDescription);
+            submitFormData.append('coordinates', JSON.stringify(formData.coordinates));
+            if (formData.additionalInfo) {
+                submitFormData.append('additionalInfo', formData.additionalInfo);
+            }
+            
+            // Add reporter info
+            submitFormData.append('reporterFirstName', formData.reporterFirstName);
+            submitFormData.append('reporterLastName', formData.reporterLastName);
+            submitFormData.append('phone', formData.phone);
+            submitFormData.append('email', formData.email);
+            
+            // Add type-specific fields
+            switch (reportType) {
+                case 'person':
+                    submitFormData.append('firstName', formData.firstName);
+                    submitFormData.append('lastName', formData.lastName);
+                    break;
+                case 'pet':
+                    submitFormData.append('petType', formData.petType);
+                    submitFormData.append('petBreed', formData.petBreed);
+                    submitFormData.append('petColor', formData.petColor);
+                    submitFormData.append('petSize', formData.petSize);
+                    submitFormData.append('hasCollar', formData.petCollar === 'yes' ? 'true' : 'false');
+                    break;
+                case 'document':
+                    submitFormData.append('documentType', formData.documentType);
+                    submitFormData.append('documentNumber', formData.documentNumber);
+                    submitFormData.append('ownerName', formData.ownerName);
+                    break;
+                case 'electronics':
+                    submitFormData.append('deviceType', formData.deviceType);
+                    submitFormData.append('deviceBrand', formData.deviceBrand);
+                    submitFormData.append('deviceModel', formData.deviceModel);
+                    submitFormData.append('deviceColor', formData.deviceColor);
+                    break;
+                case 'vehicle':
+                    submitFormData.append('vehicleType', formData.vehicleType);
+                    submitFormData.append('vehicleBrand', formData.vehicleBrand);
+                    submitFormData.append('vehicleModel', formData.vehicleModel);
+                    submitFormData.append('vehicleColor', formData.vehicleColor);
+                    submitFormData.append('licensePlate', formData.licensePlate);
+                    break;
+                case 'other':
+                    submitFormData.append('itemName', formData.itemName);
+                    submitFormData.append('itemDescription', formData.itemDescription);
+                    break;
+            }
+            
+            // Add photos
+            photos.forEach(photo => {
+                submitFormData.append('photos', photo);
+            });
 
+            // Submit to API using XMLHttpRequest for progress tracking
+            const result = await new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhrRef.current = xhr;
+                let processingInterval = null;
+                
+                // Track upload progress (0-50% for actual upload)
+                xhr.upload.addEventListener('progress', (event) => {
+                    if (event.lengthComputable) {
+                        // Upload phase: 0-50%
+                        const percentComplete = Math.round((event.loaded / event.total) * 50);
+                        setUploadProgress(percentComplete);
+                    }
+                });
+                
+                // When upload to server completes, simulate processing progress (50-95%)
+                xhr.upload.addEventListener('loadend', () => {
+                    let currentProgress = 50;
+                    setUploadProgress(50);
+                    processingInterval = setInterval(() => {
+                        if (currentProgress < 95) {
+                            currentProgress += 2;
+                            setUploadProgress(currentProgress);
+                        }
+                    }, 150);
+                });
+                
+                xhr.addEventListener('load', () => {
+                    xhrRef.current = null;
+                    if (processingInterval) clearInterval(processingInterval);
+                    
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            setUploadProgress(100);
+                            resolve(response);
+                        } else {
+                            reject(new Error(response.error || 'Failed to submit report'));
+                        }
+                    } catch (e) {
+                        reject(new Error('Failed to parse response'));
+                    }
+                });
+                
+                xhr.addEventListener('error', () => {
+                    xhrRef.current = null;
+                    if (processingInterval) clearInterval(processingInterval);
+                    reject(new Error('Network error occurred'));
+                });
+                
+                xhr.addEventListener('abort', () => {
+                    xhrRef.current = null;
+                    if (processingInterval) clearInterval(processingInterval);
+                    reject(new Error('Upload cancelled'));
+                });
+                
+                xhr.open('POST', '/api/reports/sighting');
+                xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+                xhr.send(submitFormData);
+            });
+
+            // Upload complete - hide progress bar and show success message
+            setIsUploading(false);
+            setUploadProgress(0);
+            setLoading(false);
             setMessage(t('success.reportSubmitted'));
             
-            // Redirect after success
+            // Wait 3 seconds to show success message, then redirect
             setTimeout(() => {
-                router.push('/');
-            }, 2000);
+                window.location.href = `/${locale}/my-report`;
+            }, 3000);
 
         } catch (err) {
             console.error('Submit error:', err);
-            setError(t('errors.submitFailed'));
-        } finally {
+            setError(err.message === 'Upload cancelled' ? '' : (err.message || t('errors.submitFailed')));
+            setIsUploading(false);
+            setUploadProgress(0);
             setLoading(false);
         }
     };
@@ -301,7 +440,7 @@ export default function ReportSightingPage() {
                 {/* Type Selection */}
                 <div className="mb-8">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('types.selectType')}</h2>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                         {/* Person */}
                         <button
                             type="button"
@@ -337,12 +476,8 @@ export default function ReportSightingPage() {
                             <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
                                 reportType === 'pet' ? 'bg-orange-100 dark:bg-orange-900/40' : 'bg-gray-100 dark:bg-gray-800'
                             }`}>
-                                <svg className={`w-7 h-7 ${reportType === 'pet' ? 'text-orange-600 dark:text-orange-400' : 'text-gray-500 dark:text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 19c-4 0-7-2-7-5 0-2 2-4 4-4 1.5 0 2.5 1 3 2 .5-1 1.5-2 3-2 2 0 4 2 4 4 0 3-3 5-7 5z" />
-                                    <circle cx="7" cy="8" r="2" strokeWidth="1.5" />
-                                    <circle cx="17" cy="8" r="2" strokeWidth="1.5" />
-                                    <circle cx="10" cy="5" r="1.5" strokeWidth="1.5" />
-                                    <circle cx="14" cy="5" r="1.5" strokeWidth="1.5" />
+                                <svg className={`w-7 h-7 ${reportType === 'pet' ? 'text-orange-600 dark:text-orange-400' : 'text-gray-500 dark:text-gray-400'}`} fill="currentColor" viewBox="0 0 512 512">
+                                    <path d="M226.5 92.9c14.3 42.9-.3 86.2-32.6 96.8s-70.1-15.6-84.4-58.5s.3-86.2 32.6-96.8s70.1 15.6 84.4 58.5zM100.4 198.6c18.9 32.4 14.3 70.1-10.2 84.1s-59.7-.9-78.5-33.3S-2.7 179.3 21.8 165.3s59.7 .9 78.5 33.3zM69.2 401.2C121.6 259.9 214.7 224 256 224s134.4 35.9 186.8 177.2c3.6 9.7 5.2 20.1 5.2 30.5v1.6c0 25.8-20.9 46.7-46.7 46.7c-11.5 0-22.9-1.4-34-4.2l-88-22c-15.3-3.8-31.3-3.8-46.6 0l-88 22c-11.1 2.8-22.5 4.2-34 4.2C84.9 480 64 459.1 64 433.3v-1.6c0-10.4 1.6-20.8 5.2-30.5zM421.8 282.7c-24.5-14-29.1-51.7-10.2-84.1s54-47.3 78.5-33.3s29.1 51.7 10.2 84.1s-54 47.3-78.5 33.3zM310.1 189.7c-32.3-10.6-46.9-53.9-32.6-96.8s52.1-69.1 84.4-58.5s46.9 53.9 32.6 96.8s-52.1 69.1-84.4 58.5z"/>
                                 </svg>
                             </div>
                             <span className={`text-sm font-medium ${reportType === 'pet' ? 'text-orange-700 dark:text-orange-300' : 'text-gray-700 dark:text-gray-300'}`}>
@@ -1086,35 +1221,93 @@ export default function ReportSightingPage() {
                         </div>
                     )}
 
-                    {/* Submit Button */}
+                    {/* Success Message - Shown above submit button */}
+                    {message && (
+                        <div className="flex items-center gap-3 px-4 py-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg shadow-sm">
+                            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                                <svg className="w-3 h-3 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <div className="flex-1">
+                                <span className="text-sm font-medium text-green-700 dark:text-green-300">{message}</span>
+                                <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">{t('success.redirecting')}</p>
+                            </div>
+                            <div className="flex-shrink-0">
+                                <div className="w-4 h-4 border-2 border-green-500/30 border-t-green-500 rounded-full animate-spin"></div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Upload Progress Bar - Shown during upload */}
+                    {isUploading && (
+                        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden p-4">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    {uploadProgress <= 50 
+                                        ? (t('progress.uploading') || 'Processing your report...')
+                                        : (t('progress.processing') || 'Processing your report...')
+                                    }
+                                </span>
+                                <span className="text-sm font-bold text-orange-600 dark:text-orange-400">
+                                    {uploadProgress}%
+                                </span>
+                            </div>
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+                                <div 
+                                    className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full transition-all duration-300 ease-out"
+                                    style={{ width: `${uploadProgress}%` }}
+                                />
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                {uploadProgress <= 50
+                                    ? (t('progress.pleaseWait') || 'Please wait while we upload your information...')
+                                    : (t('progress.almostDone') || 'Almost done, please wait...')
+                                }
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Buttons - Cancel always visible, Submit hidden during upload */}
                     <div className="flex flex-col sm:flex-row gap-3 pt-4">
                         <button
                             type="button"
-                            onClick={() => router.back()}
+                            onClick={() => {
+                                if (isUploading && xhrRef.current) {
+                                    xhrRef.current.abort();
+                                    setIsUploading(false);
+                                    setUploadProgress(0);
+                                    setLoading(false);
+                                } else {
+                                    router.back();
+                                }
+                            }}
                             className="flex-1 sm:flex-none px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                         >
                             {tCommon('buttons.cancel')}
                         </button>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="flex-1 px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-red-500 rounded-lg hover:from-orange-600 hover:to-red-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-orange-500/30"
-                        >
-                            {loading ? (
-                                <>
-                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                    {t('buttons.submitting')}
-                                </>
-                            ) : (
-                                <>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                    {t('buttons.submitReport')}
-                                </>
-                            )}
-                        </button>
+                        {!isUploading && (
+                            <button
+                                type="submit"
+                                disabled={loading || message}
+                                className="flex-1 px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-red-500 rounded-lg hover:from-orange-600 hover:to-red-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-orange-500/30"
+                            >
+                                {loading ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                        {t('buttons.submitting')}
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                        {t('buttons.submitReport')}
+                                    </>
+                                )}
+                            </button>
+                        )}
                     </div>
                     </>
                     )}

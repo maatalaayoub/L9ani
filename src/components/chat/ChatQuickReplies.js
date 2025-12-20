@@ -1,29 +1,94 @@
 "use client";
 
 import { memo } from 'react';
+import { 
+    FileText, 
+    Eye, 
+    Search, 
+    Phone, 
+    Info, 
+    Home,
+    User,
+    Settings,
+    Lock,
+    FileQuestion,
+    ArrowRight
+} from 'lucide-react';
 
 /**
- * Quick reply buttons component
- * Handles different reply types: action, navigateTo, value, text
+ * Quick reply buttons component - Clean pill/chip style
  */
 function ChatQuickReplies({ replies, onSelect, isRTL }) {
     if (!replies || replies.length === 0) return null;
     
-    // Get appropriate icon or emoji for the reply
-    const getReplyStyle = (reply) => {
-        // Check if it's a cancel/negative action
-        const isCancelAction = reply.action === 'cancel' || 
-            reply.text?.toLowerCase().includes('cancel') ||
-            reply.text?.includes('إلغاء') ||
-            reply.text?.toLowerCase().includes('no') ||
-            reply.text?.includes('لا');
+    // Get icon based on reply route or text
+    const getIcon = (reply) => {
+        const text = (reply.text || '').toLowerCase();
+        const route = reply.route || '';
         
-        if (isCancelAction) {
-            return 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/40';
+        if (route.includes('report-missing') || text.includes('missing') || text.includes('ضايع') || text.includes('مفقود')) {
+            return <FileText className="w-3.5 h-3.5" />;
+        }
+        if (route.includes('report-sighting') || text.includes('sighting') || text.includes('لقية') || text.includes('مشاهدة')) {
+            return <Eye className="w-3.5 h-3.5" />;
+        }
+        if (route === '/' || text.includes('search') || text.includes('قلب') || text.includes('بحث')) {
+            return <Search className="w-3.5 h-3.5" />;
+        }
+        if (route.includes('contact') || text.includes('contact') || text.includes('تواصل')) {
+            return <Phone className="w-3.5 h-3.5" />;
+        }
+        if (route.includes('about') || text.includes('about') || text.includes('عنا') || text.includes('علينا')) {
+            return <Info className="w-3.5 h-3.5" />;
+        }
+        if (route.includes('my-report') || text.includes('my report') || text.includes('بلاغاتي')) {
+            return <FileQuestion className="w-3.5 h-3.5" />;
+        }
+        if (route.includes('profile') || text.includes('profile') || text.includes('حساب') || text.includes('ملف')) {
+            return <User className="w-3.5 h-3.5" />;
+        }
+        if (route.includes('settings') || text.includes('settings') || text.includes('إعدادات')) {
+            return <Settings className="w-3.5 h-3.5" />;
+        }
+        if (route.includes('privacy') || text.includes('privacy') || text.includes('خصوصية')) {
+            return <Lock className="w-3.5 h-3.5" />;
+        }
+        if (text.includes('home') || text.includes('رئيسية')) {
+            return <Home className="w-3.5 h-3.5" />;
         }
         
-        // Default style - orange color with good contrast
-        return 'bg-orange-50 dark:bg-gray-700 text-orange-600 dark:text-orange-400 border border-orange-300 dark:border-orange-700 hover:bg-orange-100 dark:hover:bg-orange-900/30';
+        return <ArrowRight className="w-3.5 h-3.5" />;
+    };
+    
+    // Get color scheme based on reply type
+    const getColorScheme = (reply) => {
+        const text = (reply.text || '').toLowerCase();
+        const route = reply.route || '';
+        
+        // Report Missing - Orange
+        if (route.includes('report-missing') || text.includes('missing') || text.includes('ضايع') || text.includes('مفقود')) {
+            return 'bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800 hover:bg-orange-100 dark:hover:bg-orange-900/50';
+        }
+        // Report Sighting - Teal
+        if (route.includes('report-sighting') || text.includes('sighting') || text.includes('لقية') || text.includes('مشاهدة')) {
+            return 'bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 border-teal-200 dark:border-teal-800 hover:bg-teal-100 dark:hover:bg-teal-900/50';
+        }
+        // Search - Blue
+        if (route === '/' || text.includes('search') || text.includes('قلب') || text.includes('بحث') || text.includes('home') || text.includes('رئيسية')) {
+            return 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/50';
+        }
+        // Contact - Purple
+        if (route.includes('contact') || text.includes('contact') || text.includes('تواصل')) {
+            return 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/50';
+        }
+        
+        // Default - Gray
+        return 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700';
+    };
+    
+    // Remove emoji from text for cleaner look (icon replaces it)
+    const cleanText = (text) => {
+        return text?.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|📝|👁️|🔍|📞|ℹ️|📋|👤|⚙️|🔒|🏠/gu, '').trim();
     };
     
     return (
@@ -32,15 +97,16 @@ function ChatQuickReplies({ replies, onSelect, isRTL }) {
                 <button
                     key={`${reply.text || reply.value}-${index}`}
                     onClick={() => onSelect(reply)}
-                    className={`px-4 py-2 text-sm font-semibold
-                        rounded-full
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5
+                        text-xs font-medium
+                        rounded-full border
                         transition-all duration-200
-                        whitespace-nowrap
-                        shadow-md hover:shadow-lg
-                        transform hover:scale-105 active:scale-95
-                        ${getReplyStyle(reply)}`}
+                        hover:scale-105 active:scale-95
+                        ${getColorScheme(reply)}
+                        ${isRTL ? 'flex-row-reverse' : ''}`}
                 >
-                    {reply.text || reply.value}
+                    {getIcon(reply)}
+                    <span>{cleanText(reply.text || reply.value)}</span>
                 </button>
             ))}
         </div>

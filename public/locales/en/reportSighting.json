@@ -271,7 +271,8 @@
         "locationRequired": "Please provide the city and location description",
         "submitFailed": "Failed to submit the report. Please try again.",
         "legalConfirmationRequired": "You must confirm the above statement to submit the report.",
-        "typeRequired": "Please select what you found or saw"
+        "typeRequired": "Please select what you found or saw",
+        "notLoggedIn": "You must be logged in to submit a report"
     },
 
     "validation": {
@@ -291,7 +292,15 @@
     },
 
     "success": {
-        "reportSubmitted": "Thank you! Your sighting report has been submitted successfully. We will review it and contact you if needed."
+        "reportSubmitted": "Thank you! Your sighting report has been submitted successfully. We will review it and contact you if needed.",
+        "redirecting": "Redirecting you to My Reports..."
+    },
+
+    "progress": {
+        "uploading": "Uploading your report...",
+        "processing": "Processing your report...",
+        "pleaseWait": "Please wait while we upload your information...",
+        "almostDone": "Almost done, please wait..."
     },
 
     "reward": {
