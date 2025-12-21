@@ -2289,17 +2289,17 @@ export default function MyReport() {
                                         </div>
                                         {t('modal.locationInfo')}
                                     </h4>
-                                    <div className="grid grid-cols-2 gap-2">
+                                    <div className="space-y-2">
                                         <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
                                             <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.city')}</p>
                                             <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedReport.city || '-'}</p>
                                         </div>
-                                        <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20 col-span-2">
+                                        <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
                                             <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.lastKnownLocation')}</p>
                                             <p className="text-xs text-gray-700 dark:text-gray-300">{selectedReport.last_known_location || selectedReport.location_description || '-'}</p>
                                         </div>
                                         {selectedReport.coordinates && (
-                                            <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20 col-span-2">
+                                            <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
                                                 <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.coordinates') || 'Coordinates'}</p>
                                                 <p className="text-xs font-mono text-gray-700 dark:text-gray-300">
                                                     {selectedReport.coordinates.lat}, {selectedReport.coordinates.lng}
@@ -2337,27 +2337,29 @@ export default function MyReport() {
                                             </div>
                                             {t('modal.reporterContact') || 'Your Contact Information'}
                                         </h4>
-                                        <div className="grid grid-cols-2 gap-2">
+                                        <div className="space-y-2">
                                             {(selectedReport.reporter_first_name || selectedReport.reporter_last_name) && (
-                                                <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20 col-span-2">
+                                                <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
                                                     <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.reporterName') || 'Name'}</p>
                                                     <p className="text-sm font-semibold text-gray-900 dark:text-white">
                                                         {[selectedReport.reporter_first_name, selectedReport.reporter_last_name].filter(Boolean).join(' ') || '-'}
                                                     </p>
                                                 </div>
                                             )}
-                                            {selectedReport.reporter_phone && (
-                                                <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
-                                                    <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.reporterPhone') || 'Phone'}</p>
-                                                    <p className="text-sm font-semibold text-gray-900 dark:text-white" dir="ltr">{selectedReport.reporter_phone}</p>
-                                                </div>
-                                            )}
-                                            {selectedReport.reporter_email && (
-                                                <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
-                                                    <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.reporterEmail') || 'Email'}</p>
-                                                    <p className="text-sm font-semibold text-gray-900 dark:text-white" dir="ltr">{selectedReport.reporter_email}</p>
-                                                </div>
-                                            )}
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                {selectedReport.reporter_phone && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.reporterPhone') || 'Phone'}</p>
+                                                        <p className="text-sm font-semibold text-gray-900 dark:text-white break-all" dir="ltr">{selectedReport.reporter_phone}</p>
+                                                    </div>
+                                                )}
+                                                {selectedReport.reporter_email && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.reporterEmail') || 'Email'}</p>
+                                                        <p className="text-sm font-semibold text-gray-900 dark:text-white break-all" dir="ltr">{selectedReport.reporter_email}</p>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -2372,7 +2374,7 @@ export default function MyReport() {
                                         </div>
                                         {t('modal.reportInfo') || 'Report Info'}
                                     </h4>
-                                    <div className="grid grid-cols-3 gap-2">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                                         <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
                                             <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.currentStatus')}</p>
                                             <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeClass(selectedReport.status || 'pending')}`}>
@@ -3196,7 +3198,7 @@ export default function MyReport() {
                             </div>
 
                             {/* Modal Footer */}
-                            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 flex gap-3">
+                            <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 flex gap-3">
                                 <button
                                     onClick={() => !deleteLoading && setShowDeleteModal(false)}
                                     disabled={deleteLoading}
@@ -3222,7 +3224,7 @@ export default function MyReport() {
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
-                                            {t('delete.confirm') || 'Delete Report'}
+                                            {t('delete.confirm') || 'Delete'}
                                         </>
                                     )}
                                 </button>

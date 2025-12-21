@@ -118,7 +118,7 @@
         "message": "Are you sure you want to delete this report? This action cannot be undone.",
         "warning": "This action cannot be undone!",
         "cancel": "Cancel",
-        "confirm": "Delete Report",
+        "confirm": "Delete",
         "deleting": "Deleting...",
         "errors": {
             "notLoggedIn": "You must be logged in",

@@ -1375,17 +1375,17 @@ export default function AdminPage() {
                                         </div>
                                         {t('modal.locationInfo')}
                                     </h4>
-                                    <div className="grid grid-cols-2 gap-2">
+                                    <div className="space-y-2">
                                         <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
                                             <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.city')}</p>
                                             <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedReport.city || '-'}</p>
                                         </div>
-                                        <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20 col-span-2">
+                                        <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
                                             <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.lastKnownLocation')}</p>
                                             <p className="text-xs text-gray-700 dark:text-gray-300">{selectedReport.last_known_location || selectedReport.location_description || '-'}</p>
                                         </div>
                                         {selectedReport.coordinates && (
-                                            <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20 col-span-2">
+                                            <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
                                                 <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.coordinates')}</p>
                                                 <p className="text-xs font-mono text-gray-700 dark:text-gray-300">
                                                     {selectedReport.coordinates.lat}, {selectedReport.coordinates.lng}
@@ -1423,31 +1423,33 @@ export default function AdminPage() {
                                             </div>
                                             {t('modal.reporterContact') || 'Reporter Contact'}
                                         </h4>
-                                        <div className="grid grid-cols-2 gap-2">
+                                        <div className="space-y-2">
                                             {(selectedReport.reporter_first_name || selectedReport.reporter_last_name) && (
-                                                <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20 col-span-2">
+                                                <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
                                                     <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.reporterName') || 'Name'}</p>
                                                     <p className="text-sm font-semibold text-gray-900 dark:text-white">
                                                         {[selectedReport.reporter_first_name, selectedReport.reporter_last_name].filter(Boolean).join(' ') || '-'}
                                                     </p>
                                                 </div>
                                             )}
-                                            {selectedReport.reporter_phone && (
-                                                <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
-                                                    <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.reporterPhone') || 'Phone'}</p>
-                                                    <a href={`tel:${selectedReport.reporter_phone}`} className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline" dir="ltr">
-                                                        {selectedReport.reporter_phone}
-                                                    </a>
-                                                </div>
-                                            )}
-                                            {selectedReport.reporter_email && (
-                                                <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
-                                                    <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.reporterEmail') || 'Email'}</p>
-                                                    <a href={`mailto:${selectedReport.reporter_email}`} className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline" dir="ltr">
-                                                        {selectedReport.reporter_email}
-                                                    </a>
-                                                </div>
-                                            )}
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                {selectedReport.reporter_phone && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.reporterPhone') || 'Phone'}</p>
+                                                        <a href={`tel:${selectedReport.reporter_phone}`} className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline break-all" dir="ltr">
+                                                            {selectedReport.reporter_phone}
+                                                        </a>
+                                                    </div>
+                                                )}
+                                                {selectedReport.reporter_email && (
+                                                    <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
+                                                        <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-0.5">{t('modal.reporterEmail') || 'Email'}</p>
+                                                        <a href={`mailto:${selectedReport.reporter_email}`} className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline break-all" dir="ltr">
+                                                            {selectedReport.reporter_email}
+                                                        </a>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -1462,7 +1464,7 @@ export default function AdminPage() {
                                         </div>
                                         {t('modal.reportInfo')}
                                     </h4>
-                                    <div className="grid grid-cols-3 gap-2">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                                         <div className="bg-gray-50 dark:bg-[#344054] rounded p-2 border border-gray-100 dark:border-gray-600/20">
                                             <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{t('modal.currentStatus')}</p>
                                             <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeClass(selectedReport.status || 'pending')}`}>
