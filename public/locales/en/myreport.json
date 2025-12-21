@@ -95,6 +95,7 @@
         "healthDetailsPlaceholder": "Any medical conditions...",
         "city": "City",
         "lastKnownLocation": "Last Known Location",
+        "locationDescription": "Location Description",
         "additionalInfo": "Additional Information",
         "additionalInfoPlaceholder": "Any other relevant details...",
         "photos": "Photos",
@@ -115,7 +116,63 @@
         "errors": {
             "notLoggedIn": "You must be logged in",
             "failed": "Failed to update report"
-        }
+        },
+        "petName": "Pet Name",
+        "petType": "Pet Type",
+        "selectPetType": "Select Pet Type",
+        "petTypes": {
+            "dog": "Dog",
+            "cat": "Cat",
+            "bird": "Bird",
+            "other": "Other"
+        },
+        "petBreed": "Breed",
+        "petColor": "Color",
+        "petSize": "Size",
+        "selectSize": "Select Size",
+        "sizes": {
+            "small": "Small",
+            "medium": "Medium",
+            "large": "Large"
+        },
+        "documentType": "Document Type",
+        "selectDocumentType": "Select Document Type",
+        "documentTypes": {
+            "nationalId": "National ID",
+            "passport": "Passport",
+            "driverLicense": "Driver License",
+            "other": "Other"
+        },
+        "ownerName": "Owner Name",
+        "documentNumber": "Document Number",
+        "documentIssuer": "Issuing Authority",
+        "deviceType": "Device Type",
+        "selectDeviceType": "Select Device Type",
+        "deviceTypes": {
+            "phone": "Phone",
+            "laptop": "Laptop",
+            "tablet": "Tablet",
+            "other": "Other"
+        },
+        "deviceBrand": "Brand",
+        "deviceModel": "Model",
+        "deviceColor": "Color",
+        "serialNumber": "Serial Number",
+        "vehicleType": "Vehicle Type",
+        "selectVehicleType": "Select Vehicle Type",
+        "vehicleTypes": {
+            "car": "Car",
+            "motorcycle": "Motorcycle",
+            "bicycle": "Bicycle",
+            "other": "Other"
+        },
+        "vehicleBrand": "Brand",
+        "vehicleModel": "Model",
+        "vehicleColor": "Color",
+        "vehicleYear": "Year",
+        "licensePlate": "License Plate",
+        "itemName": "Item Name",
+        "itemDescription": "Item Description"
     },
     "delete": {
         "title": "Delete Report",

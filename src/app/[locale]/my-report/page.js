@@ -2688,112 +2688,137 @@ export default function MyReport() {
                                 {/* Type-specific Fields */}
                                 {(editingReport.report_type === 'person' || !editingReport.report_type) && (
                                     <>
-                                        {/* Name Fields */}
+                                        {/* Name Fields - same for both missing and sighting */}
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.firstName') || 'First Name'} <span className="text-red-500">*</span>
+                                                    {t('edit.firstName') || 'First Name'}
                                                 </label>
                                                 <input
                                                     type="text"
                                                     value={editFormData.firstName || ''}
                                                     onChange={(e) => handleEditFormChange('firstName', e.target.value)}
                                                     className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                    required
                                                 />
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.lastName') || 'Last Name'} <span className="text-red-500">*</span>
+                                                    {t('edit.lastName') || 'Last Name'}
                                                 </label>
                                                 <input
                                                     type="text"
                                                     value={editFormData.lastName || ''}
                                                     onChange={(e) => handleEditFormChange('lastName', e.target.value)}
                                                     className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                    required
                                                 />
                                             </div>
                                         </div>
 
-                                        {/* Date of Birth & Gender */}
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.dateOfBirth') || 'Date of Birth'}
-                                                </label>
-                                                <input
-                                                    type="date"
-                                                    value={editFormData.dateOfBirth || ''}
-                                                    onChange={(e) => handleEditFormChange('dateOfBirth', e.target.value)}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.gender') || 'Gender'}
-                                                </label>
-                                                <select
-                                                    value={editFormData.gender || ''}
-                                                    onChange={(e) => handleEditFormChange('gender', e.target.value)}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                >
-                                                    <option value="">{t('edit.selectGender') || 'Select Gender'}</option>
-                                                    <option value="male">{t('edit.male') || 'Male'}</option>
-                                                    <option value="female">{t('edit.female') || 'Female'}</option>
-                                                </select>
-                                            </div>
-                                        </div>
+                                        {/* Additional fields only for missing reports (not sighting) */}
+                                        {activeTab === 'missing' && (
+                                            <>
+                                                {/* Date of Birth & Gender */}
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                            {t('edit.dateOfBirth') || 'Date of Birth'}
+                                                        </label>
+                                                        <input
+                                                            type="date"
+                                                            value={editFormData.dateOfBirth || ''}
+                                                            onChange={(e) => handleEditFormChange('dateOfBirth', e.target.value)}
+                                                            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                            {t('edit.gender') || 'Gender'}
+                                                        </label>
+                                                        <select
+                                                            value={editFormData.gender || ''}
+                                                            onChange={(e) => handleEditFormChange('gender', e.target.value)}
+                                                            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                                        >
+                                                            <option value="">{t('edit.selectGender') || 'Select Gender'}</option>
+                                                            <option value="male">{t('edit.male') || 'Male'}</option>
+                                                            <option value="female">{t('edit.female') || 'Female'}</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
 
-                                        {/* Health Status */}
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.healthStatus') || 'Health Status'}
-                                                </label>
-                                                <select
-                                                    value={editFormData.healthStatus || ''}
-                                                    onChange={(e) => handleEditFormChange('healthStatus', e.target.value)}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                >
-                                                    <option value="">{t('edit.selectHealthStatus') || 'Select Health Status'}</option>
-                                                    <option value="healthy">{t('edit.healthy') || 'Healthy'}</option>
-                                                    <option value="medical_condition">{t('edit.medicalCondition') || 'Has Medical Condition'}</option>
-                                                    <option value="unknown">{t('edit.unknown') || 'Unknown'}</option>
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.healthDetails') || 'Health Details'}
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={editFormData.healthDetails || ''}
-                                                    onChange={(e) => handleEditFormChange('healthDetails', e.target.value)}
-                                                    placeholder={t('edit.healthDetailsPlaceholder') || 'Any medical conditions...'}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                />
-                                            </div>
-                                        </div>
+                                                {/* Health Status */}
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                            {t('edit.healthStatus') || 'Health Status'}
+                                                        </label>
+                                                        <select
+                                                            value={editFormData.healthStatus || ''}
+                                                            onChange={(e) => handleEditFormChange('healthStatus', e.target.value)}
+                                                            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                                        >
+                                                            <option value="">{t('edit.selectHealthStatus') || 'Select Health Status'}</option>
+                                                            <option value="healthy">{t('edit.healthy') || 'Healthy'}</option>
+                                                            <option value="medical_condition">{t('edit.medicalCondition') || 'Has Medical Condition'}</option>
+                                                            <option value="unknown">{t('edit.unknown') || 'Unknown'}</option>
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                            {t('edit.healthDetails') || 'Health Details'}
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={editFormData.healthDetails || ''}
+                                                            onChange={(e) => handleEditFormChange('healthDetails', e.target.value)}
+                                                            placeholder={t('edit.healthDetailsPlaceholder') || 'Any medical conditions...'}
+                                                            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
                                     </>
                                 )}
 
                                 {/* Pet Fields */}
                                 {editingReport.report_type === 'pet' && (
                                     <>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.petName') || 'Pet Name'} <span className="text-red-500">*</span>
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={editFormData.petName || ''}
-                                                    onChange={(e) => handleEditFormChange('petName', e.target.value)}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                    required
-                                                />
+                                        {/* For missing reports: petName is required, for sighting: petType is required */}
+                                        {activeTab === 'missing' ? (
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                        {t('edit.petName') || 'Pet Name'} <span className="text-red-500">*</span>
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        value={editFormData.petName || ''}
+                                                        onChange={(e) => handleEditFormChange('petName', e.target.value)}
+                                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                                        required
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                        {t('edit.petType') || 'Pet Type'} <span className="text-red-500">*</span>
+                                                    </label>
+                                                    <select
+                                                        value={editFormData.petType || ''}
+                                                        onChange={(e) => handleEditFormChange('petType', e.target.value)}
+                                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                                        required
+                                                    >
+                                                        <option value="">{t('edit.selectPetType') || 'Select Pet Type'}</option>
+                                                        <option value="dog">{t('edit.petTypes.dog') || 'Dog'}</option>
+                                                        <option value="cat">{t('edit.petTypes.cat') || 'Cat'}</option>
+                                                        <option value="bird">{t('edit.petTypes.bird') || 'Bird'}</option>
+                                                        <option value="other">{t('edit.petTypes.other') || 'Other'}</option>
+                                                    </select>
+                                                </div>
                                             </div>
+                                        ) : (
+                                            /* Sighting reports - only petType required */
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                                     {t('edit.petType') || 'Pet Type'} <span className="text-red-500">*</span>
@@ -2811,8 +2836,9 @@ export default function MyReport() {
                                                     <option value="other">{t('edit.petTypes.other') || 'Other'}</option>
                                                 </select>
                                             </div>
-                                        </div>
-                                        <div className="grid grid-cols-3 gap-4">
+                                        )}
+                                        {/* Breed and Color - same for both */}
+                                        <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                                     {t('edit.petBreed') || 'Breed'}
@@ -2835,6 +2861,9 @@ export default function MyReport() {
                                                     className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                                                 />
                                             </div>
+                                        </div>
+                                        {/* Size - only for missing reports */}
+                                        {activeTab === 'missing' && (
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                                     {t('edit.petSize') || 'Size'}
@@ -2850,7 +2879,7 @@ export default function MyReport() {
                                                     <option value="large">{t('edit.sizes.large') || 'Large'}</option>
                                                 </select>
                                             </div>
-                                        </div>
+                                        )}
                                     </>
                                 )}
 
@@ -2869,35 +2898,11 @@ export default function MyReport() {
                                                     required
                                                 >
                                                     <option value="">{t('edit.selectDocumentType') || 'Select Document Type'}</option>
-                                                    <option value="id_card">{t('edit.documentTypes.idCard') || 'ID Card'}</option>
+                                                    <option value="nationalId">{t('edit.documentTypes.nationalId') || 'National ID'}</option>
                                                     <option value="passport">{t('edit.documentTypes.passport') || 'Passport'}</option>
-                                                    <option value="driver_license">{t('edit.documentTypes.driverLicense') || 'Driver License'}</option>
+                                                    <option value="driverLicense">{t('edit.documentTypes.driverLicense') || 'Driver License'}</option>
                                                     <option value="other">{t('edit.documentTypes.other') || 'Other'}</option>
                                                 </select>
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.documentNumber') || 'Document Number'}
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={editFormData.documentNumber || ''}
-                                                    onChange={(e) => handleEditFormChange('documentNumber', e.target.value)}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.documentIssuer') || 'Issuing Authority'}
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={editFormData.documentIssuer || ''}
-                                                    onChange={(e) => handleEditFormChange('documentIssuer', e.target.value)}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                />
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -2911,12 +2916,40 @@ export default function MyReport() {
                                                 />
                                             </div>
                                         </div>
+                                        {/* Additional document fields - only for missing reports */}
+                                        {activeTab === 'missing' && (
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                        {t('edit.documentNumber') || 'Document Number'}
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        value={editFormData.documentNumber || ''}
+                                                        onChange={(e) => handleEditFormChange('documentNumber', e.target.value)}
+                                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                        {t('edit.documentIssuer') || 'Issuing Authority'}
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        value={editFormData.documentIssuer || ''}
+                                                        onChange={(e) => handleEditFormChange('documentIssuer', e.target.value)}
+                                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
                                     </>
                                 )}
 
                                 {/* Electronics Fields */}
                                 {editingReport.report_type === 'electronics' && (
                                     <>
+                                        {/* Device Type and Brand - same for both */}
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -2948,47 +2981,51 @@ export default function MyReport() {
                                                 />
                                             </div>
                                         </div>
-                                        <div className="grid grid-cols-3 gap-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.deviceModel') || 'Model'}
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={editFormData.deviceModel || ''}
-                                                    onChange={(e) => handleEditFormChange('deviceModel', e.target.value)}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                />
+                                        {/* Additional electronics fields - only for missing reports */}
+                                        {activeTab === 'missing' && (
+                                            <div className="grid grid-cols-3 gap-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                        {t('edit.deviceModel') || 'Model'}
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        value={editFormData.deviceModel || ''}
+                                                        onChange={(e) => handleEditFormChange('deviceModel', e.target.value)}
+                                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                        {t('edit.deviceColor') || 'Color'}
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        value={editFormData.deviceColor || ''}
+                                                        onChange={(e) => handleEditFormChange('deviceColor', e.target.value)}
+                                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                        {t('edit.serialNumber') || 'Serial Number'}
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        value={editFormData.serialNumber || ''}
+                                                        onChange={(e) => handleEditFormChange('serialNumber', e.target.value)}
+                                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                                    />
+                                                </div>
                                             </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.deviceColor') || 'Color'}
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={editFormData.deviceColor || ''}
-                                                    onChange={(e) => handleEditFormChange('deviceColor', e.target.value)}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.serialNumber') || 'Serial Number'}
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={editFormData.serialNumber || ''}
-                                                    onChange={(e) => handleEditFormChange('serialNumber', e.target.value)}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                />
-                                            </div>
-                                        </div>
+                                        )}
                                     </>
                                 )}
 
                                 {/* Vehicle Fields */}
                                 {editingReport.report_type === 'vehicle' && (
                                     <>
+                                        {/* Vehicle Type and Brand - same for both */}
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -3020,52 +3057,55 @@ export default function MyReport() {
                                                 />
                                             </div>
                                         </div>
-                                        <div className="grid grid-cols-4 gap-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.vehicleModel') || 'Model'}
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={editFormData.vehicleModel || ''}
-                                                    onChange={(e) => handleEditFormChange('vehicleModel', e.target.value)}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                />
+                                        {/* Additional vehicle fields - only for missing reports */}
+                                        {activeTab === 'missing' && (
+                                            <div className="grid grid-cols-4 gap-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                        {t('edit.vehicleModel') || 'Model'}
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        value={editFormData.vehicleModel || ''}
+                                                        onChange={(e) => handleEditFormChange('vehicleModel', e.target.value)}
+                                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                        {t('edit.vehicleColor') || 'Color'}
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        value={editFormData.vehicleColor || ''}
+                                                        onChange={(e) => handleEditFormChange('vehicleColor', e.target.value)}
+                                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                        {t('edit.vehicleYear') || 'Year'}
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        value={editFormData.vehicleYear || ''}
+                                                        onChange={(e) => handleEditFormChange('vehicleYear', e.target.value)}
+                                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                        {t('edit.licensePlate') || 'License Plate'}
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        value={editFormData.licensePlate || ''}
+                                                        onChange={(e) => handleEditFormChange('licensePlate', e.target.value)}
+                                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                                    />
+                                                </div>
                                             </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.vehicleColor') || 'Color'}
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={editFormData.vehicleColor || ''}
-                                                    onChange={(e) => handleEditFormChange('vehicleColor', e.target.value)}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.vehicleYear') || 'Year'}
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={editFormData.vehicleYear || ''}
-                                                    onChange={(e) => handleEditFormChange('vehicleYear', e.target.value)}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.licensePlate') || 'License Plate'}
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={editFormData.licensePlate || ''}
-                                                    onChange={(e) => handleEditFormChange('licensePlate', e.target.value)}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                />
-                                            </div>
-                                        </div>
+                                        )}
                                     </>
                                 )}
 
@@ -3084,17 +3124,20 @@ export default function MyReport() {
                                                 required
                                             />
                                         </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                {t('edit.itemDescription') || 'Item Description'}
-                                            </label>
-                                            <textarea
-                                                value={editFormData.itemDescription || ''}
-                                                onChange={(e) => handleEditFormChange('itemDescription', e.target.value)}
-                                                rows={3}
-                                                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-none"
-                                            />
-                                        </div>
+                                        {/* Item description - only for missing reports */}
+                                        {activeTab === 'missing' && (
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                    {t('edit.itemDescription') || 'Item Description'}
+                                                </label>
+                                                <textarea
+                                                    value={editFormData.itemDescription || ''}
+                                                    onChange={(e) => handleEditFormChange('itemDescription', e.target.value)}
+                                                    rows={3}
+                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-none"
+                                                />
+                                            </div>
+                                        )}
                                     </>
                                 )}
 
@@ -3114,7 +3157,10 @@ export default function MyReport() {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        {t('edit.lastKnownLocation') || 'Last Known Location'} <span className="text-red-500">*</span>
+                                        {activeTab === 'sighting' 
+                                            ? (t('edit.locationDescription') || 'Location Description') 
+                                            : (t('edit.lastKnownLocation') || 'Last Known Location')
+                                        } <span className="text-red-500">*</span>
                                     </label>
                                     <textarea
                                         value={editFormData.lastKnownLocation || ''}
@@ -3230,12 +3276,22 @@ export default function MyReport() {
                                 <button
                                     onClick={() => handleEditSubmit(editingReport?.status === 'rejected')}
                                     disabled={editLoading || !editFormData.city || !editFormData.lastKnownLocation || (
-                                        (editingReport.report_type === 'person' || !editingReport.report_type) ? (!editFormData.firstName || !editFormData.lastName) :
-                                        editingReport.report_type === 'pet' ? (!editFormData.petName || !editFormData.petType) :
-                                        editingReport.report_type === 'document' ? !editFormData.documentType :
-                                        editingReport.report_type === 'electronics' ? (!editFormData.deviceType || !editFormData.deviceBrand) :
-                                        editingReport.report_type === 'vehicle' ? (!editFormData.vehicleType || !editFormData.vehicleBrand) :
-                                        editingReport.report_type === 'other' ? !editFormData.itemName : false
+                                        activeTab === 'sighting' ? (
+                                            // Sighting reports: less strict validation
+                                            editingReport.report_type === 'pet' ? !editFormData.petType :
+                                            editingReport.report_type === 'document' ? !editFormData.documentType :
+                                            editingReport.report_type === 'electronics' ? (!editFormData.deviceType || !editFormData.deviceBrand) :
+                                            editingReport.report_type === 'vehicle' ? (!editFormData.vehicleType || !editFormData.vehicleBrand) :
+                                            editingReport.report_type === 'other' ? !editFormData.itemName : false
+                                        ) : (
+                                            // Missing reports: full validation
+                                            (editingReport.report_type === 'person' || !editingReport.report_type) ? (!editFormData.firstName || !editFormData.lastName) :
+                                            editingReport.report_type === 'pet' ? (!editFormData.petName || !editFormData.petType) :
+                                            editingReport.report_type === 'document' ? !editFormData.documentType :
+                                            editingReport.report_type === 'electronics' ? (!editFormData.deviceType || !editFormData.deviceBrand) :
+                                            editingReport.report_type === 'vehicle' ? (!editFormData.vehicleType || !editFormData.vehicleBrand) :
+                                            editingReport.report_type === 'other' ? !editFormData.itemName : false
+                                        )
                                     )}
                                     className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
                                         editingReport?.status === 'rejected'

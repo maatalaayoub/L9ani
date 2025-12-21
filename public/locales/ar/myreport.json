@@ -95,6 +95,7 @@
         "healthDetailsPlaceholder": "أي حالات طبية...",
         "city": "المدينة",
         "lastKnownLocation": "آخر موقع معروف",
+        "locationDescription": "وصف الموقع",
         "additionalInfo": "معلومات إضافية",
         "additionalInfoPlaceholder": "أي تفاصيل أخرى ذات صلة...",
         "photos": "الصور",
@@ -115,7 +116,63 @@
         "errors": {
             "notLoggedIn": "يجب تسجيل الدخول",
             "failed": "فشل تحديث البلاغ"
-        }
+        },
+        "petName": "اسم الحيوان الأليف",
+        "petType": "نوع الحيوان الأليف",
+        "selectPetType": "اختر نوع الحيوان الأليف",
+        "petTypes": {
+            "dog": "كلب",
+            "cat": "قطة",
+            "bird": "طائر",
+            "other": "أخرى"
+        },
+        "petBreed": "السلالة",
+        "petColor": "اللون",
+        "petSize": "الحجم",
+        "selectSize": "اختر الحجم",
+        "sizes": {
+            "small": "صغير",
+            "medium": "متوسط",
+            "large": "كبير"
+        },
+        "documentType": "نوع الوثيقة",
+        "selectDocumentType": "اختر نوع الوثيقة",
+        "documentTypes": {
+            "nationalId": "بطاقة الهوية الوطنية",
+            "passport": "جواز السفر",
+            "driverLicense": "رخصة القيادة",
+            "other": "أخرى"
+        },
+        "ownerName": "اسم المالك",
+        "documentNumber": "رقم الوثيقة",
+        "documentIssuer": "الجهة المصدرة",
+        "deviceType": "نوع الجهاز",
+        "selectDeviceType": "اختر نوع الجهاز",
+        "deviceTypes": {
+            "phone": "هاتف",
+            "laptop": "حاسوب محمول",
+            "tablet": "جهاز لوحي",
+            "other": "أخرى"
+        },
+        "deviceBrand": "العلامة التجارية",
+        "deviceModel": "الموديل",
+        "deviceColor": "اللون",
+        "serialNumber": "الرقم التسلسلي",
+        "vehicleType": "نوع المركبة",
+        "selectVehicleType": "اختر نوع المركبة",
+        "vehicleTypes": {
+            "car": "سيارة",
+            "motorcycle": "دراجة نارية",
+            "bicycle": "دراجة هوائية",
+            "other": "أخرى"
+        },
+        "vehicleBrand": "العلامة التجارية",
+        "vehicleModel": "الموديل",
+        "vehicleColor": "اللون",
+        "vehicleYear": "السنة",
+        "licensePlate": "لوحة الترخيص",
+        "itemName": "اسم العنصر",
+        "itemDescription": "وصف العنصر"
     },
     "delete": {
         "title": "حذف البلاغ",
