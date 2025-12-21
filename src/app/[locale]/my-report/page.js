@@ -152,6 +152,11 @@ export default function MyReport() {
     const [editError, setEditError] = useState('');
     const [editSuccess, setEditSuccess] = useState('');
     
+    // Edit photos state
+    const [editExistingPhotos, setEditExistingPhotos] = useState([]); // URLs of existing photos to keep
+    const [editNewPhotos, setEditNewPhotos] = useState([]); // New File objects to upload
+    const [editPhotosPreviews, setEditPhotosPreviews] = useState([]); // Preview URLs for new photos
+    
     // Delete modal state
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deletingReport, setDeletingReport] = useState(null);
@@ -1377,9 +1382,45 @@ export default function MyReport() {
         }
         
         setEditFormData({ ...baseData, ...typeSpecificData });
+        // Initialize photo state with existing photos
+        setEditExistingPhotos(report.photos || []);
+        setEditNewPhotos([]);
+        setEditPhotosPreviews([]);
         setEditError('');
         setEditSuccess('');
         setShowEditModal(true);
+    };
+
+    // Handle adding new photos in edit modal
+    const handleEditPhotoAdd = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+        
+        // Limit total photos to 5
+        const totalPhotos = editExistingPhotos.length + editNewPhotos.length + files.length;
+        if (totalPhotos > 5) {
+            setEditError(t('edit.maxPhotosError') || 'Maximum 5 photos allowed');
+            return;
+        }
+        
+        // Create preview URLs
+        const newPreviews = files.map(file => URL.createObjectURL(file));
+        
+        setEditNewPhotos(prev => [...prev, ...files]);
+        setEditPhotosPreviews(prev => [...prev, ...newPreviews]);
+    };
+
+    // Handle removing existing photo
+    const handleRemoveExistingPhoto = (index) => {
+        setEditExistingPhotos(prev => prev.filter((_, i) => i !== index));
+    };
+
+    // Handle removing new photo
+    const handleRemoveNewPhoto = (index) => {
+        // Revoke the object URL to prevent memory leaks
+        URL.revokeObjectURL(editPhotosPreviews[index]);
+        setEditNewPhotos(prev => prev.filter((_, i) => i !== index));
+        setEditPhotosPreviews(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleEditFormChange = (field, value) => {
@@ -1414,57 +1455,64 @@ export default function MyReport() {
 
             const reportType = editingReport.report_type || 'person';
             
-            // Build request body based on report type
-            const requestBody = {
-                reportId: editingReport.id,
-                reportType: reportType,
-                city: editFormData.city,
-                lastKnownLocation: editFormData.lastKnownLocation,
-                additionalInfo: editFormData.additionalInfo || null,
-                resubmit: resubmit
-            };
+            // Use FormData to support file uploads
+            const formData = new FormData();
+            formData.append('reportId', editingReport.id);
+            formData.append('reportType', reportType);
+            formData.append('city', editFormData.city);
+            formData.append('lastKnownLocation', editFormData.lastKnownLocation);
+            formData.append('additionalInfo', editFormData.additionalInfo || '');
+            formData.append('resubmit', resubmit ? 'true' : 'false');
+            
+            // Add existing photos to keep (as JSON array)
+            formData.append('existingPhotos', JSON.stringify(editExistingPhotos));
+            
+            // Add new photos
+            for (const photo of editNewPhotos) {
+                formData.append('photos', photo);
+            }
             
             // Add type-specific fields
             switch (reportType) {
                 case 'person':
-                    requestBody.firstName = editFormData.firstName;
-                    requestBody.lastName = editFormData.lastName;
-                    requestBody.dateOfBirth = editFormData.dateOfBirth || null;
-                    requestBody.gender = editFormData.gender || null;
-                    requestBody.healthStatus = editFormData.healthStatus || null;
-                    requestBody.healthDetails = editFormData.healthDetails || null;
+                    formData.append('firstName', editFormData.firstName || '');
+                    formData.append('lastName', editFormData.lastName || '');
+                    formData.append('dateOfBirth', editFormData.dateOfBirth || '');
+                    formData.append('gender', editFormData.gender || '');
+                    formData.append('healthStatus', editFormData.healthStatus || '');
+                    formData.append('healthDetails', editFormData.healthDetails || '');
                     break;
                 case 'pet':
-                    requestBody.petName = editFormData.petName;
-                    requestBody.petType = editFormData.petType;
-                    requestBody.petBreed = editFormData.petBreed || null;
-                    requestBody.petColor = editFormData.petColor || null;
-                    requestBody.petSize = editFormData.petSize || null;
+                    formData.append('petName', editFormData.petName || '');
+                    formData.append('petType', editFormData.petType || '');
+                    formData.append('petBreed', editFormData.petBreed || '');
+                    formData.append('petColor', editFormData.petColor || '');
+                    formData.append('petSize', editFormData.petSize || '');
                     break;
                 case 'document':
-                    requestBody.documentType = editFormData.documentType;
-                    requestBody.documentNumber = editFormData.documentNumber || null;
-                    requestBody.documentIssuer = editFormData.documentIssuer || null;
-                    requestBody.ownerName = editFormData.ownerName || null;
+                    formData.append('documentType', editFormData.documentType || '');
+                    formData.append('documentNumber', editFormData.documentNumber || '');
+                    formData.append('documentIssuer', editFormData.documentIssuer || '');
+                    formData.append('ownerName', editFormData.ownerName || '');
                     break;
                 case 'electronics':
-                    requestBody.deviceType = editFormData.deviceType;
-                    requestBody.deviceBrand = editFormData.deviceBrand;
-                    requestBody.deviceModel = editFormData.deviceModel || null;
-                    requestBody.deviceColor = editFormData.deviceColor || null;
-                    requestBody.serialNumber = editFormData.serialNumber || null;
+                    formData.append('deviceType', editFormData.deviceType || '');
+                    formData.append('deviceBrand', editFormData.deviceBrand || '');
+                    formData.append('deviceModel', editFormData.deviceModel || '');
+                    formData.append('deviceColor', editFormData.deviceColor || '');
+                    formData.append('serialNumber', editFormData.serialNumber || '');
                     break;
                 case 'vehicle':
-                    requestBody.vehicleType = editFormData.vehicleType;
-                    requestBody.vehicleBrand = editFormData.vehicleBrand;
-                    requestBody.vehicleModel = editFormData.vehicleModel || null;
-                    requestBody.vehicleColor = editFormData.vehicleColor || null;
-                    requestBody.vehicleYear = editFormData.vehicleYear || null;
-                    requestBody.licensePlate = editFormData.licensePlate || null;
+                    formData.append('vehicleType', editFormData.vehicleType || '');
+                    formData.append('vehicleBrand', editFormData.vehicleBrand || '');
+                    formData.append('vehicleModel', editFormData.vehicleModel || '');
+                    formData.append('vehicleColor', editFormData.vehicleColor || '');
+                    formData.append('vehicleYear', editFormData.vehicleYear || '');
+                    formData.append('licensePlate', editFormData.licensePlate || '');
                     break;
                 case 'other':
-                    requestBody.itemName = editFormData.itemName;
-                    requestBody.itemDescription = editFormData.itemDescription || null;
+                    formData.append('itemName', editFormData.itemName || '');
+                    formData.append('itemDescription', editFormData.itemDescription || '');
                     break;
             }
 
@@ -1476,10 +1524,10 @@ export default function MyReport() {
             const response = await fetch(endpoint, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    'Authorization': `Bearer ${token}`
+                    // Don't set Content-Type - browser will set it with boundary for FormData
                 },
-                body: JSON.stringify(requestBody)
+                body: formData
             });
 
             const data = await response.json();
@@ -3091,17 +3139,83 @@ export default function MyReport() {
                                     />
                                 </div>
 
-                                {/* Photos Note */}
-                                {editingReport?.photos && editingReport.photos.length > 0 && (
-                                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
-                                        <p className="text-sm text-blue-700 dark:text-blue-400 flex items-center gap-2">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                            {t('edit.photosNote') || 'Photos cannot be changed after submission. Current photos will be kept.'}
-                                        </p>
+                                {/* Photos Section */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        {t('edit.photos') || 'Photos'}
+                                        <span className="text-xs text-gray-500 dark:text-gray-400 font-normal ms-2">
+                                            ({editExistingPhotos.length + editNewPhotos.length}/5)
+                                        </span>
+                                    </label>
+                                    
+                                    {/* Photo Grid */}
+                                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mb-3">
+                                        {/* Existing Photos */}
+                                        {editExistingPhotos.map((photoUrl, index) => (
+                                            <div key={`existing-${index}`} className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-600 group">
+                                                <img 
+                                                    src={photoUrl} 
+                                                    alt={`Photo ${index + 1}`}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveExistingPhoto(index)}
+                                                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                                                >
+                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        ))}
+                                        
+                                        {/* New Photos */}
+                                        {editPhotosPreviews.map((previewUrl, index) => (
+                                            <div key={`new-${index}`} className="relative aspect-square rounded-lg overflow-hidden border-2 border-blue-400 dark:border-blue-500 group">
+                                                <img 
+                                                    src={previewUrl} 
+                                                    alt={`New photo ${index + 1}`}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-blue-500 text-white text-[10px] rounded font-medium">
+                                                    {t('edit.newPhoto') || 'New'}
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveNewPhoto(index)}
+                                                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                                                >
+                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        ))}
+                                        
+                                        {/* Add Photo Button */}
+                                        {editExistingPhotos.length + editNewPhotos.length < 5 && (
+                                            <label className="aspect-square rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                                                <svg className="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                </svg>
+                                                <span className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">{t('edit.addPhoto') || 'Add'}</span>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    multiple
+                                                    onChange={handleEditPhotoAdd}
+                                                    className="hidden"
+                                                />
+                                            </label>
+                                        )}
                                     </div>
-                                )}
+                                    
+                                    {/* Photo hint */}
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        {t('edit.photosHint') || 'Click on a photo to remove it. Add up to 5 photos.'}
+                                    </p>
+                                </div>
                             </div>
 
                             {/* Modal Footer */}

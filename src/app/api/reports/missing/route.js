@@ -293,52 +293,57 @@ export async function PUT(request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Parse request body
-        const body = await request.json();
-        const { 
-            reportId, 
-            reportType,
-            // Common fields
-            city, 
-            lastKnownLocation, 
-            coordinates, 
-            additionalInfo, 
-            resubmit,
-            // Person fields
-            firstName, 
-            lastName, 
-            dateOfBirth, 
-            gender, 
-            healthStatus, 
-            healthDetails,
-            // Pet fields
-            petName,
-            petType,
-            petBreed,
-            petColor,
-            petSize,
-            // Document fields
-            documentType,
-            documentNumber,
-            documentIssuer,
-            ownerName,
-            // Electronics fields
-            deviceType,
-            deviceBrand,
-            deviceModel,
-            deviceColor,
-            serialNumber,
-            // Vehicle fields
-            vehicleType,
-            vehicleBrand,
-            vehicleModel,
-            vehicleColor,
-            vehicleYear,
-            licensePlate,
-            // Other fields
-            itemName,
-            itemDescription
-        } = body;
+        // Parse FormData
+        const formData = await request.formData();
+        
+        const reportId = formData.get('reportId');
+        const reportType = formData.get('reportType');
+        const city = formData.get('city');
+        const lastKnownLocation = formData.get('lastKnownLocation');
+        const coordinatesStr = formData.get('coordinates');
+        const additionalInfo = formData.get('additionalInfo');
+        const resubmit = formData.get('resubmit') === 'true';
+        const existingPhotosStr = formData.get('existingPhotos');
+        
+        // Person fields
+        const firstName = formData.get('firstName');
+        const lastName = formData.get('lastName');
+        const dateOfBirth = formData.get('dateOfBirth');
+        const gender = formData.get('gender');
+        const healthStatus = formData.get('healthStatus');
+        const healthDetails = formData.get('healthDetails');
+        
+        // Pet fields
+        const petName = formData.get('petName');
+        const petType = formData.get('petType');
+        const petBreed = formData.get('petBreed');
+        const petColor = formData.get('petColor');
+        const petSize = formData.get('petSize');
+        
+        // Document fields
+        const documentType = formData.get('documentType');
+        const documentNumber = formData.get('documentNumber');
+        const documentIssuer = formData.get('documentIssuer');
+        const ownerName = formData.get('ownerName');
+        
+        // Electronics fields
+        const deviceType = formData.get('deviceType');
+        const deviceBrand = formData.get('deviceBrand');
+        const deviceModel = formData.get('deviceModel');
+        const deviceColor = formData.get('deviceColor');
+        const serialNumber = formData.get('serialNumber');
+        
+        // Vehicle fields
+        const vehicleType = formData.get('vehicleType');
+        const vehicleBrand = formData.get('vehicleBrand');
+        const vehicleModel = formData.get('vehicleModel');
+        const vehicleColor = formData.get('vehicleColor');
+        const vehicleYear = formData.get('vehicleYear');
+        const licensePlate = formData.get('licensePlate');
+        
+        // Other fields
+        const itemName = formData.get('itemName');
+        const itemDescription = formData.get('itemDescription');
 
         if (!reportId) {
             return NextResponse.json({ error: 'Report ID is required' }, { status: 400 });
@@ -364,12 +369,96 @@ export async function PUT(request) {
             return NextResponse.json({ error: 'Cannot edit approved reports' }, { status: 403 });
         }
 
+        // Parse coordinates
+        let coordinates = existingReport.coordinates;
+        if (coordinatesStr) {
+            try {
+                coordinates = JSON.parse(coordinatesStr);
+            } catch (e) {
+                console.error('[API Reports PUT] Error parsing coordinates:', e);
+            }
+        }
+
+        // Parse existing photos to keep
+        let existingPhotos = [];
+        if (existingPhotosStr) {
+            try {
+                existingPhotos = JSON.parse(existingPhotosStr);
+            } catch (e) {
+                console.error('[API Reports PUT] Error parsing existingPhotos:', e);
+            }
+        }
+
+        // Handle photo uploads and deletions
+        const STORAGE_BUCKET = 'reports-photos';
+        const oldPhotos = existingReport.photos || [];
+        const photosToDelete = oldPhotos.filter(url => !existingPhotos.includes(url));
+        
+        // Delete removed photos from storage
+        for (const photoUrl of photosToDelete) {
+            try {
+                // Extract file path from URL
+                const urlParts = photoUrl.split('/');
+                const bucketIndex = urlParts.findIndex(part => part === STORAGE_BUCKET);
+                if (bucketIndex !== -1) {
+                    const filePath = urlParts.slice(bucketIndex + 1).join('/');
+                    console.log('[API Reports PUT] Deleting photo:', filePath);
+                    await supabaseAdmin.storage.from(STORAGE_BUCKET).remove([filePath]);
+                }
+            } catch (err) {
+                console.error('[API Reports PUT] Error deleting photo:', err);
+            }
+        }
+
+        // Upload new photos
+        const newPhotoUrls = [...existingPhotos];
+        const photoFiles = formData.getAll('photos');
+        
+        if (photoFiles && photoFiles.length > 0) {
+            console.log('[API Reports PUT] Processing', photoFiles.length, 'new photos');
+            
+            for (const file of photoFiles) {
+                if (file && file.size > 0) {
+                    try {
+                        const fileExt = file.name.split('.').pop() || 'jpg';
+                        const fileName = `${existingReport.report_type}/${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+                        
+                        const arrayBuffer = await file.arrayBuffer();
+                        const buffer = Buffer.from(arrayBuffer);
+                        
+                        const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+                            .from(STORAGE_BUCKET)
+                            .upload(fileName, buffer, {
+                                contentType: file.type || 'image/jpeg',
+                                upsert: false
+                            });
+                        
+                        if (uploadError) {
+                            console.error('[API Reports PUT] Photo upload error:', uploadError.message);
+                        } else {
+                            const { data: urlData } = supabaseAdmin.storage
+                                .from(STORAGE_BUCKET)
+                                .getPublicUrl(fileName);
+                            
+                            if (urlData?.publicUrl) {
+                                newPhotoUrls.push(urlData.publicUrl);
+                                console.log('[API Reports PUT] Photo uploaded:', fileName);
+                            }
+                        }
+                    } catch (photoErr) {
+                        console.error('[API Reports PUT] Photo processing error:', photoErr);
+                    }
+                }
+            }
+        }
+
         // Update main report table
         const updateData = {
             city: city || existingReport.city,
             last_known_location: lastKnownLocation || existingReport.last_known_location,
-            coordinates: coordinates || existingReport.coordinates,
+            coordinates: coordinates,
             additional_info: additionalInfo || existingReport.additional_info,
+            photos: newPhotoUrls.length > 0 ? newPhotoUrls : null,
             updated_at: new Date().toISOString()
         };
 

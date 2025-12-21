@@ -465,54 +465,61 @@ export async function PUT(request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const body = await request.json();
-        const {
-            reportId,
-            reportType,
-            // Common fields
-            city, 
-            locationDescription, 
-            additionalInfo, 
-            resubmit,
-            // Reporter info
-            reporterFirstName,
-            reporterLastName,
-            phone,
-            email,
-            // Person fields
-            firstName, 
-            lastName, 
-            approximateAge,
-            gender, 
-            physicalDescription,
-            clothingDescription,
-            // Pet fields
-            petType,
-            petBreed,
-            petColor,
-            petSize,
-            hasCollar,
-            collarDescription,
-            condition,
-            // Document fields
-            documentType,
-            documentNumber,
-            ownerName,
-            // Electronics fields
-            deviceType,
-            deviceBrand,
-            deviceModel,
-            deviceColor,
-            // Vehicle fields
-            vehicleType,
-            vehicleBrand,
-            vehicleModel,
-            vehicleColor,
-            licensePlate,
-            // Other fields
-            itemName,
-            itemDescription
-        } = body;
+        // Parse FormData instead of JSON to handle file uploads
+        const formData = await request.formData();
+        
+        // Extract fields from formData
+        const reportId = formData.get('reportId');
+        const reportType = formData.get('reportType');
+        // Common fields
+        const city = formData.get('city');
+        const locationDescription = formData.get('locationDescription');
+        const additionalInfo = formData.get('additionalInfo');
+        const resubmit = formData.get('resubmit') === 'true';
+        // Reporter info
+        const reporterFirstName = formData.get('reporterFirstName');
+        const reporterLastName = formData.get('reporterLastName');
+        const phone = formData.get('phone');
+        const email = formData.get('email');
+        // Person fields
+        const firstName = formData.get('firstName');
+        const lastName = formData.get('lastName');
+        const approximateAge = formData.get('approximateAge');
+        const gender = formData.get('gender');
+        const physicalDescription = formData.get('physicalDescription');
+        const clothingDescription = formData.get('clothingDescription');
+        // Pet fields
+        const petType = formData.get('petType');
+        const petBreed = formData.get('petBreed');
+        const petColor = formData.get('petColor');
+        const petSize = formData.get('petSize');
+        const hasCollar = formData.get('hasCollar');
+        const collarDescription = formData.get('collarDescription');
+        const condition = formData.get('condition');
+        // Document fields
+        const documentType = formData.get('documentType');
+        const documentNumber = formData.get('documentNumber');
+        const ownerName = formData.get('ownerName');
+        // Electronics fields
+        const deviceType = formData.get('deviceType');
+        const deviceBrand = formData.get('deviceBrand');
+        const deviceModel = formData.get('deviceModel');
+        const deviceColor = formData.get('deviceColor');
+        // Vehicle fields
+        const vehicleType = formData.get('vehicleType');
+        const vehicleBrand = formData.get('vehicleBrand');
+        const vehicleModel = formData.get('vehicleModel');
+        const vehicleColor = formData.get('vehicleColor');
+        const licensePlate = formData.get('licensePlate');
+        // Other fields
+        const itemName = formData.get('itemName');
+        const itemDescription = formData.get('itemDescription');
+        
+        // Photo handling
+        const photoFiles = formData.getAll('photos');
+        const existingPhotosJson = formData.get('existingPhotos');
+        const removedPhotosJson = formData.get('removedPhotos');
+        const photosChanged = formData.get('photosChanged') === 'true';
 
         if (!reportId) {
             return NextResponse.json({ error: 'Report ID is required' }, { status: 400 });
@@ -538,6 +545,86 @@ export async function PUT(request) {
             return NextResponse.json({ error: 'Cannot edit approved reports' }, { status: 403 });
         }
 
+        // Handle photo updates if photos changed
+        const STORAGE_BUCKET = 'sighting-reports-photos';
+        let finalPhotoUrls = existingReport.photos || [];
+        
+        if (photosChanged) {
+            console.log('[API Sighting Reports PUT] Processing photo changes');
+            
+            // Parse existing photos to keep and removed photos
+            let existingPhotos = [];
+            let removedPhotos = [];
+            
+            try {
+                if (existingPhotosJson) {
+                    existingPhotos = JSON.parse(existingPhotosJson);
+                }
+                if (removedPhotosJson) {
+                    removedPhotos = JSON.parse(removedPhotosJson);
+                }
+            } catch (e) {
+                console.error('[API Sighting Reports PUT] Error parsing photo JSON:', e);
+            }
+            
+            // Delete removed photos from storage
+            if (removedPhotos.length > 0) {
+                console.log('[API Sighting Reports PUT] Deleting', removedPhotos.length, 'removed photos');
+                for (const photoUrl of removedPhotos) {
+                    try {
+                        if (photoUrl.includes('/sighting-reports-photos/')) {
+                            const filePath = photoUrl.split('/sighting-reports-photos/')[1];
+                            if (filePath) {
+                                const { error: deleteError } = await supabaseAdmin.storage
+                                    .from(STORAGE_BUCKET)
+                                    .remove([filePath]);
+                                if (deleteError) {
+                                    console.error('[API Sighting Reports PUT] Error deleting photo:', deleteError);
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.error('[API Sighting Reports PUT] Exception deleting photo:', e);
+                    }
+                }
+            }
+            
+            // Upload new photos
+            const newPhotoUrls = [];
+            if (photoFiles && photoFiles.length > 0) {
+                console.log('[API Sighting Reports PUT] Uploading', photoFiles.length, 'new photos');
+                for (const file of photoFiles) {
+                    if (file && file.size > 0) {
+                        const fileExt = file.name.split('.').pop();
+                        const fileName = `${user.id}/${reportId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+                        
+                        const arrayBuffer = await file.arrayBuffer();
+                        const buffer = Buffer.from(arrayBuffer);
+                        
+                        const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+                            .from(STORAGE_BUCKET)
+                            .upload(fileName, buffer, {
+                                contentType: file.type,
+                                upsert: false
+                            });
+                        
+                        if (uploadError) {
+                            console.error('[API Sighting Reports PUT] Photo upload error:', uploadError);
+                        } else {
+                            const { data: { publicUrl } } = supabaseAdmin.storage
+                                .from(STORAGE_BUCKET)
+                                .getPublicUrl(fileName);
+                            newPhotoUrls.push(publicUrl);
+                        }
+                    }
+                }
+            }
+            
+            // Combine existing (non-removed) photos with new photos
+            finalPhotoUrls = [...existingPhotos, ...newPhotoUrls];
+            console.log('[API Sighting Reports PUT] Final photo count:', finalPhotoUrls.length);
+        }
+
         // Update main report table
         const updateData = {
             city: city || existingReport.city,
@@ -547,6 +634,7 @@ export async function PUT(request) {
             reporter_last_name: reporterLastName || existingReport.reporter_last_name,
             reporter_phone: phone || existingReport.reporter_phone,
             reporter_email: email || existingReport.reporter_email,
+            photos: finalPhotoUrls.length > 0 ? finalPhotoUrls : null,
             updated_at: new Date().toISOString()
         };
 
