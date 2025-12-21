@@ -83,6 +83,28 @@ async function getReportDetails(reportId, reportType) {
     }
 }
 
+// Helper to get a display title for a report based on its type and details
+function getReportTitle(reportType, details) {
+    if (!details) return null;
+    
+    switch (reportType) {
+        case 'person':
+            return [details.first_name, details.last_name].filter(Boolean).join(' ') || null;
+        case 'pet':
+            return details.pet_name || null;
+        case 'document':
+            return details.document_type || null;
+        case 'electronics':
+            return [details.brand, details.model].filter(Boolean).join(' ') || null;
+        case 'vehicle':
+            return [details.brand, details.model].filter(Boolean).join(' ') || null;
+        case 'other':
+            return details.item_name || null;
+        default:
+            return null;
+    }
+}
+
 // GET - Fetch all reports for admin
 export async function GET(request) {
     try {

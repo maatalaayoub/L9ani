@@ -1,12 +1,29 @@
 "use client"
 
 import { Link, usePathname } from "@/i18n/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import LoginDialog from "./LoginDialog";
 import { useAuth } from "../context/AuthContext";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useTranslations, useLanguage } from "../context/LanguageContext";
 import Image from "next/image";
+import { supabase } from "@/lib/supabase";
+
+// Helper to format relative time
+function formatRelativeTime(dateString, locale = 'en') {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return locale === 'ar' ? 'الآن' : 'Just now';
+    if (diffMins < 60) return locale === 'ar' ? `منذ ${diffMins} دقيقة` : `${diffMins}m ago`;
+    if (diffHours < 24) return locale === 'ar' ? `منذ ${diffHours} ساعة` : `${diffHours}h ago`;
+    if (diffDays < 7) return locale === 'ar' ? `منذ ${diffDays} يوم` : `${diffDays}d ago`;
+    return date.toLocaleDateString(locale === 'ar' ? 'ar-MA' : 'en-US', { month: 'short', day: 'numeric' });
+}
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,9 +31,17 @@ export default function Header() {
     const [initialTab, setInitialTab] = useState("login");
     const [isAdmin, setIsAdmin] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+    
+    // Notification state
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [notificationsLoading, setNotificationsLoading] = useState(false);
+    const [selectedNotification, setSelectedNotification] = useState(null);
+    
     const pathname = usePathname();
     const { user, profile, logout, isAuthLoading } = useAuth();
     const t = useTranslations('header');
+    const tNotif = useTranslations('notifications');
     const { locale } = useLanguage();
     const tCommon = useTranslations('common');
     const isRTL = locale === 'ar';
@@ -28,6 +53,18 @@ export default function Header() {
         setIsLoginDialogOpen(false);
         setIsMenuOpen(false);
         setIsNotificationsOpen(false);
+        setSelectedNotification(null);
+    };
+
+    // Open notification detail
+    const openNotificationDetail = (notification) => {
+        if (!notification.is_read) markAsRead(notification.id);
+        setSelectedNotification(notification);
+    };
+
+    // Close notification detail
+    const closeNotificationDetail = () => {
+        setSelectedNotification(null);
     };
 
     // Close login dialog when user logs in successfully
@@ -55,6 +92,182 @@ export default function Header() {
         };
         checkAdminStatus();
     }, [user]);
+
+    // Fetch notifications function
+    const fetchNotifications = useCallback(async () => {
+        if (!user || !supabase) return;
+        
+        setNotificationsLoading(true);
+        try {
+            const { data: session } = await supabase.auth.getSession();
+            if (!session?.session?.access_token) return;
+
+            const response = await fetch('/api/notifications?limit=10', {
+                headers: {
+                    'Authorization': `Bearer ${session.session.access_token}`
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                setNotifications(data.notifications || []);
+                setUnreadCount(data.notifications?.filter(n => !n.is_read).length || 0);
+            }
+        } catch (err) {
+            console.error('Error fetching notifications:', err);
+        } finally {
+            setNotificationsLoading(false);
+        }
+    }, [user]);
+
+    // Fetch notifications when user logs in or dropdown opens
+    useEffect(() => {
+        if (user) {
+            fetchNotifications();
+        } else {
+            setNotifications([]);
+            setUnreadCount(0);
+        }
+    }, [user, fetchNotifications]);
+
+    // Subscribe to realtime notifications
+    useEffect(() => {
+        if (!user || !supabase) return;
+
+        const channel = supabase
+            .channel(`notifications:${user.id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'notifications',
+                    filter: `user_id=eq.${user.id}`,
+                },
+                (payload) => {
+                    console.log('[Header] New notification received:', payload.new);
+                    // Add new notification to the top
+                    setNotifications(prev => [payload.new, ...prev].slice(0, 10));
+                    setUnreadCount(prev => prev + 1);
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [user]);
+
+    // Mark single notification as read
+    const markAsRead = async (notificationId) => {
+        if (!supabase) return;
+        
+        try {
+            const { data: session } = await supabase.auth.getSession();
+            if (!session?.session?.access_token) return;
+
+            const response = await fetch(`/api/notifications/${notificationId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${session.session.access_token}`
+                }
+            });
+            
+            if (response.ok) {
+                setNotifications(prev => 
+                    prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
+                );
+                setUnreadCount(prev => Math.max(0, prev - 1));
+            }
+        } catch (err) {
+            console.error('Error marking notification as read:', err);
+        }
+    };
+
+    // Mark all notifications as read
+    const markAllAsRead = async () => {
+        if (!supabase) return;
+        
+        try {
+            const { data: session } = await supabase.auth.getSession();
+            if (!session?.session?.access_token) return;
+
+            const response = await fetch('/api/notifications/read-all', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${session.session.access_token}`
+                }
+            });
+            
+            if (response.ok) {
+                setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+                setUnreadCount(0);
+            }
+        } catch (err) {
+            console.error('Error marking all as read:', err);
+        }
+    };
+
+    // Delete a notification
+    const deleteNotification = async (notificationId, e) => {
+        if (e) {
+            e.stopPropagation(); // Prevent triggering the parent onClick
+        }
+        if (!supabase) return;
+        
+        try {
+            const { data: session } = await supabase.auth.getSession();
+            if (!session?.session?.access_token) return;
+
+            const response = await fetch(`/api/notifications/${notificationId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${session.session.access_token}`
+                }
+            });
+            
+            if (response.ok) {
+                // Check if the notification was unread before removing
+                const notification = notifications.find(n => n.id === notificationId);
+                if (notification && !notification.is_read) {
+                    setUnreadCount(prev => Math.max(0, prev - 1));
+                }
+                setNotifications(prev => prev.filter(n => n.id !== notificationId));
+            }
+        } catch (err) {
+            console.error('Error deleting notification:', err);
+        }
+    };
+
+    // Get notification icon based on type
+    const getNotificationIcon = (type) => {
+        switch (type) {
+            case 'REPORT_ACCEPTED':
+                return (
+                    <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                );
+            case 'REPORT_REJECTED':
+                return (
+                    <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-4 h-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </div>
+                );
+            default:
+                return (
+                    <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                    </div>
+                );
+        }
+    };
 
     // Close notifications dropdown when clicking outside
     useEffect(() => {
@@ -158,42 +371,213 @@ export default function Header() {
                             {user && (
                                 <div className="relative notifications-container">
                                     <button 
-                                        onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                                        onClick={() => {
+                                            setIsNotificationsOpen(!isNotificationsOpen);
+                                            if (!isNotificationsOpen) fetchNotifications();
+                                        }}
                                         className="btn-icon flex relative p-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
                                     >
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                                         </svg>
-                                        {/* Notification badge - hidden when no notifications */}
-                                        {/* <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span> */}
+                                        {/* Notification badge */}
+                                        {unreadCount > 0 && (
+                                            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                                                {unreadCount > 9 ? '9+' : unreadCount}
+                                            </span>
+                                        )}
                                     </button>
                                     
                                     {/* Notifications Dropdown */}
                                     {isNotificationsOpen && (
-                                        <div className={`fixed inset-x-4 top-16 sm:inset-x-auto sm:absolute sm:top-full sm:mt-2 w-auto sm:w-80 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50 ${isRTL ? 'sm:left-0 sm:right-auto' : 'sm:right-0 sm:left-auto'}`}>
+                                        <div className={`fixed inset-x-4 top-16 sm:inset-x-auto sm:absolute sm:top-full sm:mt-2 w-auto sm:w-96 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50 ${isRTL ? 'sm:left-0 sm:right-auto' : 'sm:right-0 sm:left-auto'}`}>
                                             {/* Header */}
-                                            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                                            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex items-center justify-between">
                                                 <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                                                     <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                                                     </svg>
-                                                    {t('notifications') || 'Notifications'}
+                                                    {tNotif('title') || t('notifications') || 'Notifications'}
+                                                    {unreadCount > 0 && (
+                                                        <span className="ml-1 px-1.5 py-0.5 text-[10px] font-bold bg-red-500 text-white rounded-full">
+                                                            {unreadCount}
+                                                        </span>
+                                                    )}
                                                 </h3>
+                                                {unreadCount > 0 && (
+                                                    <button
+                                                        onClick={markAllAsRead}
+                                                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                                                    >
+                                                        {tNotif('markAllAsRead') || 'Mark all as read'}
+                                                    </button>
+                                                )}
                                             </div>
                                             
                                             {/* Content */}
-                                            <div className="p-6 flex flex-col items-center justify-center text-center">
-                                                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-3">
-                                                    <svg className="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                                                    </svg>
+                                            {notificationsLoading ? (
+                                                <div className="p-6 flex items-center justify-center">
+                                                    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                                                 </div>
-                                                <p className="text-gray-500 dark:text-gray-400 text-sm">
-                                                    {t('noNotifications') || 'No notifications'}
-                                                </p>
-                                                <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">
-                                                    {t('notificationsDescription') || "You're all caught up!"}
-                                                </p>
+                                            ) : notifications.length === 0 ? (
+                                                <div className="p-6 flex flex-col items-center justify-center text-center">
+                                                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-3">
+                                                        <svg className="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                                                        </svg>
+                                                    </div>
+                                                    <p className="text-gray-500 dark:text-gray-400 text-sm">
+                                                        {tNotif('noNotifications') || t('noNotifications') || 'No notifications'}
+                                                    </p>
+                                                    <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">
+                                                        {t('notificationsDescription') || "You're all caught up!"}
+                                                    </p>
+                                                </div>
+                                            ) : (
+                                                <div className="max-h-80 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
+                                                    {notifications.map((notification) => (
+                                                        <div
+                                                            key={notification.id}
+                                                            onClick={() => openNotificationDetail(notification)}
+                                                            className={`group px-4 py-3 flex gap-3 cursor-pointer transition-colors ${
+                                                                notification.is_read 
+                                                                    ? 'bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800/50' 
+                                                                    : 'bg-blue-50/50 dark:bg-blue-900/10 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                                                            }`}
+                                                        >
+                                                            {getNotificationIcon(notification.type)}
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-start justify-between gap-2">
+                                                                    <p className={`text-sm font-medium truncate ${
+                                                                        notification.is_read 
+                                                                            ? 'text-gray-700 dark:text-gray-300' 
+                                                                            : 'text-gray-900 dark:text-white'
+                                                                    }`}>
+                                                                        {notification.title}
+                                                                    </p>
+                                                                    <div className="flex items-center gap-1 flex-shrink-0">
+                                                                        {!notification.is_read && (
+                                                                            <span className="w-2 h-2 bg-blue-500 rounded-full mt-1.5"></span>
+                                                                        )}
+                                                                        {/* Delete button - always visible on mobile, hover on desktop */}
+                                                                        <button
+                                                                            onClick={(e) => deleteNotification(notification.id, e)}
+                                                                            className="p-1.5 sm:p-1 rounded-full sm:opacity-0 sm:group-hover:opacity-100 hover:bg-red-100 dark:hover:bg-red-900/30 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-all active:scale-90"
+                                                                            title={tNotif('delete') || 'Delete'}
+                                                                        >
+                                                                            <svg className="w-4 h-4 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                                                            </svg>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
+                                                                    {notification.message}
+                                                                </p>
+                                                                <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
+                                                                    {formatRelativeTime(notification.created_at, locale)}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Notification Detail Modal */}
+                                    {selectedNotification && (
+                                        <div 
+                                            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+                                            onClick={closeNotificationDetail}
+                                        >
+                                            <div 
+                                                className={`w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden transform transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                {/* Modal Header */}
+                                                <div className={`px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3 ${
+                                                    selectedNotification.type === 'REPORT_ACCEPTED' 
+                                                        ? 'bg-green-50 dark:bg-green-900/20' 
+                                                        : selectedNotification.type === 'REPORT_REJECTED'
+                                                        ? 'bg-red-50 dark:bg-red-900/20'
+                                                        : 'bg-gray-50 dark:bg-gray-800/50'
+                                                }`}>
+                                                    {getNotificationIcon(selectedNotification.type)}
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="font-semibold text-gray-900 dark:text-white">
+                                                            {selectedNotification.title}
+                                                        </h3>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                                            {formatRelativeTime(selectedNotification.created_at, locale)}
+                                                        </p>
+                                                    </div>
+                                                    <button
+                                                        onClick={closeNotificationDetail}
+                                                        className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
+                                                    >
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+
+                                                {/* Modal Body */}
+                                                <div className="px-5 py-4">
+                                                    <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
+                                                        {selectedNotification.message}
+                                                    </p>
+
+                                                    {/* Additional data display */}
+                                                    {selectedNotification.data?.reason && (
+                                                        <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                                                            <p className="text-xs font-medium text-red-600 dark:text-red-400 mb-1">
+                                                                {tNotif('reason') || 'Reason:'}
+                                                            </p>
+                                                            <p className="text-sm text-red-700 dark:text-red-300">
+                                                                {selectedNotification.data.reason}
+                                                            </p>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Report link if available */}
+                                                    {selectedNotification.data?.reportId && (
+                                                        <div className="mt-4">
+                                                            <Link
+                                                                href="/my-report"
+                                                                onClick={() => {
+                                                                    closeNotificationDetail();
+                                                                    setIsNotificationsOpen(false);
+                                                                }}
+                                                                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                                                            >
+                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                </svg>
+                                                                {tNotif('viewReport') || 'View Report'}
+                                                            </Link>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Modal Footer */}
+                                                <div className="px-5 py-3 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-2">
+                                                    <button
+                                                        onClick={() => {
+                                                            deleteNotification(selectedNotification.id);
+                                                            closeNotificationDetail();
+                                                        }}
+                                                        className="px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                    >
+                                                        {tNotif('delete') || 'Delete'}
+                                                    </button>
+                                                    <button
+                                                        onClick={closeNotificationDetail}
+                                                        className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                                    >
+                                                        {tNotif('close') || 'Close'}
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     )}

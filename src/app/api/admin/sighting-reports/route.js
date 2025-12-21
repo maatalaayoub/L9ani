@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { notifyReportAccepted, notifyReportRejected } from '@/lib/notifications';
 
 // Detail table names mapping for sighting reports
 const SIGHTING_DETAIL_TABLE_MAP = {
@@ -79,6 +80,28 @@ async function getSightingReportDetails(reportId, reportType) {
     } catch (err) {
         console.error(`[Admin Sighting Reports] Exception fetching details:`, err);
         return null;
+    }
+}
+
+// Helper to get a display title for a sighting report based on its type and details
+function getSightingReportTitle(reportType, details) {
+    if (!details) return null;
+    
+    switch (reportType) {
+        case 'person':
+            return [details.first_name, details.last_name].filter(Boolean).join(' ') || null;
+        case 'pet':
+            return details.pet_name || null;
+        case 'document':
+            return details.document_type || null;
+        case 'electronics':
+            return [details.brand, details.model].filter(Boolean).join(' ') || null;
+        case 'vehicle':
+            return [details.brand, details.model].filter(Boolean).join(' ') || null;
+        case 'other':
+            return details.item_name || null;
+        default:
+            return null;
     }
 }
 
@@ -318,12 +341,33 @@ export async function PATCH(request) {
             return NextResponse.json({ error: 'Sighting report not found' }, { status: 404 });
         }
 
+        const updatedReport = data[0];
         console.log('[API Admin Sighting Reports PATCH] Updated report:', reportId, 'to status:', newStatus);
+
+        // Send notification to the report owner
+        if (updatedReport.user_id) {
+            try {
+                // Get report details for the notification title
+                const reportDetails = await getSightingReportDetails(reportId, updatedReport.report_type);
+                const reportTitle = getSightingReportTitle(updatedReport.report_type, reportDetails) || `Sighting Report #${reportId.slice(0, 8)}`;
+
+                if (action === 'approve') {
+                    await notifyReportAccepted(updatedReport.user_id, reportId, reportTitle);
+                    console.log('[API Admin Sighting Reports PATCH] Sent approval notification to user:', updatedReport.user_id);
+                } else if (action === 'reject') {
+                    await notifyReportRejected(updatedReport.user_id, reportId, reportTitle, { reason: rejectionReason });
+                    console.log('[API Admin Sighting Reports PATCH] Sent rejection notification to user:', updatedReport.user_id);
+                }
+            } catch (notifyErr) {
+                // Don't fail the request if notification fails
+                console.error('[API Admin Sighting Reports PATCH] Error sending notification:', notifyErr);
+            }
+        }
 
         return NextResponse.json({
             success: true,
             message: `Sighting report ${newStatus} successfully`,
-            report: data[0]
+            report: updatedReport
         });
     } catch (err) {
         console.error('[API Admin Sighting Reports PATCH] Exception:', err);

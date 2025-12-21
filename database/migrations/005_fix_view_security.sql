@@ -60,5 +60,5 @@ LEFT JOIN report_details_other oth ON r.id = oth.report_id AND r.report_type = '
 COMMENT ON VIEW reports_with_details IS 'View combining reports with their type-specific details. Uses SECURITY INVOKER to respect RLS policies.';
 
 -- =====================================================
--- MIGRATION COMPLETE
--- =====================================================
+-- MIGRATION COMPLETE                                   
+-- ===================================================== 
