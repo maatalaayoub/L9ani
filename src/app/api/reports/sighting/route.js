@@ -545,27 +545,33 @@ export async function PUT(request) {
             return NextResponse.json({ error: 'Cannot edit approved reports' }, { status: 403 });
         }
 
-        // Handle photo updates if photos changed
+        // Handle photo updates
+        // Process photos if: photosChanged flag is set, or there are new photos, or existingPhotos differs from current
         const STORAGE_BUCKET = 'sighting-reports-photos';
         let finalPhotoUrls = existingReport.photos || [];
         
-        if (photosChanged) {
-            console.log('[API Sighting Reports PUT] Processing photo changes');
-            
-            // Parse existing photos to keep and removed photos
-            let existingPhotos = [];
-            let removedPhotos = [];
-            
-            try {
-                if (existingPhotosJson) {
-                    existingPhotos = JSON.parse(existingPhotosJson);
-                }
-                if (removedPhotosJson) {
-                    removedPhotos = JSON.parse(removedPhotosJson);
-                }
-            } catch (e) {
-                console.error('[API Sighting Reports PUT] Error parsing photo JSON:', e);
+        // Parse existing photos to keep and removed photos
+        let existingPhotos = [];
+        let removedPhotos = [];
+        
+        try {
+            if (existingPhotosJson) {
+                existingPhotos = JSON.parse(existingPhotosJson);
             }
+            if (removedPhotosJson) {
+                removedPhotos = JSON.parse(removedPhotosJson);
+            }
+        } catch (e) {
+            console.error('[API Sighting Reports PUT] Error parsing photo JSON:', e);
+        }
+        
+        // Check if photos have changed - either explicitly flagged or we have new photos or existing changed
+        const hasPhotoChanges = photosChanged || 
+            (photoFiles && photoFiles.length > 0 && photoFiles.some(f => f && f.size > 0)) || 
+            JSON.stringify(existingPhotos) !== JSON.stringify(existingReport.photos || []);
+        
+        if (hasPhotoChanges) {
+            console.log('[API Sighting Reports PUT] Processing photo changes');
             
             // Delete removed photos from storage
             if (removedPhotos.length > 0) {

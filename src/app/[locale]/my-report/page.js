@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import { Link } from '@/i18n/navigation';
 import LoginDialog from "@/components/LoginDialog";
+import SelectDropdown from "@/components/SelectDropdown";
+import { getCitiesForDropdown } from '@/data/moroccanCities';
 import { supabase } from '@/lib/supabase';
 
 // Report type icons component
@@ -156,6 +158,8 @@ export default function MyReport() {
     const [editExistingPhotos, setEditExistingPhotos] = useState([]); // URLs of existing photos to keep
     const [editNewPhotos, setEditNewPhotos] = useState([]); // New File objects to upload
     const [editPhotosPreviews, setEditPhotosPreviews] = useState([]); // Preview URLs for new photos
+    const [editRemovedPhotos, setEditRemovedPhotos] = useState([]); // URLs of photos that were removed
+    const [editOriginalPhotos, setEditOriginalPhotos] = useState([]); // Original photos when modal opened
     
     // Delete modal state
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -173,6 +177,122 @@ export default function MyReport() {
     const tCommon = useTranslations('common');
     const { locale } = useLanguage();
     const isRTL = locale === 'ar';
+
+    // Dropdown options for edit modal (matching report-missing and report-sighting pages)
+    const petTypeOptions = [
+        { value: 'dog', label: t('edit.petTypes.dog') || 'Dog' },
+        { value: 'cat', label: t('edit.petTypes.cat') || 'Cat' },
+        { value: 'bird', label: t('edit.petTypes.bird') || 'Bird' },
+        { value: 'other', label: t('edit.petTypes.other') || 'Other' }
+    ];
+
+    const petSizeOptions = [
+        { value: 'small', label: t('edit.sizes.small') || 'Small' },
+        { value: 'medium', label: t('edit.sizes.medium') || 'Medium' },
+        { value: 'large', label: t('edit.sizes.large') || 'Large' }
+    ];
+
+    const documentTypeOptions = [
+        { value: 'nationalId', label: t('edit.documentTypes.nationalId') || 'National ID' },
+        { value: 'passport', label: t('edit.documentTypes.passport') || 'Passport' },
+        { value: 'driverLicense', label: t('edit.documentTypes.driverLicense') || 'Driver License' },
+        { value: 'residenceCard', label: t('edit.documentTypes.residenceCard') || 'Residence Card' },
+        { value: 'birthCertificate', label: t('edit.documentTypes.birthCertificate') || 'Birth Certificate' },
+        { value: 'diploma', label: t('edit.documentTypes.diploma') || 'Diploma' },
+        { value: 'other', label: t('edit.documentTypes.other') || 'Other' }
+    ];
+
+    const deviceTypeOptions = [
+        { value: 'phone', label: t('edit.deviceTypes.phone') || 'Phone' },
+        { value: 'laptop', label: t('edit.deviceTypes.laptop') || 'Laptop' },
+        { value: 'tablet', label: t('edit.deviceTypes.tablet') || 'Tablet' },
+        { value: 'camera', label: t('edit.deviceTypes.camera') || 'Camera' },
+        { value: 'smartwatch', label: t('edit.deviceTypes.smartwatch') || 'Smartwatch' },
+        { value: 'earbuds', label: t('edit.deviceTypes.earbuds') || 'Earbuds' },
+        { value: 'other', label: t('edit.deviceTypes.other') || 'Other' }
+    ];
+
+    const deviceBrandOptions = [
+        { value: 'apple', label: t('edit.deviceBrands.apple') || 'Apple' },
+        { value: 'samsung', label: t('edit.deviceBrands.samsung') || 'Samsung' },
+        { value: 'huawei', label: t('edit.deviceBrands.huawei') || 'Huawei' },
+        { value: 'xiaomi', label: t('edit.deviceBrands.xiaomi') || 'Xiaomi' },
+        { value: 'oppo', label: t('edit.deviceBrands.oppo') || 'OPPO' },
+        { value: 'vivo', label: t('edit.deviceBrands.vivo') || 'Vivo' },
+        { value: 'realme', label: t('edit.deviceBrands.realme') || 'Realme' },
+        { value: 'oneplus', label: t('edit.deviceBrands.oneplus') || 'OnePlus' },
+        { value: 'google', label: t('edit.deviceBrands.google') || 'Google' },
+        { value: 'sony', label: t('edit.deviceBrands.sony') || 'Sony' },
+        { value: 'lg', label: t('edit.deviceBrands.lg') || 'LG' },
+        { value: 'nokia', label: t('edit.deviceBrands.nokia') || 'Nokia' },
+        { value: 'motorola', label: t('edit.deviceBrands.motorola') || 'Motorola' },
+        { value: 'asus', label: t('edit.deviceBrands.asus') || 'ASUS' },
+        { value: 'lenovo', label: t('edit.deviceBrands.lenovo') || 'Lenovo' },
+        { value: 'hp', label: t('edit.deviceBrands.hp') || 'HP' },
+        { value: 'dell', label: t('edit.deviceBrands.dell') || 'Dell' },
+        { value: 'acer', label: t('edit.deviceBrands.acer') || 'Acer' },
+        { value: 'microsoft', label: t('edit.deviceBrands.microsoft') || 'Microsoft' },
+        { value: 'other', label: t('edit.deviceBrands.other') || 'Other' }
+    ];
+
+    const vehicleTypeOptions = [
+        { value: 'car', label: t('edit.vehicleTypes.car') || 'Car' },
+        { value: 'motorcycle', label: t('edit.vehicleTypes.motorcycle') || 'Motorcycle' },
+        { value: 'bicycle', label: t('edit.vehicleTypes.bicycle') || 'Bicycle' },
+        { value: 'scooter', label: t('edit.vehicleTypes.scooter') || 'Scooter' },
+        { value: 'other', label: t('edit.vehicleTypes.other') || 'Other' }
+    ];
+
+    const vehicleBrandOptions = [
+        { value: 'toyota', label: t('edit.vehicleBrands.toyota') || 'Toyota' },
+        { value: 'honda', label: t('edit.vehicleBrands.honda') || 'Honda' },
+        { value: 'nissan', label: t('edit.vehicleBrands.nissan') || 'Nissan' },
+        { value: 'hyundai', label: t('edit.vehicleBrands.hyundai') || 'Hyundai' },
+        { value: 'kia', label: t('edit.vehicleBrands.kia') || 'Kia' },
+        { value: 'mercedes', label: t('edit.vehicleBrands.mercedes') || 'Mercedes' },
+        { value: 'bmw', label: t('edit.vehicleBrands.bmw') || 'BMW' },
+        { value: 'audi', label: t('edit.vehicleBrands.audi') || 'Audi' },
+        { value: 'volkswagen', label: t('edit.vehicleBrands.volkswagen') || 'Volkswagen' },
+        { value: 'ford', label: t('edit.vehicleBrands.ford') || 'Ford' },
+        { value: 'chevrolet', label: t('edit.vehicleBrands.chevrolet') || 'Chevrolet' },
+        { value: 'peugeot', label: t('edit.vehicleBrands.peugeot') || 'Peugeot' },
+        { value: 'renault', label: t('edit.vehicleBrands.renault') || 'Renault' },
+        { value: 'dacia', label: t('edit.vehicleBrands.dacia') || 'Dacia' },
+        { value: 'fiat', label: t('edit.vehicleBrands.fiat') || 'Fiat' },
+        { value: 'citroen', label: t('edit.vehicleBrands.citroen') || 'Citroën' },
+        { value: 'suzuki', label: t('edit.vehicleBrands.suzuki') || 'Suzuki' },
+        { value: 'mazda', label: t('edit.vehicleBrands.mazda') || 'Mazda' },
+        { value: 'mitsubishi', label: t('edit.vehicleBrands.mitsubishi') || 'Mitsubishi' },
+        { value: 'other', label: t('edit.vehicleBrands.other') || 'Other' }
+    ];
+
+    const colorOptions = [
+        { value: 'black', label: t('edit.colors.black') || 'Black' },
+        { value: 'white', label: t('edit.colors.white') || 'White' },
+        { value: 'silver', label: t('edit.colors.silver') || 'Silver' },
+        { value: 'gray', label: t('edit.colors.gray') || 'Gray' },
+        { value: 'red', label: t('edit.colors.red') || 'Red' },
+        { value: 'blue', label: t('edit.colors.blue') || 'Blue' },
+        { value: 'green', label: t('edit.colors.green') || 'Green' },
+        { value: 'yellow', label: t('edit.colors.yellow') || 'Yellow' },
+        { value: 'orange', label: t('edit.colors.orange') || 'Orange' },
+        { value: 'brown', label: t('edit.colors.brown') || 'Brown' },
+        { value: 'gold', label: t('edit.colors.gold') || 'Gold' },
+        { value: 'pink', label: t('edit.colors.pink') || 'Pink' },
+        { value: 'purple', label: t('edit.colors.purple') || 'Purple' },
+        { value: 'other', label: t('edit.colors.other') || 'Other' }
+    ];
+
+    const genderOptions = [
+        { value: 'male', label: t('edit.male') || 'Male' },
+        { value: 'female', label: t('edit.female') || 'Female' }
+    ];
+
+    const healthStatusOptions = [
+        { value: 'healthy', label: t('edit.healthy') || 'Healthy' },
+        { value: 'medical_condition', label: t('edit.medicalCondition') || 'Has Medical Condition' },
+        { value: 'unknown', label: t('edit.unknown') || 'Unknown' }
+    ];
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -1313,9 +1433,10 @@ export default function MyReport() {
         const reportType = report.report_type || 'person';
         const details = report.details || {};
         
+        // For sighting reports, use location_description; for missing reports, use last_known_location
         const baseData = {
             city: report.city ?? '',
-            lastKnownLocation: report.last_known_location ?? '',
+            lastKnownLocation: report.last_known_location ?? report.location_description ?? '',
             additionalInfo: report.additional_info ?? ''
         };
         
@@ -1383,9 +1504,12 @@ export default function MyReport() {
         
         setEditFormData({ ...baseData, ...typeSpecificData });
         // Initialize photo state with existing photos
-        setEditExistingPhotos(report.photos || []);
+        const originalPhotos = report.photos || [];
+        setEditExistingPhotos([...originalPhotos]);
+        setEditOriginalPhotos([...originalPhotos]);
         setEditNewPhotos([]);
         setEditPhotosPreviews([]);
+        setEditRemovedPhotos([]);
         setEditError('');
         setEditSuccess('');
         setShowEditModal(true);
@@ -1412,6 +1536,11 @@ export default function MyReport() {
 
     // Handle removing existing photo
     const handleRemoveExistingPhoto = (index) => {
+        const removedUrl = editExistingPhotos[index];
+        // Add to removed photos list if it was an original photo
+        if (editOriginalPhotos.includes(removedUrl)) {
+            setEditRemovedPhotos(prev => [...prev, removedUrl]);
+        }
         setEditExistingPhotos(prev => prev.filter((_, i) => i !== index));
     };
 
@@ -1460,12 +1589,25 @@ export default function MyReport() {
             formData.append('reportId', editingReport.id);
             formData.append('reportType', reportType);
             formData.append('city', editFormData.city);
-            formData.append('lastKnownLocation', editFormData.lastKnownLocation);
+            
+            // For sighting reports, use locationDescription; for missing reports, use lastKnownLocation
+            if (activeTab === 'sighting') {
+                formData.append('locationDescription', editFormData.lastKnownLocation);
+            } else {
+                formData.append('lastKnownLocation', editFormData.lastKnownLocation);
+            }
+            
             formData.append('additionalInfo', editFormData.additionalInfo || '');
             formData.append('resubmit', resubmit ? 'true' : 'false');
             
             // Add existing photos to keep (as JSON array)
             formData.append('existingPhotos', JSON.stringify(editExistingPhotos));
+            
+            // Check if photos have changed (for sighting reports API)
+            const photosChanged = editRemovedPhotos.length > 0 || editNewPhotos.length > 0 ||
+                JSON.stringify(editExistingPhotos) !== JSON.stringify(editOriginalPhotos);
+            formData.append('photosChanged', photosChanged ? 'true' : 'false');
+            formData.append('removedPhotos', JSON.stringify(editRemovedPhotos));
             
             // Add new photos
             for (const photo of editNewPhotos) {
@@ -2731,37 +2873,30 @@ export default function MyReport() {
                                                         />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                            {t('edit.gender') || 'Gender'}
-                                                        </label>
-                                                        <select
+                                                        <SelectDropdown
                                                             value={editFormData.gender || ''}
-                                                            onChange={(e) => handleEditFormChange('gender', e.target.value)}
-                                                            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                        >
-                                                            <option value="">{t('edit.selectGender') || 'Select Gender'}</option>
-                                                            <option value="male">{t('edit.male') || 'Male'}</option>
-                                                            <option value="female">{t('edit.female') || 'Female'}</option>
-                                                        </select>
+                                                            onChange={(value) => handleEditFormChange('gender', value)}
+                                                            options={genderOptions}
+                                                            placeholder={t('edit.selectGender') || 'Select Gender'}
+                                                            searchPlaceholder={t('edit.searchOptions') || 'Search...'}
+                                                            label={t('edit.gender') || 'Gender'}
+                                                            isRTL={isRTL}
+                                                        />
                                                     </div>
                                                 </div>
 
                                                 {/* Health Status */}
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
-                                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                            {t('edit.healthStatus') || 'Health Status'}
-                                                        </label>
-                                                        <select
+                                                        <SelectDropdown
                                                             value={editFormData.healthStatus || ''}
-                                                            onChange={(e) => handleEditFormChange('healthStatus', e.target.value)}
-                                                            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                        >
-                                                            <option value="">{t('edit.selectHealthStatus') || 'Select Health Status'}</option>
-                                                            <option value="healthy">{t('edit.healthy') || 'Healthy'}</option>
-                                                            <option value="medical_condition">{t('edit.medicalCondition') || 'Has Medical Condition'}</option>
-                                                            <option value="unknown">{t('edit.unknown') || 'Unknown'}</option>
-                                                        </select>
+                                                            onChange={(value) => handleEditFormChange('healthStatus', value)}
+                                                            options={healthStatusOptions}
+                                                            placeholder={t('edit.selectHealthStatus') || 'Select Health Status'}
+                                                            searchPlaceholder={t('edit.searchOptions') || 'Search...'}
+                                                            label={t('edit.healthStatus') || 'Health Status'}
+                                                            isRTL={isRTL}
+                                                        />
                                                     </div>
                                                     <div>
                                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -2800,41 +2935,33 @@ export default function MyReport() {
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                        {t('edit.petType') || 'Pet Type'} <span className="text-red-500">*</span>
-                                                    </label>
-                                                    <select
+                                                    <SelectDropdown
                                                         value={editFormData.petType || ''}
-                                                        onChange={(e) => handleEditFormChange('petType', e.target.value)}
-                                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                        required
-                                                    >
-                                                        <option value="">{t('edit.selectPetType') || 'Select Pet Type'}</option>
-                                                        <option value="dog">{t('edit.petTypes.dog') || 'Dog'}</option>
-                                                        <option value="cat">{t('edit.petTypes.cat') || 'Cat'}</option>
-                                                        <option value="bird">{t('edit.petTypes.bird') || 'Bird'}</option>
-                                                        <option value="other">{t('edit.petTypes.other') || 'Other'}</option>
-                                                    </select>
+                                                        onChange={(value) => handleEditFormChange('petType', value)}
+                                                        options={petTypeOptions}
+                                                        placeholder={t('edit.selectPetType') || 'Select Pet Type'}
+                                                        searchPlaceholder={t('edit.searchOptions') || 'Search...'}
+                                                        label={<>{t('edit.petType') || 'Pet Type'} <span className="text-red-500">*</span></>}
+                                                        isRTL={isRTL}
+                                                        allowCustom={true}
+                                                        customLabel={t('edit.addCustomOption') || 'Add custom option'}
+                                                    />
                                                 </div>
                                             </div>
                                         ) : (
                                             /* Sighting reports - only petType required */
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.petType') || 'Pet Type'} <span className="text-red-500">*</span>
-                                                </label>
-                                                <select
+                                                <SelectDropdown
                                                     value={editFormData.petType || ''}
-                                                    onChange={(e) => handleEditFormChange('petType', e.target.value)}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                    required
-                                                >
-                                                    <option value="">{t('edit.selectPetType') || 'Select Pet Type'}</option>
-                                                    <option value="dog">{t('edit.petTypes.dog') || 'Dog'}</option>
-                                                    <option value="cat">{t('edit.petTypes.cat') || 'Cat'}</option>
-                                                    <option value="bird">{t('edit.petTypes.bird') || 'Bird'}</option>
-                                                    <option value="other">{t('edit.petTypes.other') || 'Other'}</option>
-                                                </select>
+                                                    onChange={(value) => handleEditFormChange('petType', value)}
+                                                    options={petTypeOptions}
+                                                    placeholder={t('edit.selectPetType') || 'Select Pet Type'}
+                                                    searchPlaceholder={t('edit.searchOptions') || 'Search...'}
+                                                    label={<>{t('edit.petType') || 'Pet Type'} <span className="text-red-500">*</span></>}
+                                                    isRTL={isRTL}
+                                                    allowCustom={true}
+                                                    customLabel={t('edit.addCustomOption') || 'Add custom option'}
+                                                />
                                             </div>
                                         )}
                                         {/* Breed and Color - same for both */}
@@ -2851,33 +2978,31 @@ export default function MyReport() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.petColor') || 'Color'}
-                                                </label>
-                                                <input
-                                                    type="text"
+                                                <SelectDropdown
                                                     value={editFormData.petColor || ''}
-                                                    onChange={(e) => handleEditFormChange('petColor', e.target.value)}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                                    onChange={(value) => handleEditFormChange('petColor', value)}
+                                                    options={colorOptions}
+                                                    placeholder={t('edit.selectColor') || 'Select Color'}
+                                                    searchPlaceholder={t('edit.searchOptions') || 'Search...'}
+                                                    label={t('edit.petColor') || 'Color'}
+                                                    isRTL={isRTL}
+                                                    allowCustom={true}
+                                                    customLabel={t('edit.addCustomOption') || 'Add custom option'}
                                                 />
                                             </div>
                                         </div>
                                         {/* Size - only for missing reports */}
                                         {activeTab === 'missing' && (
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.petSize') || 'Size'}
-                                                </label>
-                                                <select
+                                                <SelectDropdown
                                                     value={editFormData.petSize || ''}
-                                                    onChange={(e) => handleEditFormChange('petSize', e.target.value)}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                >
-                                                    <option value="">{t('edit.selectSize') || 'Select Size'}</option>
-                                                    <option value="small">{t('edit.sizes.small') || 'Small'}</option>
-                                                    <option value="medium">{t('edit.sizes.medium') || 'Medium'}</option>
-                                                    <option value="large">{t('edit.sizes.large') || 'Large'}</option>
-                                                </select>
+                                                    onChange={(value) => handleEditFormChange('petSize', value)}
+                                                    options={petSizeOptions}
+                                                    placeholder={t('edit.selectSize') || 'Select Size'}
+                                                    searchPlaceholder={t('edit.searchOptions') || 'Search...'}
+                                                    label={t('edit.petSize') || 'Size'}
+                                                    isRTL={isRTL}
+                                                />
                                             </div>
                                         )}
                                     </>
@@ -2888,21 +3013,17 @@ export default function MyReport() {
                                     <>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.documentType') || 'Document Type'} <span className="text-red-500">*</span>
-                                                </label>
-                                                <select
+                                                <SelectDropdown
                                                     value={editFormData.documentType || ''}
-                                                    onChange={(e) => handleEditFormChange('documentType', e.target.value)}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                    required
-                                                >
-                                                    <option value="">{t('edit.selectDocumentType') || 'Select Document Type'}</option>
-                                                    <option value="nationalId">{t('edit.documentTypes.nationalId') || 'National ID'}</option>
-                                                    <option value="passport">{t('edit.documentTypes.passport') || 'Passport'}</option>
-                                                    <option value="driverLicense">{t('edit.documentTypes.driverLicense') || 'Driver License'}</option>
-                                                    <option value="other">{t('edit.documentTypes.other') || 'Other'}</option>
-                                                </select>
+                                                    onChange={(value) => handleEditFormChange('documentType', value)}
+                                                    options={documentTypeOptions}
+                                                    placeholder={t('edit.selectDocumentType') || 'Select Document Type'}
+                                                    searchPlaceholder={t('edit.searchOptions') || 'Search...'}
+                                                    label={<>{t('edit.documentType') || 'Document Type'} <span className="text-red-500">*</span></>}
+                                                    isRTL={isRTL}
+                                                    allowCustom={true}
+                                                    customLabel={t('edit.addCustomOption') || 'Add custom option'}
+                                                />
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -2952,32 +3073,29 @@ export default function MyReport() {
                                         {/* Device Type and Brand - same for both */}
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.deviceType') || 'Device Type'} <span className="text-red-500">*</span>
-                                                </label>
-                                                <select
+                                                <SelectDropdown
                                                     value={editFormData.deviceType || ''}
-                                                    onChange={(e) => handleEditFormChange('deviceType', e.target.value)}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                    required
-                                                >
-                                                    <option value="">{t('edit.selectDeviceType') || 'Select Device Type'}</option>
-                                                    <option value="phone">{t('edit.deviceTypes.phone') || 'Phone'}</option>
-                                                    <option value="laptop">{t('edit.deviceTypes.laptop') || 'Laptop'}</option>
-                                                    <option value="tablet">{t('edit.deviceTypes.tablet') || 'Tablet'}</option>
-                                                    <option value="other">{t('edit.deviceTypes.other') || 'Other'}</option>
-                                                </select>
+                                                    onChange={(value) => handleEditFormChange('deviceType', value)}
+                                                    options={deviceTypeOptions}
+                                                    placeholder={t('edit.selectDeviceType') || 'Select Device Type'}
+                                                    searchPlaceholder={t('edit.searchOptions') || 'Search...'}
+                                                    label={<>{t('edit.deviceType') || 'Device Type'} <span className="text-red-500">*</span></>}
+                                                    isRTL={isRTL}
+                                                    allowCustom={true}
+                                                    customLabel={t('edit.addCustomOption') || 'Add custom option'}
+                                                />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.deviceBrand') || 'Brand'} <span className="text-red-500">*</span>
-                                                </label>
-                                                <input
-                                                    type="text"
+                                                <SelectDropdown
                                                     value={editFormData.deviceBrand || ''}
-                                                    onChange={(e) => handleEditFormChange('deviceBrand', e.target.value)}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                    required
+                                                    onChange={(value) => handleEditFormChange('deviceBrand', value)}
+                                                    options={deviceBrandOptions}
+                                                    placeholder={t('edit.selectBrand') || 'Select Brand'}
+                                                    searchPlaceholder={t('edit.searchOptions') || 'Search...'}
+                                                    label={<>{t('edit.deviceBrand') || 'Brand'} <span className="text-red-500">*</span></>}
+                                                    isRTL={isRTL}
+                                                    allowCustom={true}
+                                                    customLabel={t('edit.addCustomOption') || 'Add custom option'}
                                                 />
                                             </div>
                                         </div>
@@ -2996,14 +3114,16 @@ export default function MyReport() {
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                        {t('edit.deviceColor') || 'Color'}
-                                                    </label>
-                                                    <input
-                                                        type="text"
+                                                    <SelectDropdown
                                                         value={editFormData.deviceColor || ''}
-                                                        onChange={(e) => handleEditFormChange('deviceColor', e.target.value)}
-                                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                                        onChange={(value) => handleEditFormChange('deviceColor', value)}
+                                                        options={colorOptions}
+                                                        placeholder={t('edit.selectColor') || 'Select Color'}
+                                                        searchPlaceholder={t('edit.searchOptions') || 'Search...'}
+                                                        label={t('edit.deviceColor') || 'Color'}
+                                                        isRTL={isRTL}
+                                                        allowCustom={true}
+                                                        customLabel={t('edit.addCustomOption') || 'Add custom option'}
                                                     />
                                                 </div>
                                                 <div>
@@ -3028,38 +3148,35 @@ export default function MyReport() {
                                         {/* Vehicle Type and Brand - same for both */}
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.vehicleType') || 'Vehicle Type'} <span className="text-red-500">*</span>
-                                                </label>
-                                                <select
+                                                <SelectDropdown
                                                     value={editFormData.vehicleType || ''}
-                                                    onChange={(e) => handleEditFormChange('vehicleType', e.target.value)}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                    required
-                                                >
-                                                    <option value="">{t('edit.selectVehicleType') || 'Select Vehicle Type'}</option>
-                                                    <option value="car">{t('edit.vehicleTypes.car') || 'Car'}</option>
-                                                    <option value="motorcycle">{t('edit.vehicleTypes.motorcycle') || 'Motorcycle'}</option>
-                                                    <option value="bicycle">{t('edit.vehicleTypes.bicycle') || 'Bicycle'}</option>
-                                                    <option value="other">{t('edit.vehicleTypes.other') || 'Other'}</option>
-                                                </select>
+                                                    onChange={(value) => handleEditFormChange('vehicleType', value)}
+                                                    options={vehicleTypeOptions}
+                                                    placeholder={t('edit.selectVehicleType') || 'Select Vehicle Type'}
+                                                    searchPlaceholder={t('edit.searchOptions') || 'Search...'}
+                                                    label={<>{t('edit.vehicleType') || 'Vehicle Type'} <span className="text-red-500">*</span></>}
+                                                    isRTL={isRTL}
+                                                    allowCustom={true}
+                                                    customLabel={t('edit.addCustomOption') || 'Add custom option'}
+                                                />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    {t('edit.vehicleBrand') || 'Brand'} <span className="text-red-500">*</span>
-                                                </label>
-                                                <input
-                                                    type="text"
+                                                <SelectDropdown
                                                     value={editFormData.vehicleBrand || ''}
-                                                    onChange={(e) => handleEditFormChange('vehicleBrand', e.target.value)}
-                                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                                    required
+                                                    onChange={(value) => handleEditFormChange('vehicleBrand', value)}
+                                                    options={vehicleBrandOptions}
+                                                    placeholder={t('edit.selectBrand') || 'Select Brand'}
+                                                    searchPlaceholder={t('edit.searchOptions') || 'Search...'}
+                                                    label={<>{t('edit.vehicleBrand') || 'Brand'} <span className="text-red-500">*</span></>}
+                                                    isRTL={isRTL}
+                                                    allowCustom={true}
+                                                    customLabel={t('edit.addCustomOption') || 'Add custom option'}
                                                 />
                                             </div>
                                         </div>
                                         {/* Additional vehicle fields - only for missing reports */}
                                         {activeTab === 'missing' && (
-                                            <div className="grid grid-cols-4 gap-4">
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                                 <div>
                                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                                         {t('edit.vehicleModel') || 'Model'}
@@ -3072,14 +3189,16 @@ export default function MyReport() {
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                        {t('edit.vehicleColor') || 'Color'}
-                                                    </label>
-                                                    <input
-                                                        type="text"
+                                                    <SelectDropdown
                                                         value={editFormData.vehicleColor || ''}
-                                                        onChange={(e) => handleEditFormChange('vehicleColor', e.target.value)}
-                                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                                        onChange={(value) => handleEditFormChange('vehicleColor', value)}
+                                                        options={colorOptions}
+                                                        placeholder={t('edit.selectColor') || 'Select Color'}
+                                                        searchPlaceholder={t('edit.searchOptions') || 'Search...'}
+                                                        label={t('edit.vehicleColor') || 'Color'}
+                                                        isRTL={isRTL}
+                                                        allowCustom={true}
+                                                        customLabel={t('edit.addCustomOption') || 'Add custom option'}
                                                     />
                                                 </div>
                                                 <div>
@@ -3142,16 +3261,19 @@ export default function MyReport() {
                                 )}
 
                                 {/* Common Location Fields */}
-                                <div>
+                                <div className="relative z-50">
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         {t('edit.city') || 'City'} <span className="text-red-500">*</span>
                                     </label>
-                                    <input
-                                        type="text"
+                                    <SelectDropdown
                                         value={editFormData.city || ''}
-                                        onChange={(e) => handleEditFormChange('city', e.target.value)}
-                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                        required
+                                        onChange={(value) => handleEditFormChange('city', value)}
+                                        options={getCitiesForDropdown(locale)}
+                                        placeholder={t('edit.selectCity') || 'Select City'}
+                                        searchPlaceholder={t('edit.searchCity') || 'Search city...'}
+                                        isRTL={isRTL}
+                                        allowCustom={true}
+                                        customLabel={t('edit.addNewCity') || 'Add new city'}
                                     />
                                 </div>
 
