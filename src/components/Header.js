@@ -596,20 +596,22 @@ export default function Header() {
                     onClick={closeNotificationDetail}
                 >
                     <div 
-                        className={`w-full sm:max-w-md max-h-[85vh] sm:max-h-[80vh] bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden transform transition-all sm:m-4 ${isRTL ? 'text-right' : 'text-left'}`}
+                        className={`w-full sm:max-w-md bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden transform transition-all sm:m-4 ${isRTL ? 'text-right' : 'text-left'}`}
                         onClick={(e) => e.stopPropagation()}
                     >
+                        {/* Drag indicator for mobile */}
+                        <div className="flex justify-center pt-2 pb-1 sm:hidden">
+                            <div className="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                        </div>
+
                         {/* Modal Header */}
-                        <div className={`px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3 ${
+                        <div className={`px-4 sm:px-5 py-3 sm:py-4 flex items-center gap-3 ${
                             selectedNotification.type === 'REPORT_ACCEPTED' 
                                 ? 'bg-green-50 dark:bg-green-900/20' 
                                 : selectedNotification.type === 'REPORT_REJECTED'
                                 ? 'bg-red-50 dark:bg-red-900/20'
                                 : 'bg-gray-50 dark:bg-gray-800/50'
                         }`}>
-                            {/* Drag indicator for mobile */}
-                            <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full sm:hidden"></div>
-                            
                             {getNotificationIcon(selectedNotification.type)}
                             <div className="flex-1 min-w-0">
                                 <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
@@ -621,7 +623,7 @@ export default function Header() {
                             </div>
                             <button
                                 onClick={closeNotificationDetail}
-                                className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
+                                className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors sm:flex hidden"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -630,15 +632,15 @@ export default function Header() {
                         </div>
 
                         {/* Modal Body */}
-                        <div className="px-4 sm:px-5 py-4 overflow-y-auto">
-                            <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
+                        <div className="px-4 sm:px-5 py-3 sm:py-4">
+                            <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
                                 {selectedNotification.message}
                             </p>
 
                             {/* Additional data display */}
                             {selectedNotification.data?.reason && (
-                                <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                                    <p className="text-xs font-medium text-red-600 dark:text-red-400 mb-1">
+                                <div className="mt-3 p-2.5 sm:p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                                    <p className="text-xs font-medium text-red-600 dark:text-red-400 mb-0.5">
                                         {tNotif('reason') || 'Reason:'}
                                     </p>
                                     <p className="text-sm text-red-700 dark:text-red-300">
@@ -646,43 +648,41 @@ export default function Header() {
                                     </p>
                                 </div>
                             )}
-
-                            {/* Report link if available */}
-                            {selectedNotification.data?.reportId && (
-                                <div className="mt-4">
-                                    <Link
-                                        href="/my-report"
-                                        onClick={() => {
-                                            closeNotificationDetail();
-                                            setIsNotificationsOpen(false);
-                                        }}
-                                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors w-full sm:w-auto justify-center"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                        {tNotif('viewReport') || 'View Report'}
-                                    </Link>
-                                </div>
-                            )}
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="px-4 sm:px-5 py-3 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex flex-col-reverse sm:flex-row justify-end gap-2">
-                            <button
-                                onClick={closeNotificationDetail}
-                                className="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors w-full sm:w-auto"
-                            >
-                                {tNotif('close') || 'Close'}
-                            </button>
+                        <div className="px-4 sm:px-5 py-3 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex gap-2">
+                            {/* View Report button - only show if reportId exists */}
+                            {selectedNotification.data?.reportId && (
+                                <Link
+                                    href="/my-report"
+                                    onClick={() => {
+                                        closeNotificationDetail();
+                                        setIsNotificationsOpen(false);
+                                    }}
+                                    className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <span className="hidden sm:inline">{tNotif('viewReport') || 'View Report'}</span>
+                                    <span className="sm:hidden">{tNotif('viewReport') || 'View'}</span>
+                                </Link>
+                            )}
                             <button
                                 onClick={() => {
                                     deleteNotification(selectedNotification.id);
                                     closeNotificationDetail();
                                 }}
-                                className="px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors w-full sm:w-auto"
+                                className={`${selectedNotification.data?.reportId ? '' : 'flex-1'} px-4 py-2.5 text-sm font-medium text-white bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 rounded-lg transition-colors`}
                             >
                                 {tNotif('delete') || 'Delete'}
+                            </button>
+                            <button
+                                onClick={closeNotificationDetail}
+                                className={`${selectedNotification.data?.reportId ? '' : 'flex-1'} px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-lg transition-colors`}
+                            >
+                                {tNotif('close') || 'Close'}
                             </button>
                         </div>
                     </div>

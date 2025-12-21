@@ -130,19 +130,15 @@ export async function notifyReportAccepted(userId, reportId, reportTitle, option
 export async function notifyReportRejected(userId, reportId, reportTitle, options = {}) {
     const { reason, locale = 'en' } = options;
     
-    // Localized messages
+    // Localized messages (reason is stored in data, not in message to avoid duplication)
     const messages = {
         en: {
             title: 'Report Rejected',
-            message: reason 
-                ? `Your report "${reportTitle}" has been rejected. Reason: ${reason}`
-                : `Your report "${reportTitle}" has been rejected.`,
+            message: `Your report "${reportTitle}" has been rejected.`,
         },
         ar: {
             title: 'تم رفض البلاغ',
-            message: reason
-                ? `تم رفض بلاغك "${reportTitle}". السبب: ${reason}`
-                : `تم رفض بلاغك "${reportTitle}".`,
+            message: `تم رفض بلاغك "${reportTitle}".`,
         },
     };
 
