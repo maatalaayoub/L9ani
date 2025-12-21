@@ -1,0 +1,32 @@
+{
+    "title": "الإشعارات",
+    "noNotifications": "لا توجد إشعارات",
+    "noUnreadNotifications": "لا توجد إشعارات غير مقروءة",
+    "markAllAsRead": "تحديد الكل كمقروء",
+    "markAsRead": "تحديد كمقروء",
+    "viewAll": "عرض جميع الإشعارات",
+    "new": "جديد",
+    "unread": "غير مقروء",
+    "all": "الكل",
+    "loadMore": "تحميل المزيد",
+    "justNow": "الآن",
+    "minutesAgo": "منذ دقيقة واحدة",
+    "minutesAgo_plural": "منذ {{count}} دقائق",
+    "hoursAgo": "منذ ساعة واحدة",
+    "hoursAgo_plural": "منذ {{count}} ساعات",
+    "daysAgo": "منذ يوم واحد",
+    "daysAgo_plural": "منذ {{count}} أيام",
+    "types": {
+        "REPORT_ACCEPTED": "تم قبول البلاغ",
+        "REPORT_REJECTED": "تم رفض البلاغ"
+    },
+    "messages": {
+        "reportAccepted": "تمت مراجعة بلاغك \"{{title}}\" وقبوله.",
+        "reportRejected": "تم رفض بلاغك \"{{title}}\".",
+        "reportRejectedWithReason": "تم رفض بلاغك \"{{title}}\". السبب: {{reason}}"
+    },
+    "errors": {
+        "fetchFailed": "فشل تحميل الإشعارات",
+        "updateFailed": "فشل تحديث الإشعار"
+    }
+}

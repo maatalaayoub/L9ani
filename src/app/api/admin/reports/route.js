@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { notifyReportAccepted, notifyReportRejected } from '@/lib/notifications';
 
 // Detail table names mapping
 const DETAIL_TABLE_MAP = {
@@ -335,12 +336,33 @@ export async function PATCH(request) {
             return NextResponse.json({ error: 'Report not found' }, { status: 404 });
         }
 
+        const updatedReport = data[0];
         console.log('[API Admin Reports PATCH] Updated report:', reportId, 'to status:', newStatus);
+
+        // Send notification to the report owner
+        if (updatedReport.user_id) {
+            try {
+                // Get report details for the notification title
+                const reportDetails = await getReportDetails(reportId, updatedReport.report_type);
+                const reportTitle = getReportTitle(updatedReport.report_type, reportDetails) || `Report #${reportId.slice(0, 8)}`;
+
+                if (action === 'approve') {
+                    await notifyReportAccepted(updatedReport.user_id, reportId, reportTitle);
+                    console.log('[API Admin Reports PATCH] Sent approval notification to user:', updatedReport.user_id);
+                } else if (action === 'reject') {
+                    await notifyReportRejected(updatedReport.user_id, reportId, reportTitle, { reason: rejectionReason });
+                    console.log('[API Admin Reports PATCH] Sent rejection notification to user:', updatedReport.user_id);
+                }
+            } catch (notifyErr) {
+                // Don't fail the request if notification fails
+                console.error('[API Admin Reports PATCH] Error sending notification:', notifyErr);
+            }
+        }
 
         return NextResponse.json({
             success: true,
             message: `Report ${newStatus} successfully`,
-            report: data[0]
+            report: updatedReport
         });
     } catch (err) {
         console.error('[API Admin Reports PATCH] Exception:', err);
