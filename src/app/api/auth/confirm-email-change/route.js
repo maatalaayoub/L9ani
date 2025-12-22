@@ -7,11 +7,14 @@ export async function GET(request) {
     const userId = requestUrl.searchParams.get('user_id');
     const origin = requestUrl.origin;
 
+    // Default to English locale for redirects
+    const profileUrl = `${origin}/en/profile`;
+
     console.log('[ConfirmEmailChange] Starting');
 
     if (!token || !userId) {
         console.error('[ConfirmEmailChange] Missing token or user_id');
-        return NextResponse.redirect(`${origin}/profile?error=invalid_link`);
+        return NextResponse.redirect(`${profileUrl}?error=invalid_link`);
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -19,7 +22,7 @@ export async function GET(request) {
 
     if (!supabaseUrl || !supabaseServiceKey) {
         console.error('[ConfirmEmailChange] Missing Supabase configuration');
-        return NextResponse.redirect(`${origin}/profile?error=configuration_error`);
+        return NextResponse.redirect(`${profileUrl}?error=configuration_error`);
     }
 
     try {
@@ -39,13 +42,13 @@ export async function GET(request) {
 
         if (fetchError || !profile) {
             console.error('[ConfirmEmailChange] Profile not found:', fetchError);
-            return NextResponse.redirect(`${origin}/profile?error=user_not_found`);
+            return NextResponse.redirect(`${profileUrl}?error=user_not_found`);
         }
 
         // Verify token
         if (profile.email_change_token !== token) {
             console.error('[ConfirmEmailChange] Token mismatch');
-            return NextResponse.redirect(`${origin}/profile?error=invalid_token`);
+            return NextResponse.redirect(`${profileUrl}?error=invalid_token`);
         }
 
         // Check expiry
@@ -60,14 +63,14 @@ export async function GET(request) {
                     email_change_token_expires: null,
                 })
                 .eq('auth_user_id', userId);
-            return NextResponse.redirect(`${origin}/profile?error=token_expired`);
+            return NextResponse.redirect(`${profileUrl}?error=token_expired`);
         }
 
         const newEmail = profile.pending_email;
 
         if (!newEmail) {
             console.error('[ConfirmEmailChange] No pending email');
-            return NextResponse.redirect(`${origin}/profile?error=no_pending_change`);
+            return NextResponse.redirect(`${profileUrl}?error=no_pending_change`);
         }
 
         // Update the email in auth.users using admin API
@@ -78,7 +81,7 @@ export async function GET(request) {
 
         if (authError) {
             console.error('[ConfirmEmailChange] Auth update error:', authError);
-            return NextResponse.redirect(`${origin}/profile?error=update_failed`);
+            return NextResponse.redirect(`${profileUrl}?error=update_failed`);
         }
 
         // Update the profile
@@ -98,10 +101,10 @@ export async function GET(request) {
         }
 
         console.log('[ConfirmEmailChange] Email changed successfully to:', newEmail);
-        return NextResponse.redirect(`${origin}/profile?email_changed=true`);
+        return NextResponse.redirect(`${profileUrl}?email_changed=true`);
 
     } catch (err) {
         console.error('[ConfirmEmailChange] Unexpected error:', err);
-        return NextResponse.redirect(`${origin}/profile?error=unexpected_error`);
+        return NextResponse.redirect(`${profileUrl}?error=unexpected_error`);
     }
 }
