@@ -1478,8 +1478,8 @@ export default function ProfilePage() {
                                     {/* OAuth users without password - prompt to set password first */}
                                     {isOAuthUser && !hasPassword ? (
                                         <div className="text-center py-4">
-                                            <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                                                <svg className="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                                <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                                 </svg>
                                             </div>
@@ -1492,7 +1492,7 @@ export default function ProfilePage() {
                                                     setIsEmailChangeModalOpen(false);
                                                     setShowPasswordSetup(true);
                                                 }}
-                                                className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition-colors"
+                                                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors"
                                             >
                                                 {t('emailChange.passwordRequired.button') || 'Set Password'}
                                             </button>
@@ -1579,8 +1579,8 @@ export default function ProfilePage() {
                             {/* Step 3: Email Sent Success */}
                             {emailChangeStep === 3 && (
                                 <div className="text-center py-4">
-                                    <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <svg className="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                                         </svg>
                                     </div>
@@ -1588,7 +1588,7 @@ export default function ProfilePage() {
                                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                                         {t('emailChange.step2.emailSentDescription')}
                                     </p>
-                                    <p className="text-sm font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-4 py-2 rounded-lg inline-block">
+                                    <p className="text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-lg inline-block">
                                         {newEmail}
                                     </p>
                                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">
