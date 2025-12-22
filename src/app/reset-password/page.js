@@ -175,9 +175,6 @@ export default function ResetPasswordPage() {
                 return; // Don't continue with Supabase flow
             }
         }
-                console.log(`  ${key}:`, value);
-            }
-        }
 
 
         const handleRecovery = async () => {
