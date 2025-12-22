@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Confirm Your Email - Lqani.ma</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, Arial, sans-serif;">
+    
+    <!-- Main Container -->
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff;">
+        <tr>
+            <td align="center" style="padding: 48px 24px;">
+                
+                <!-- Content -->
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 480px;">
+                    
+                    <!-- Logo Section -->
+                    <tr>
+                        <td align="center" style="padding: 0 0 40px 0;">
+                            <img src="https://nqzjimrupjergwtwzlok.supabase.co/storage/v1/object/public/logo/Untitled%20folder/logo.svg" alt="Lqani.ma" width="140" height="40" style="display: block;">
+                        </td>
+                    </tr>
+
+                    <!-- Icon -->
+                    <tr>
+                        <td align="center" style="padding: 0 0 32px 0;">
+                            <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%; display: inline-block;">
+                                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="80" height="80">
+                                    <tr>
+                                        <td align="center" valign="middle">
+                                            <span style="font-size: 36px; line-height: 1;">✉️</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Title -->
+                    <tr>
+                        <td align="center" style="padding: 0 0 16px 0;">
+                            <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #1e293b; line-height: 1.4;">
+                                Confirm Your Email
+                            </h1>
+                        </td>
+                    </tr>
+
+                    <!-- Description -->
+                    <tr>
+                        <td align="center" style="padding: 0 0 40px 0;">
+                            <p style="margin: 0; font-size: 16px; color: #64748b; line-height: 1.7; text-align: center;">
+                                Welcome to Lqani.ma! Please confirm your email address to activate your account and start using our platform.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- CTA Button -->
+                    <tr>
+                        <td align="center" style="padding: 0 0 40px 0;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td align="center" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 14px;">
+                                        <a href="{{ .SiteURL }}api/auth/confirm?token_hash={{ .TokenHash }}&type=signup" 
+                                           target="_blank"
+                                           style="display: inline-block; padding: 18px 56px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600;">
+                                            Confirm Email
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Expiry Notice -->
+                    <tr>
+                        <td align="center" style="padding: 0 0 40px 0;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                                <tr>
+                                    <td style="background-color: #ecfdf5; border-radius: 12px; padding: 16px 20px;">
+                                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                                            <tr>
+                                                <td width="32" valign="top">
+                                                    <span style="font-size: 20px;">⏰</span>
+                                                </td>
+                                                <td style="padding-left: 12px;">
+                                                    <p style="margin: 0; font-size: 14px; color: #065f46; line-height: 1.6;">
+                                                        This link expires in <strong>24 hours</strong>
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Divider -->
+                    <tr>
+                        <td style="padding: 0 0 32px 0;">
+                            <div style="height: 1px; background-color: #e2e8f0;"></div>
+                        </td>
+                    </tr>
+
+                    <!-- Alternative Link -->
+                    <tr>
+                        <td align="center" style="padding: 0 0 32px 0;">
+                            <p style="margin: 0 0 12px 0; font-size: 13px; color: #94a3b8; line-height: 1.6; text-align: center;">
+                                If the button doesn't work, copy and paste this link into your browser:
+                            </p>
+                            <p style="margin: 0; font-size: 12px; color: #10b981; word-break: break-all; line-height: 1.6; text-align: center; font-family: monospace; background-color: #f1f5f9; padding: 12px 16px; border-radius: 8px;">
+                                {{ .SiteURL }}api/auth/confirm?token_hash={{ .TokenHash }}&type=signup
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Security Notice -->
+                    <tr>
+                        <td align="center" style="padding: 0 0 48px 0;">
+                            <p style="margin: 0; font-size: 13px; color: #94a3b8; line-height: 1.6; text-align: center;">
+                                If you didn't create an account on Lqani.ma, you can safely ignore this email.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Divider -->
+                    <tr>
+                        <td style="padding: 0 0 32px 0;">
+                            <div style="height: 1px; background-color: #e2e8f0;"></div>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td align="center" style="padding: 0 0 16px 0;">
+                            <p style="margin: 0; font-size: 13px; color: #64748b;">
+                                Need help? 
+                                <a href="mailto:support@lqani.ma" style="color: #10b981; text-decoration: none; font-weight: 500;">Contact us</a>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="center" style="padding: 0 0 16px 0;">
+                            <p style="margin: 0; font-size: 12px; color: #94a3b8;">
+                                © 2025 Lqani.ma. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="center">
+                            <p style="margin: 0; font-size: 12px; color: #94a3b8;">
+                                <a href="{{ .SiteURL }}privacy" style="color: #64748b; text-decoration: none;">Privacy Policy</a>
+                                <span style="color: #cbd5e1; margin: 0 8px;">•</span>
+                                <a href="{{ .SiteURL }}about" style="color: #64748b; text-decoration: none;">Terms of Service</a>
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

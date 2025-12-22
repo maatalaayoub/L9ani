@@ -48,9 +48,8 @@ export default function ProfilePage() {
 
     // Email Change State
     const [isEmailChangeModalOpen, setIsEmailChangeModalOpen] = useState(false);
-    const [emailChangeStep, setEmailChangeStep] = useState(1); // 1: Input New Email, 2: Verify Code
+    const [emailChangeStep, setEmailChangeStep] = useState(1); // 1: Input New Email, 2: Email Sent Success
     const [newEmail, setNewEmail] = useState('');
-    const [emailChangeCode, setEmailChangeCode] = useState('');
     const [emailChangeError, setEmailChangeError] = useState('');
     const [isChangingEmail, setIsChangingEmail] = useState(false);
 
@@ -423,12 +422,23 @@ export default function ProfilePage() {
                 throw new Error(checkData.message || t('errors.emailInUse'));
             }
 
-            // 2. Request Change
-            const { data: code, error } = await supabase.rpc('request_email_change', { new_email: newEmail });
-            if (error) throw error;
+            // 2. Request email change via custom API (sends confirmation link to NEW email only)
+            const response = await fetch('/api/auth/request-email-change', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: user.id, newEmail }),
+            });
+            
+            const result = await response.json();
+            
+            if (!response.ok) {
+                const errorMsg = result.details 
+                    ? `${result.error}: ${result.details}` 
+                    : (result.error || 'Failed to request email change');
+                throw new Error(errorMsg);
+            }
 
-            console.log('[TESTING] Security Code for Email Change:', code);
-            // Move to step 2
+            // Move to step 2 (email sent success)
             setEmailChangeStep(2);
         } catch (err) {
             console.error('Email change request error:', err);
@@ -446,37 +456,6 @@ export default function ProfilePage() {
                     </span>
                 );
             }
-        } finally {
-            setIsChangingEmail(false);
-        }
-    };
-
-    const handleConfirmEmailChange = async () => {
-        if (!emailChangeCode || emailChangeCode.length < 6) return;
-        setIsChangingEmail(true);
-        setEmailChangeError('');
-        try {
-            // Call our API route which has admin privileges to update auth.users
-            const response = await fetch('/api/auth/confirm-change', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: user.id, code: emailChangeCode })
-            });
-            const result = await response.json();
-
-            if (!response.ok) throw new Error(result.error || t('errors.updateEmailFailed'));
-
-            // Success
-            setEmailChangeStep(3); // Success state
-
-            // Reload page after a delay
-            setTimeout(() => {
-                window.location.reload();
-            }, 3000);
-
-        } catch (err) {
-            console.error('Confirm change error:', err);
-            setEmailChangeError(err.message || t('errors.verifyCodeFailed'));
         } finally {
             setIsChangingEmail(false);
         }
@@ -1235,7 +1214,6 @@ export default function ProfilePage() {
                                                 setIsEmailChangeModalOpen(true);
                                                 setEmailChangeStep(1);
                                                 setNewEmail('');
-                                                setEmailChangeCode('');
                                                 setEmailChangeError('');
                                             }}
                                             className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-gray-400 hover:text-blue-500 transition-colors"
@@ -1442,44 +1420,28 @@ export default function ProfilePage() {
                             )}
 
                             {emailChangeStep === 2 && (
-                                <>
-                                    <div className="text-center mb-6">
-                                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('emailChange.step2.title')}</h3>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                                            {t('emailChange.step2.description')} <span className="font-semibold text-gray-900 dark:text-white">{t('emailChange.step2.currentEmail')}</span> ({user.email}) {t('emailChange.step2.authorize')}
-                                        </p>
+                                <div className="text-center py-4">
+                                    <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <svg className="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                        </svg>
                                     </div>
-
-                                    <input
-                                        type="text"
-                                        maxLength={6}
-                                        value={emailChangeCode}
-                                        onChange={(e) => setEmailChangeCode(e.target.value.replace(/[^0-9]/g, ''))}
-                                        placeholder="000 000"
-                                        className="w-full text-center text-3xl font-bold tracking-[0.5em] px-4 py-4 bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white mb-4 focus:ring-2 focus:ring-blue-500 outline-none"
-                                    />
-
-                                    {emailChangeError && (
-                                        <p className="text-sm text-red-500 mb-4 text-center">{emailChangeError}</p>
-                                    )}
-
+                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t('emailChange.step2.emailSentTitle')}</h3>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                                        {t('emailChange.step2.emailSentDescription')}
+                                    </p>
+                                    <p className="text-sm font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-4 py-2 rounded-lg inline-block">
+                                        {newEmail}
+                                    </p>
+                                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">
+                                        {t('emailChange.step2.checkInbox')}
+                                    </p>
                                     <button
-                                        onClick={handleConfirmEmailChange}
-                                        disabled={isChangingEmail || emailChangeCode.length < 6}
-                                        className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors disabled:opacity-50 flex justify-center"
+                                        onClick={() => setIsEmailChangeModalOpen(false)}
+                                        className="w-full mt-6 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-medium rounded-xl transition-colors"
                                     >
-                                        {isChangingEmail ? t('emailChange.step2.verifying') : t('emailChange.step2.button')}
+                                        {t('emailChange.step2.closeButton')}
                                     </button>
-                                </>
-                            )}
-
-                            {emailChangeStep === 3 && (
-                                <div className="text-center py-8">
-                                    <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                                    </div>
-                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t('emailChange.step3.title')}</h3>
-                                    <p className="text-gray-500 dark:text-gray-400">{t('emailChange.step3.description')}</p>
                                 </div>
                             )}
                         </div>

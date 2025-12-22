@@ -135,22 +135,16 @@
     "emailChange": {
         "title": "Change Email",
         "step1": {
-            "description": "Enter your new email address. We will verify your identity first.",
+            "description": "Enter your new email address. We'll send a confirmation link to verify the change.",
             "placeholder": "New Email Address",
-            "button": "Continue",
-            "sending": "Sending Code..."
+            "button": "Send Confirmation Link",
+            "sending": "Sending..."
         },
         "step2": {
-            "title": "Security Check",
-            "description": "Please enter the code sent to your",
-            "currentEmail": "current email",
-            "authorize": "to authorize this change.",
-            "button": "Confirm Change",
-            "verifying": "Verifying..."
-        },
-        "step3": {
-            "title": "Email Updated!",
-            "description": "Please verify your new email address."
+            "emailSentTitle": "Confirmation Email Sent!",
+            "emailSentDescription": "We've sent a confirmation link to your new email address. Please click the link to complete the email change.",
+            "checkInbox": "Check your inbox and spam folder.",
+            "closeButton": "Close"
         }
     },
     "dangerZone": {

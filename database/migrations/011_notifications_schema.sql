@@ -74,22 +74,22 @@ CREATE POLICY "Users can view their own notifications"
 ON notifications
 FOR SELECT
 TO authenticated
-USING (auth.uid() = user_id);
+USING ((SELECT auth.uid()) = user_id);
 
 -- Policy: Users can UPDATE only their own notifications (for marking as read)
 CREATE POLICY "Users can update their own notifications"
 ON notifications
 FOR UPDATE
 TO authenticated
-USING (auth.uid() = user_id)
-WITH CHECK (auth.uid() = user_id);
+USING ((SELECT auth.uid()) = user_id)
+WITH CHECK ((SELECT auth.uid()) = user_id);
 
 -- Policy: Users can DELETE only their own notifications
 CREATE POLICY "Users can delete their own notifications"
 ON notifications
 FOR DELETE
 TO authenticated
-USING (auth.uid() = user_id);
+USING ((SELECT auth.uid()) = user_id);
 
 -- Policy: Users CANNOT insert notifications directly (must go through service role)
 -- No INSERT policy for authenticated role = users cannot insert
@@ -154,7 +154,7 @@ BEGIN
     UPDATE notifications
     SET is_read = true
     WHERE id = p_notification_id
-    AND user_id = auth.uid();
+    AND user_id = (SELECT auth.uid());
     
     RETURN FOUND;
 END;
@@ -177,7 +177,7 @@ DECLARE
 BEGIN
     UPDATE notifications
     SET is_read = true
-    WHERE user_id = auth.uid()
+    WHERE user_id = (SELECT auth.uid())
     AND is_read = false;
     
     GET DIAGNOSTICS v_count = ROW_COUNT;
@@ -202,7 +202,7 @@ DECLARE
 BEGIN
     SELECT COUNT(*)::INTEGER INTO v_count
     FROM notifications
-    WHERE user_id = auth.uid()
+    WHERE user_id = (SELECT auth.uid())
     AND is_read = false;
     
     RETURN v_count;
