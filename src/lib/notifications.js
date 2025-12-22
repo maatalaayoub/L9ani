@@ -18,6 +18,9 @@ export const NotificationType = {
     REPORT_ACCEPTED: 'REPORT_ACCEPTED',
     REPORT_REJECTED: 'REPORT_REJECTED',
     
+    // Account-related notifications
+    EMAIL_CHANGED: 'EMAIL_CHANGED',
+    
     // Future notification types (add here as needed)
     // REPORT_COMMENT: 'REPORT_COMMENT',
     // REPORT_MATCH_FOUND: 'REPORT_MATCH_FOUND',

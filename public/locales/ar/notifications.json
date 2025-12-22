@@ -23,12 +23,14 @@
     "daysAgo_plural": "منذ {{count}} أيام",
     "types": {
         "REPORT_ACCEPTED": "تم قبول البلاغ",
-        "REPORT_REJECTED": "تم رفض البلاغ"
+        "REPORT_REJECTED": "تم رفض البلاغ",
+        "EMAIL_CHANGED": "تم تغيير البريد الإلكتروني"
     },
     "messages": {
         "reportAccepted": "تمت مراجعة بلاغك \"{{title}}\" وقبوله.",
         "reportRejected": "تم رفض بلاغك \"{{title}}\".",
-        "reportRejectedWithReason": "تم رفض بلاغك \"{{title}}\". السبب: {{reason}}"
+        "reportRejectedWithReason": "تم رفض بلاغك \"{{title}}\". السبب: {{reason}}",
+        "emailChanged": "تم تغيير بريدك الإلكتروني من {{oldEmail}} إلى {{newEmail}}."
     },
     "errors": {
         "fetchFailed": "فشل تحميل الإشعارات",

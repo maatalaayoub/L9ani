@@ -67,6 +67,7 @@ export async function GET(request) {
         }
 
         const newEmail = profile.pending_email;
+        const oldEmail = profile.email;
 
         if (!newEmail) {
             console.error('[ConfirmEmailChange] No pending email');
@@ -92,12 +93,34 @@ export async function GET(request) {
                 pending_email: null,
                 email_change_token: null,
                 email_change_token_expires: null,
+                last_email_change: new Date().toISOString(),
             })
             .eq('auth_user_id', userId);
 
         if (profileError) {
             console.error('[ConfirmEmailChange] Profile update error:', profileError);
             // Auth was updated but profile failed - still consider success
+        }
+
+        // Create a notification for the user
+        try {
+            await supabaseAdmin
+                .from('notifications')
+                .insert({
+                    user_id: userId,
+                    type: 'EMAIL_CHANGED',
+                    title: 'Email Changed Successfully',
+                    message: `Your email has been changed from ${oldEmail} to ${newEmail}.`,
+                    data: {
+                        old_email: oldEmail,
+                        new_email: newEmail,
+                        changed_at: new Date().toISOString(),
+                    },
+                });
+            console.log('[ConfirmEmailChange] Notification created for user:', userId);
+        } catch (notifError) {
+            console.error('[ConfirmEmailChange] Failed to create notification:', notifError);
+            // Don't fail the whole operation if notification fails
         }
 
         console.log('[ConfirmEmailChange] Email changed successfully to:', newEmail);

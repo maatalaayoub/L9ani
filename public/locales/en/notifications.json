@@ -23,12 +23,14 @@
     "daysAgo_plural": "{{count}} days ago",
     "types": {
         "REPORT_ACCEPTED": "Report Accepted",
-        "REPORT_REJECTED": "Report Rejected"
+        "REPORT_REJECTED": "Report Rejected",
+        "EMAIL_CHANGED": "Email Changed"
     },
     "messages": {
         "reportAccepted": "Your report \"{{title}}\" has been reviewed and accepted.",
         "reportRejected": "Your report \"{{title}}\" has been rejected.",
-        "reportRejectedWithReason": "Your report \"{{title}}\" has been rejected. Reason: {{reason}}"
+        "reportRejectedWithReason": "Your report \"{{title}}\" has been rejected. Reason: {{reason}}",
+        "emailChanged": "Your email has been changed from {{oldEmail}} to {{newEmail}}."
     },
     "errors": {
         "fetchFailed": "Failed to load notifications",
