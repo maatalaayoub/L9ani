@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { Resend } from 'resend';
 import crypto from 'crypto';
+import { notifyEmailVerificationSent } from '@/lib/notifications';
 
 export async function POST(request) {
     try {
@@ -183,6 +184,9 @@ export async function POST(request) {
                         // Don't fail signup if email fails - user can request resend later
                     } else {
                         console.log(`[Signup] Verification email sent to ${email}`);
+                        
+                        // Create notification that verification email was sent
+                        await notifyEmailVerificationSent(data.user.id, email, { locale: 'en' });
                     }
                 } catch (emailErr) {
                     console.error('[Signup] Email service error:', emailErr);
@@ -190,6 +194,9 @@ export async function POST(request) {
                 }
             } else {
                 console.log(`[TESTING] Verification token for ${email}: ${verificationToken}`);
+                
+                // Still create notification even in testing mode
+                await notifyEmailVerificationSent(data.user.id, email, { locale: 'en' });
             }
 
             // Create default settings for the new user

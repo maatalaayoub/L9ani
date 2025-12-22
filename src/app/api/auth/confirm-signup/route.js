@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { notifyEmailVerified } from '@/lib/notifications';
 
 export async function GET(request) {
     try {
@@ -81,6 +82,9 @@ export async function GET(request) {
         }
 
         console.log('[ConfirmSignup] Email verified successfully for user:', userId);
+
+        // Create notification that email was verified
+        await notifyEmailVerified(userId, profile.email, { locale: 'en' });
 
         // Redirect to profile with success message
         return NextResponse.redirect(`${baseUrl}/en/profile?email_verified=true`);

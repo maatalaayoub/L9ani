@@ -20,11 +20,12 @@ export const NotificationType = {
     
     // Account-related notifications
     EMAIL_CHANGED: 'EMAIL_CHANGED',
+    EMAIL_VERIFICATION_SENT: 'EMAIL_VERIFICATION_SENT',
+    EMAIL_VERIFIED: 'EMAIL_VERIFIED',
     
     // Future notification types (add here as needed)
     // REPORT_COMMENT: 'REPORT_COMMENT',
     // REPORT_MATCH_FOUND: 'REPORT_MATCH_FOUND',
-    // ACCOUNT_VERIFIED: 'ACCOUNT_VERIFIED',
     // SYSTEM_ANNOUNCEMENT: 'SYSTEM_ANNOUNCEMENT',
 };
 
@@ -157,6 +158,78 @@ export async function notifyReportRejected(userId, reportId, reportTitle, option
             reportTitle,
             status: 'rejected',
             reason: reason || null,
+        },
+    });
+}
+
+/**
+ * Creates an "Email Verification Sent" notification
+ * 
+ * @param {string} userId - User ID to notify
+ * @param {string} email - The email address verification was sent to
+ * @param {Object} [options={}] - Additional options
+ * @param {string} [options.locale='en'] - Locale for message translation
+ * @returns {Promise<{success: boolean, notification?: Object, error?: string}>}
+ */
+export async function notifyEmailVerificationSent(userId, email, options = {}) {
+    const { locale = 'en' } = options;
+    
+    const messages = {
+        en: {
+            title: 'Verification Email Sent',
+            message: `A verification link has been sent to ${email}. Please check your inbox and click the link to verify your account.`,
+        },
+        ar: {
+            title: 'تم إرسال بريد التحقق',
+            message: `تم إرسال رابط التحقق إلى ${email}. يرجى التحقق من صندوق الوارد والنقر على الرابط لتفعيل حسابك.`,
+        },
+    };
+
+    const msg = messages[locale] || messages.en;
+
+    return createNotification({
+        userId,
+        type: NotificationType.EMAIL_VERIFICATION_SENT,
+        title: msg.title,
+        message: msg.message,
+        data: {
+            email,
+        },
+    });
+}
+
+/**
+ * Creates an "Email Verified" notification
+ * 
+ * @param {string} userId - User ID to notify
+ * @param {string} email - The email address that was verified
+ * @param {Object} [options={}] - Additional options
+ * @param {string} [options.locale='en'] - Locale for message translation
+ * @returns {Promise<{success: boolean, notification?: Object, error?: string}>}
+ */
+export async function notifyEmailVerified(userId, email, options = {}) {
+    const { locale = 'en' } = options;
+    
+    const messages = {
+        en: {
+            title: 'Email Verified Successfully',
+            message: `Your email address ${email} has been verified. Your account is now fully active!`,
+        },
+        ar: {
+            title: 'تم التحقق من البريد الإلكتروني بنجاح',
+            message: `تم التحقق من بريدك الإلكتروني ${email}. حسابك نشط بالكامل الآن!`,
+        },
+    };
+
+    const msg = messages[locale] || messages.en;
+
+    return createNotification({
+        userId,
+        type: NotificationType.EMAIL_VERIFIED,
+        title: msg.title,
+        message: msg.message,
+        data: {
+            email,
         },
     });
 }

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import crypto from 'crypto';
+import { notifyEmailVerificationSent } from '@/lib/notifications';
 
 export async function POST(request) {
     try {
@@ -95,6 +96,10 @@ export async function POST(request) {
         }
 
         console.log('[ResendVerification] Email sent successfully to:', email);
+
+        // Create notification that verification email was sent
+        await notifyEmailVerificationSent(profile.auth_user_id, email, { locale: 'en' });
+
         return NextResponse.json({ 
             success: true, 
             message: 'Verification email sent successfully' 
