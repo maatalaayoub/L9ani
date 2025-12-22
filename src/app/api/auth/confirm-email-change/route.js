@@ -139,9 +139,7 @@ export async function GET(request) {
 
         // Create a notification for the user
         try {
-            const notificationMessage = hasOAuthIdentity
-                ? `Your email has been changed from ${oldEmail} to ${newEmail}. Your Google login has been disconnected. Please set a password to continue logging in.`
-                : `Your email has been changed from ${oldEmail} to ${newEmail}.`;
+            const notificationMessage = `Your email has been changed from ${oldEmail} to ${newEmail}.`;
 
             await supabaseAdmin
                 .from('notifications')
@@ -154,7 +152,6 @@ export async function GET(request) {
                         old_email: oldEmail,
                         new_email: newEmail,
                         changed_at: new Date().toISOString(),
-                        had_oauth: hasOAuthIdentity,
                     },
                 });
             console.log('[ConfirmEmailChange] Notification created for user:', userId);
