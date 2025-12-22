@@ -591,6 +591,31 @@ export function AuthProvider({ children }) {
         await checkAdminStatus(user.id, token);
     };
 
+    // Force refresh profile from database (useful after email change)
+    const refreshProfile = async () => {
+        if (!user) return null;
+        console.log('[Profile] Force refreshing profile for user:', user.id);
+        
+        // Clear cached profile
+        storeProfile(null);
+        
+        // Also refresh the Supabase session to get updated email
+        try {
+            const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+            if (refreshError) {
+                console.error('[Profile] Error refreshing session:', refreshError);
+            } else if (refreshData?.user) {
+                console.log('[Profile] Session refreshed, new email:', refreshData.user.email);
+                setUser(refreshData.user);
+            }
+        } catch (err) {
+            console.error('[Profile] Error refreshing session:', err);
+        }
+        
+        // Fetch fresh profile
+        return await fetchProfile(user.id, null, true);
+    };
+
     // Get access token for API calls
     const getAccessToken = async () => {
         try {
@@ -643,6 +668,8 @@ export function AuthProvider({ children }) {
             adminRole,
             isAdminChecked,
             refreshAdminStatus,
+            // Profile refresh (useful after email change)
+            refreshProfile,
             // Token access for API calls
             getAccessToken
         }}>

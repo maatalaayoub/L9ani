@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import PhoneInput from 'react-phone-input-2';
@@ -12,8 +12,9 @@ import LoginDialog from '@/components/LoginDialog';
 import Image from 'next/image';
 
 export default function ProfilePage() {
-    const { user, profile, isAuthLoading, logout } = useAuth();
+    const { user, profile, isAuthLoading, logout, refreshProfile } = useAuth();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const t = useTranslations('profile');
     const tCommon = useTranslations('common');
     const { locale } = useLanguage();
@@ -237,6 +238,42 @@ export default function ProfilePage() {
             });
         }
     }, [profile]);
+
+    // Handle email_changed query parameter - refresh profile when redirected after email change
+    useEffect(() => {
+        const emailChanged = searchParams.get('email_changed');
+        if (emailChanged === 'true' && refreshProfile) {
+            console.log('[Profile] Email changed detected, refreshing profile...');
+            refreshProfile().then(() => {
+                // Show success message
+                setMessage(t('emailChange.success.emailUpdated') || 'Email updated successfully!');
+                setTimeout(() => setMessage(''), 5000);
+                
+                // Remove the query parameter from URL
+                const url = new URL(window.location.href);
+                url.searchParams.delete('email_changed');
+                router.replace(url.pathname, { scroll: false });
+            });
+        }
+        
+        // Handle error parameters
+        const errorParam = searchParams.get('error');
+        if (errorParam) {
+            const errorMessages = {
+                'invalid_link': t('emailChange.errors.invalidLink') || 'Invalid confirmation link',
+                'token_expired': t('emailChange.errors.tokenExpired') || 'Confirmation link has expired',
+                'update_failed': t('emailChange.errors.updateFailed') || 'Failed to update email',
+                'user_not_found': t('emailChange.errors.userNotFound') || 'User not found',
+            };
+            setError(errorMessages[errorParam] || 'An error occurred');
+            setTimeout(() => setError(''), 5000);
+            
+            // Remove the query parameter from URL
+            const url = new URL(window.location.href);
+            url.searchParams.delete('error');
+            router.replace(url.pathname, { scroll: false });
+        }
+    }, [searchParams, refreshProfile, router, t]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });

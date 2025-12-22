@@ -145,6 +145,15 @@
             "emailSentDescription": "We've sent a confirmation link to your new email address. Please click the link to complete the email change.",
             "checkInbox": "Check your inbox and spam folder.",
             "closeButton": "Close"
+        },
+        "success": {
+            "emailUpdated": "Your email has been updated successfully!"
+        },
+        "errors": {
+            "invalidLink": "Invalid confirmation link",
+            "tokenExpired": "Confirmation link has expired. Please request a new one.",
+            "updateFailed": "Failed to update email. Please try again.",
+            "userNotFound": "User not found"
         }
     },
     "dangerZone": {
