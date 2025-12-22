@@ -155,7 +155,7 @@ export function LanguageProvider({ children }) {
         }
     }, [locale, pathname, router, isChanging, startTransition]);
 
-    const t = useCallback((namespace, key) => {
+    const t = useCallback((namespace, key, params = {}) => {
         if (!messages[namespace]) return '';
 
         const keys = key.split('.');
@@ -167,6 +167,13 @@ export function LanguageProvider({ children }) {
             } else {
                 return '';
             }
+        }
+
+        // Handle interpolation - replace {{variable}} with actual values
+        if (typeof value === 'string' && params && Object.keys(params).length > 0) {
+            Object.entries(params).forEach(([paramKey, paramValue]) => {
+                value = value.replace(new RegExp(`\\{\\{${paramKey}\\}\\}`, 'g'), paramValue || '');
+            });
         }
 
         return value || '';
@@ -197,5 +204,5 @@ export function useLanguage() {
 // Hook for translations
 export function useTranslations(namespace) {
     const { t } = useLanguage();
-    return (key) => t(namespace, key);
+    return (key, params) => t(namespace, key, params);
 }
