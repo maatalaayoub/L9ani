@@ -17,6 +17,11 @@ export default function ResetPasswordPage() {
     const [isValidSession, setIsValidSession] = useState(false);
     const [checkingSession, setCheckingSession] = useState(true);
     const [locale, setLocale] = useState('en');
+    
+    // Custom token-based flow state
+    const [useCustomFlow, setUseCustomFlow] = useState(false);
+    const [customToken, setCustomToken] = useState('');
+    const [customUserId, setCustomUserId] = useState('');
 
     // Use ref to track if recovery was validated (avoids stale closure issue)
     const recoveryValidatedRef = useRef(false);
@@ -108,6 +113,39 @@ export default function ResetPasswordPage() {
 
     const text = t[locale] || t.en;
 
+    // Function to validate custom token (from Resend emails)
+    const validateCustomToken = async (token, userId, mounted) => {
+        try {
+            console.log('[ResetPassword] Validating custom token...');
+            const response = await fetch(`/api/auth/confirm-password-reset?token=${encodeURIComponent(token)}&user_id=${encodeURIComponent(userId)}`);
+            const data = await response.json();
+            
+            if (mounted) {
+                if (data.valid) {
+                    console.log('[ResetPassword] Custom token is valid');
+                    setUseCustomFlow(true);
+                    setCustomToken(token);
+                    setCustomUserId(userId);
+                    setIsValidSession(true);
+                    setCheckingSession(false);
+                    // Clean up URL
+                    window.history.replaceState(null, '', window.location.pathname);
+                } else {
+                    console.log('[ResetPassword] Custom token is invalid:', data.error);
+                    setError('invalid');
+                    setCheckingSession(false);
+                    window.history.replaceState(null, '', window.location.pathname);
+                }
+            }
+        } catch (err) {
+            console.error('[ResetPassword] Token validation error:', err);
+            if (mounted) {
+                setError('invalid');
+                setCheckingSession(false);
+            }
+        }
+    };
+
     useEffect(() => {
         let mounted = true;
 
@@ -123,6 +161,20 @@ export default function ResetPasswordPage() {
             const urlParams = new URLSearchParams(window.location.search);
             console.log('[ResetPassword] All query params:');
             for (const [key, value] of urlParams.entries()) {
+                console.log(`  ${key}:`, value);
+            }
+            
+            // Check for custom token-based flow (our Resend emails)
+            const token = urlParams.get('token');
+            const userId = urlParams.get('user_id');
+            
+            if (token && userId) {
+                console.log('[ResetPassword] Custom token flow detected');
+                // Validate the token via API
+                validateCustomToken(token, userId, mounted);
+                return; // Don't continue with Supabase flow
+            }
+        }
                 console.log(`  ${key}:`, value);
             }
         }
@@ -297,6 +349,38 @@ export default function ResetPasswordPage() {
         setLoading(true);
 
         try {
+            // Check if we're using custom token flow (from Resend emails)
+            if (useCustomFlow && customToken && customUserId) {
+                console.log('[ResetPassword] Using custom token flow');
+                
+                const response = await fetch('/api/auth/confirm-password-reset', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: customToken,
+                        userId: customUserId,
+                        newPassword: password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    console.error('[ResetPassword] Custom flow error:', data.error);
+                    throw new Error(data.error || 'Failed to reset password');
+                }
+                
+                console.log('[ResetPassword] Password updated successfully via custom flow');
+                setSuccess(true);
+                
+                // Redirect to home page after success (user needs to log in)
+                setTimeout(() => {
+                    router.push(`/${locale}`);
+                }, 2000);
+                return;
+            }
+            
+            // Supabase flow (legacy support)
             // Check if we have a valid session first
             const { data: { session } } = await supabase.auth.getSession();
             console.log('[ResetPassword] Current session before update:', !!session);
@@ -331,13 +415,15 @@ export default function ResetPasswordPage() {
             console.error('[ResetPassword] Error message:', err.message);
             console.error('[ResetPassword] Error details:', err);
             
-            // Translate common Supabase errors
+            // Translate common errors
             let errorMessage = text.errors.failed;
             if (err.message) {
                 const msg = err.message.toLowerCase();
-                if (msg.includes('same password') || msg.includes('different from') || msg.includes('should be different')) {
+                if (msg.includes('same password') || msg.includes('different from') || msg.includes('should be different') || msg.includes('must be different')) {
                     errorMessage = text.errors.samePassword;
                 } else if (msg.includes('no active session') || msg.includes('session')) {
+                    errorMessage = text.invalidLink.description;
+                } else if (msg.includes('expired')) {
                     errorMessage = text.invalidLink.description;
                 }
             }
