@@ -74,6 +74,22 @@ export async function GET(request) {
             return NextResponse.redirect(`${profileUrl}?error=no_pending_change`);
         }
 
+        // Get the current user to check for OAuth identities
+        const { data: userData, error: userFetchError } = await supabaseAdmin.auth.admin.getUserById(userId);
+        
+        if (userFetchError) {
+            console.error('[ConfirmEmailChange] Error fetching user:', userFetchError);
+        }
+
+        // Check if user has OAuth identities (like Google)
+        const hasOAuthIdentity = userData?.user?.identities?.some(
+            identity => identity.provider !== 'email'
+        );
+
+        if (hasOAuthIdentity) {
+            console.log('[ConfirmEmailChange] User has OAuth identity, will unlink after email update');
+        }
+
         // Update the email in auth.users using admin API
         const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
             email: newEmail,
@@ -83,6 +99,25 @@ export async function GET(request) {
         if (authError) {
             console.error('[ConfirmEmailChange] Auth update error:', authError);
             return NextResponse.redirect(`${profileUrl}?error=update_failed`);
+        }
+
+        // If user had OAuth identity, we need to unlink it so they can't login with old Google account
+        // This is done by calling a database function that deletes from auth.identities
+        if (hasOAuthIdentity) {
+            try {
+                const { error: unlinkError } = await supabaseAdmin.rpc('unlink_oauth_identities', {
+                    target_user_id: userId
+                });
+                
+                if (unlinkError) {
+                    console.error('[ConfirmEmailChange] Could not unlink OAuth identity:', unlinkError);
+                    // Continue anyway - email is changed, just OAuth might still work
+                } else {
+                    console.log('[ConfirmEmailChange] Successfully unlinked OAuth identities for user:', userId);
+                }
+            } catch (unlinkErr) {
+                console.error('[ConfirmEmailChange] Error calling unlink function:', unlinkErr);
+            }
         }
 
         // Update the profile
@@ -104,17 +139,22 @@ export async function GET(request) {
 
         // Create a notification for the user
         try {
+            const notificationMessage = hasOAuthIdentity
+                ? `Your email has been changed from ${oldEmail} to ${newEmail}. Your Google login has been disconnected. Please set a password to continue logging in.`
+                : `Your email has been changed from ${oldEmail} to ${newEmail}.`;
+
             await supabaseAdmin
                 .from('notifications')
                 .insert({
                     user_id: userId,
                     type: 'EMAIL_CHANGED',
                     title: 'Email Changed Successfully',
-                    message: `Your email has been changed from ${oldEmail} to ${newEmail}.`,
+                    message: notificationMessage,
                     data: {
                         old_email: oldEmail,
                         new_email: newEmail,
                         changed_at: new Date().toISOString(),
+                        had_oauth: hasOAuthIdentity,
                     },
                 });
             console.log('[ConfirmEmailChange] Notification created for user:', userId);
