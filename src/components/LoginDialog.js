@@ -87,6 +87,10 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [showEmailFields, setShowEmailFields] = useState(false);
 
+    // Resend Verification State
+    const [showResendVerification, setShowResendVerification] = useState(false);
+    const [isResendingVerification, setIsResendingVerification] = useState(false);
+
     // Forgot Password State
     const [resetEmailSent, setResetEmailSent] = useState(false);
 
@@ -362,7 +366,7 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
                         setActiveTab("login");
                         setSuccessMessage("");
                         setConfirmPassword("");
-                    }, 2000);
+                    }, 4000);
                 }
             } else {
                 // Use Supabase Client-Side Auth directly
@@ -384,16 +388,53 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
             // Handle login/signup errors
             if (error.message === "Invalid login credentials" || error.message?.includes("invalid_credentials")) {
                 setPasswordError(t('errors.invalidCredentials'));
+                setShowResendVerification(false);
             } else if (error.message?.includes("Email not confirmed")) {
                 setPasswordError(t('errors.emailNotConfirmed'));
+                setShowResendVerification(true);
             } else {
                 setPasswordError(error.message || t('errors.authFailed'));
+                setShowResendVerification(false);
             }
         } finally {
             // Only stop loading if we didn't succeed (result is null) OR if we are waiting for a timeout (signup success) which handles its own state
             // Actually, simplest is to just always stop loading here, unless we unmount.
             // But for signup success, we might want to keep loading? No, we show success message.
             setIsLoading(false);
+        }
+    };
+
+    // Handle resend verification email
+    const handleResendVerification = async () => {
+        if (!email) return;
+        
+        setIsResendingVerification(true);
+        setPasswordError("");
+        
+        try {
+            const response = await fetch('/api/auth/resend-verification', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+            
+            const result = await response.json();
+            
+            if (result.alreadyVerified) {
+                setPasswordError(result.error);
+                setShowResendVerification(false);
+            } else if (response.ok) {
+                setSuccessMessage(t('success.verificationEmailResent'));
+                setShowResendVerification(false);
+                setTimeout(() => setSuccessMessage(''), 5000);
+            } else {
+                setPasswordError(result.error || t('errors.resendVerificationFailed'));
+            }
+        } catch (err) {
+            console.error('Resend verification error:', err);
+            setPasswordError(t('errors.resendVerificationFailed'));
+        } finally {
+            setIsResendingVerification(false);
         }
     };
 
@@ -846,6 +887,16 @@ export default function LoginDialog({ isOpen, onClose, initialTab = "login" }) {
                         {passwordError && (
                             <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg">
                                 <p className="text-sm text-red-600 dark:text-red-400">{passwordError}</p>
+                                {showResendVerification && activeTab === "login" && (
+                                    <button
+                                        type="button"
+                                        onClick={handleResendVerification}
+                                        disabled={isResendingVerification}
+                                        className="mt-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 hover:underline disabled:opacity-50"
+                                    >
+                                        {isResendingVerification ? t('common.sending') || 'Sending...' : t('common.resendVerificationEmail') || 'Resend verification email'}
+                                    </button>
+                                )}
                             </div>
                         )}
 

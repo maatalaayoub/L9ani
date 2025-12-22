@@ -1,6 +1,8 @@
 
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { Resend } from 'resend';
+import crypto from 'crypto';
 
 export async function POST(request) {
     try {
@@ -128,8 +130,9 @@ export async function POST(request) {
                 baseUsername = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
             }
 
-            // Generate 6-digit verification code
-            const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+            // Generate secure token for email verification (instead of code)
+            const verificationToken = crypto.randomBytes(32).toString('hex');
+            const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
             // Append random suffix to ensure uniqueness
             const suffix = Math.floor(1000 + Math.random() * 9000);
@@ -144,15 +147,12 @@ export async function POST(request) {
                 phone: phoneNumber || "",
                 avatar_url: null,
                 email_verified: false,
-                email_verified_code: verificationCode,
+                email_verification_token: verificationToken,
+                email_verification_token_expires: tokenExpiry.toISOString(),
                 has_password: true,
                 terms_accepted: true,
                 terms_accepted_at: new Date().toISOString()
             }, { onConflict: 'auth_user_id' });
-
-            // TODO: Send verificationCode to user's email via an email service (e.g. Resend, SendGrid)
-            // For now, logging it for testing purposes
-            console.log(`[TESTING] Verification code for ${email}: ${verificationCode}`);
 
             if (profileError) {
                 console.error('Error creating/updating profile:', profileError);
@@ -160,6 +160,36 @@ export async function POST(request) {
                     { error: 'Profile creation failed: ' + profileError.message },
                     { status: 500 }
                 );
+            }
+
+            // Send verification email via Resend
+            const resendApiKey = process.env.RESEND_API_KEY;
+            if (resendApiKey && resendApiKey !== 'your_resend_api_key_here') {
+                try {
+                    const resend = new Resend(resendApiKey);
+                    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://lqani.ma';
+                    const confirmUrl = `${baseUrl}/api/auth/confirm-signup?token=${verificationToken}&user_id=${data.user.id}`;
+                    const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+
+                    const { error: emailError } = await resend.emails.send({
+                        from: fromEmail,
+                        to: email,
+                        subject: 'Verify Your Email - Lqani.ma',
+                        html: getSignupEmailTemplate(confirmUrl, firstName || 'there'),
+                    });
+
+                    if (emailError) {
+                        console.error('[Signup] Email send error:', emailError);
+                        // Don't fail signup if email fails - user can request resend later
+                    } else {
+                        console.log(`[Signup] Verification email sent to ${email}`);
+                    }
+                } catch (emailErr) {
+                    console.error('[Signup] Email service error:', emailErr);
+                    // Don't fail signup
+                }
+            } else {
+                console.log(`[TESTING] Verification token for ${email}: ${verificationToken}`);
             }
 
             // Create default settings for the new user
@@ -191,4 +221,134 @@ export async function POST(request) {
             { status: 500 }
         );
     }
+}
+
+function getSignupEmailTemplate(confirmUrl, firstName) {
+    return `<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Verify Your Email - Lqani.ma</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, Arial, sans-serif;">
+    
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff;">
+        <tr>
+            <td align="center" style="padding: 48px 24px;">
+                
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 480px;">
+                    
+                    <tr>
+                        <td align="center" style="padding: 0 0 40px 0;">
+                            <img src="https://nqzjimrupjergwtwzlok.supabase.co/storage/v1/object/public/logo/Untitled%20folder/logo.svg" alt="Lqani.ma" width="140" height="40" style="display: block;">
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding: 0 0 32px 0;">
+                            <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 50%; display: inline-block;">
+                                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="80" height="80">
+                                    <tr>
+                                        <td align="center" valign="middle">
+                                            <span style="font-size: 36px; line-height: 1;">✉️</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding: 0 0 16px 0;">
+                            <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #1e293b; line-height: 1.4;">
+                                Welcome to Lqani.ma!
+                            </h1>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding: 0 0 40px 0;">
+                            <p style="margin: 0; font-size: 16px; color: #64748b; line-height: 1.7; text-align: center;">
+                                Hi ${firstName}, thank you for signing up! Please verify your email address by clicking the button below.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding: 0 0 40px 0;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td align="center" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 14px;">
+                                        <a href="${confirmUrl}" 
+                                           target="_blank"
+                                           style="display: inline-block; padding: 18px 56px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600;">
+                                            Verify Email Address
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding: 0 0 40px 0;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                                <tr>
+                                    <td style="background-color: #dbeafe; border-radius: 12px; padding: 16px 20px;">
+                                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                                            <tr>
+                                                <td width="32" valign="top">
+                                                    <span style="font-size: 20px;">⏰</span>
+                                                </td>
+                                                <td style="padding-left: 12px;">
+                                                    <p style="margin: 0; font-size: 14px; color: #1e40af; line-height: 1.6;">
+                                                        This link expires in <strong>24 hours</strong>
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 0 0 32px 0;">
+                            <div style="height: 1px; background-color: #e2e8f0;"></div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding: 0 0 48px 0;">
+                            <p style="margin: 0; font-size: 13px; color: #94a3b8; line-height: 1.6; text-align: center;">
+                                If you didn't create an account on Lqani.ma, please ignore this email.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 0 0 32px 0;">
+                            <div style="height: 1px; background-color: #e2e8f0;"></div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding: 0 0 16px 0;">
+                            <p style="margin: 0; font-size: 12px; color: #94a3b8;">
+                                © 2025 Lqani.ma. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>`;
 }

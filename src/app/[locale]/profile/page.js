@@ -258,6 +258,22 @@ export default function ProfilePage() {
                 router.replace(url.pathname, { scroll: false });
             });
         }
+
+        // Handle email_verified parameter (from signup confirmation)
+        const emailVerified = searchParams.get('email_verified');
+        if (emailVerified === 'true' && refreshProfile) {
+            console.log('[Profile] Email verified detected, refreshing profile...');
+            refreshProfile().then(() => {
+                // Show success message
+                setMessage(t('verify.success.title') || 'Email verified successfully!');
+                setTimeout(() => setMessage(''), 5000);
+                
+                // Remove the query parameter from URL
+                const url = new URL(window.location.href);
+                url.searchParams.delete('email_verified');
+                router.replace(url.pathname, { scroll: false });
+            });
+        }
         
         // Handle error parameters
         const errorParam = searchParams.get('error');
@@ -267,6 +283,8 @@ export default function ProfilePage() {
                 'token_expired': t('emailChange.errors.tokenExpired') || 'Confirmation link has expired',
                 'update_failed': t('emailChange.errors.updateFailed') || 'Failed to update email',
                 'user_not_found': t('emailChange.errors.userNotFound') || 'User not found',
+                'server_error': t('errors.serverError') || 'Server error occurred',
+                'unexpected_error': t('errors.unexpectedError') || 'An unexpected error occurred',
             };
             setError(errorMessages[errorParam] || 'An error occurred');
             setTimeout(() => setError(''), 5000);
