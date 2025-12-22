@@ -359,15 +359,25 @@ export function getEmailChangeTemplate(confirmUrl, locale = 'en') {
  */
 export async function getUserLanguage(supabaseAdmin, userId) {
     try {
-        const { data: settings } = await supabaseAdmin
+        console.log('[EmailTemplates] Fetching language for user:', userId);
+        
+        const { data: settings, error } = await supabaseAdmin
             .from('user_settings')
             .select('language')
             .eq('user_id', userId)
             .single();
         
+        if (error) {
+            console.error('[EmailTemplates] Error fetching user_settings:', error.message);
+            return 'en';
+        }
+        
+        console.log('[EmailTemplates] User settings found:', settings);
+        console.log('[EmailTemplates] Language value:', settings?.language);
+        
         return settings?.language || 'en';
     } catch (error) {
-        console.error('[EmailTemplates] Error getting user language:', error);
+        console.error('[EmailTemplates] Exception getting user language:', error);
         return 'en';
     }
 }
