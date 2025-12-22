@@ -119,17 +119,11 @@
     },
     "verify": {
         "button": "Verify",
-        "title": "Check your email",
-        "description": "We've sent a 6-digit confirmation code to",
-        "didNotReceive": "Didn't receive the code?",
-        "clickToResend": "Click to resend",
         "sending": "Sending...",
-        "verifyCode": "Verify Code",
-        "verifying": "Verifying...",
+        "emailSent": "Verification email sent! Check your inbox and click the link to verify your account.",
         "success": {
             "title": "Verified!",
-            "description": "Your account is now fully active.",
-            "codeResent": "New code sent! Check your email."
+            "description": "Your account is now fully active."
         }
     },
     "emailChange": {
