@@ -21,6 +21,7 @@ export const NotificationType = {
     // Account-related notifications
     EMAIL_CHANGED: 'EMAIL_CHANGED',
     EMAIL_VERIFICATION_SENT: 'EMAIL_VERIFICATION_SENT',
+    EMAIL_VERIFICATION_FAILED: 'EMAIL_VERIFICATION_FAILED',
     EMAIL_VERIFIED: 'EMAIL_VERIFIED',
     
     // Future notification types (add here as needed)
@@ -194,6 +195,44 @@ export async function notifyEmailVerificationSent(userId, email, options = {}) {
         message: msg.message,
         data: {
             email,
+        },
+    });
+}
+
+/**
+ * Creates an "Email Verification Failed" notification
+ * 
+ * @param {string} userId - User ID to notify
+ * @param {string} email - The email address that failed to receive verification
+ * @param {Object} [options={}] - Additional options
+ * @param {string} [options.locale='en'] - Locale for message translation
+ * @param {string} [options.reason] - Optional reason for the failure
+ * @returns {Promise<{success: boolean, notification?: Object, error?: string}>}
+ */
+export async function notifyEmailVerificationFailed(userId, email, options = {}) {
+    const { locale = 'en', reason } = options;
+    
+    const messages = {
+        en: {
+            title: 'Verification Email Failed',
+            message: `We couldn't send a verification email to ${email}. Please check that your email address is correct and try again from your profile page.`,
+        },
+        ar: {
+            title: 'فشل إرسال بريد التحقق',
+            message: `تعذر إرسال رسالة التحقق إلى ${email}. يرجى التأكد من صحة بريدك الإلكتروني والمحاولة مرة أخرى من صفحة الملف الشخصي.`,
+        },
+    };
+
+    const msg = messages[locale] || messages.en;
+
+    return createNotification({
+        userId,
+        type: NotificationType.EMAIL_VERIFICATION_FAILED,
+        title: msg.title,
+        message: msg.message,
+        data: {
+            email,
+            reason: reason || 'unknown',
         },
     });
 }

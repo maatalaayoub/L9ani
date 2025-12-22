@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { Resend } from 'resend';
 import crypto from 'crypto';
-import { notifyEmailVerificationSent } from '@/lib/notifications';
+import { notifyEmailVerificationSent, notifyEmailVerificationFailed } from '@/lib/notifications';
 
 export async function GET(request) {
     try {
@@ -227,6 +227,16 @@ async function sendVerificationEmail(userId, email, firstName) {
 
             if (emailError) {
                 console.error('[API Profile] Email send error:', emailError);
+                // Create failure notification
+                try {
+                    await notifyEmailVerificationFailed(userId, email, { 
+                        locale: 'en',
+                        reason: emailError.message || 'Email delivery failed'
+                    });
+                    console.log('[API Profile] Failure notification created');
+                } catch (notifErr) {
+                    console.error('[API Profile] Failed to create failure notification:', notifErr);
+                }
             } else {
                 console.log('[API Profile] Verification email sent successfully, ID:', emailData?.id);
                 
@@ -240,6 +250,16 @@ async function sendVerificationEmail(userId, email, firstName) {
             }
         } catch (emailErr) {
             console.error('[API Profile] Email service error:', emailErr);
+            // Create failure notification for service errors
+            try {
+                await notifyEmailVerificationFailed(userId, email, { 
+                    locale: 'en',
+                    reason: emailErr.message || 'Email service error'
+                });
+                console.log('[API Profile] Failure notification created (service error)');
+            } catch (notifErr) {
+                console.error('[API Profile] Failed to create failure notification:', notifErr);
+            }
         }
     } else {
         console.log('[API Profile] [TESTING] Would send verification email to:', email);

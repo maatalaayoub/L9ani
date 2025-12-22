@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import crypto from 'crypto';
-import { notifyEmailVerificationSent } from '@/lib/notifications';
+import { notifyEmailVerificationSent, notifyEmailVerificationFailed } from '@/lib/notifications';
 
 export async function POST(request) {
     try {
@@ -88,7 +88,7 @@ export async function POST(request) {
         const confirmUrl = `${baseUrl}/api/auth/confirm-signup?token=${verificationToken}&user_id=${profile.auth_user_id}`;
         const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
 
-        const { error: emailError } = await resend.emails.send({
+        const { data: emailData, error: emailError } = await resend.emails.send({
             from: fromEmail,
             to: email,
             subject: 'Verify Your Email - Lqani.ma',
@@ -97,7 +97,22 @@ export async function POST(request) {
 
         if (emailError) {
             console.error('[ResendVerification] Email send error:', emailError);
-            return NextResponse.json({ error: 'Failed to send verification email' }, { status: 500 });
+            
+            // Create failure notification
+            try {
+                await notifyEmailVerificationFailed(profile.auth_user_id, email, { 
+                    locale: 'en',
+                    reason: emailError.message || 'Email delivery failed'
+                });
+                console.log('[ResendVerification] Failure notification created');
+            } catch (notifErr) {
+                console.error('[ResendVerification] Failed to create failure notification:', notifErr);
+            }
+            
+            return NextResponse.json({ 
+                error: 'Failed to send verification email. Please check your email address and try again.',
+                emailFailed: true
+            }, { status: 500 });
         }
 
         console.log('[ResendVerification] Email sent successfully to:', email);
