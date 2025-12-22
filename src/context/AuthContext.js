@@ -189,11 +189,39 @@ export function AuthProvider({ children }) {
             
             clearTimeout(timeoutId);
             
+            const result = await response.json();
+            
+            // CRITICAL: Check if the user was deleted from the authentication system
+            // This handles "ghost" sessions where the token is still valid but the user no longer exists
+            if (result.userDeleted) {
+                console.log('[Profile] User was deleted from auth system, forcing logout');
+                // Clear local state and storage immediately
+                setUser(null);
+                setProfile(null);
+                setIsAdmin(false);
+                setAdminRole(null);
+                setIsAdminChecked(false);
+                localStorage.removeItem('supabase_token');
+                localStorage.removeItem('supabase_refresh_token');
+                localStorage.removeItem('supabase_user');
+                localStorage.removeItem('supabase_profile');
+                clearAdminStatus();
+                
+                // Sign out from Supabase locally
+                try {
+                    await supabase.auth.signOut({ scope: 'local' });
+                } catch (e) {
+                    console.error('[Profile] Error signing out:', e);
+                }
+                
+                // Redirect to home page
+                window.location.href = '/';
+                return null;
+            }
+            
             if (!response.ok) {
                 throw new Error(`API returned ${response.status}`);
             }
-            
-            const result = await response.json();
             
             if (result.profile) {
                 console.log('[Profile] Found existing profile:', result.profile.first_name);
@@ -262,6 +290,28 @@ export function AuthProvider({ children }) {
                 clearTimeout(createTimeoutId);
                 
                 const createResult = await createResponse.json();
+                
+                // Check if the user was deleted from auth system
+                if (createResult.userDeleted) {
+                    console.log('[Profile] User was deleted from auth system during profile creation, forcing logout');
+                    setUser(null);
+                    setProfile(null);
+                    setIsAdmin(false);
+                    setAdminRole(null);
+                    setIsAdminChecked(false);
+                    localStorage.removeItem('supabase_token');
+                    localStorage.removeItem('supabase_refresh_token');
+                    localStorage.removeItem('supabase_user');
+                    localStorage.removeItem('supabase_profile');
+                    clearAdminStatus();
+                    try {
+                        await supabase.auth.signOut({ scope: 'local' });
+                    } catch (e) {
+                        console.error('[Profile] Error signing out:', e);
+                    }
+                    window.location.href = '/';
+                    return null;
+                }
                 
                 if (createResult.profile) {
                     console.log('[Profile] Created new profile:', createResult.profile.first_name);

@@ -63,6 +63,8 @@ export async function POST(request) {
         const verificationToken = crypto.randomBytes(32).toString('hex');
         const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
+        console.log('[ResendVerification] Updating profile with token for user:', profile.auth_user_id);
+
         // Update the profile with new token
         const { error: updateError } = await supabaseAdmin
             .from('profiles')
@@ -74,8 +76,11 @@ export async function POST(request) {
 
         if (updateError) {
             console.error('[ResendVerification] Update error:', updateError);
-            return NextResponse.json({ error: 'Failed to generate verification link' }, { status: 500 });
+            console.error('[ResendVerification] This may indicate the email_verification_token column is missing. Run migration 015.');
+            return NextResponse.json({ error: 'Failed to generate verification link. Database may need migration.' }, { status: 500 });
         }
+
+        console.log('[ResendVerification] Token saved, sending email...');
 
         // Send verification email
         const resend = new Resend(resendApiKey);
@@ -98,7 +103,12 @@ export async function POST(request) {
         console.log('[ResendVerification] Email sent successfully to:', email);
 
         // Create notification that verification email was sent
-        await notifyEmailVerificationSent(profile.auth_user_id, email, { locale: 'en' });
+        try {
+            await notifyEmailVerificationSent(profile.auth_user_id, email, { locale: 'en' });
+            console.log('[ResendVerification] Notification created');
+        } catch (notifErr) {
+            console.error('[ResendVerification] Failed to create notification:', notifErr);
+        }
 
         return NextResponse.json({ 
             success: true, 

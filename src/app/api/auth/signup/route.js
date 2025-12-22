@@ -165,6 +165,8 @@ export async function POST(request) {
 
             // Send verification email via Resend
             const resendApiKey = process.env.RESEND_API_KEY;
+            console.log('[Signup] Checking Resend API key:', resendApiKey ? 'Present' : 'Missing');
+            
             if (resendApiKey && resendApiKey !== 'your_resend_api_key_here') {
                 try {
                     const resend = new Resend(resendApiKey);
@@ -172,7 +174,9 @@ export async function POST(request) {
                     const confirmUrl = `${baseUrl}/api/auth/confirm-signup?token=${verificationToken}&user_id=${data.user.id}`;
                     const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
 
-                    const { error: emailError } = await resend.emails.send({
+                    console.log('[Signup] Sending verification email to:', email, 'from:', fromEmail);
+
+                    const { data: emailData, error: emailError } = await resend.emails.send({
                         from: fromEmail,
                         to: email,
                         subject: 'Verify Your Email - Lqani.ma',
@@ -183,10 +187,15 @@ export async function POST(request) {
                         console.error('[Signup] Email send error:', emailError);
                         // Don't fail signup if email fails - user can request resend later
                     } else {
-                        console.log(`[Signup] Verification email sent to ${email}`);
+                        console.log(`[Signup] Verification email sent to ${email}, ID:`, emailData?.id);
                         
                         // Create notification that verification email was sent
-                        await notifyEmailVerificationSent(data.user.id, email, { locale: 'en' });
+                        try {
+                            await notifyEmailVerificationSent(data.user.id, email, { locale: 'en' });
+                            console.log('[Signup] Notification created for verification email');
+                        } catch (notifErr) {
+                            console.error('[Signup] Failed to create notification:', notifErr);
+                        }
                     }
                 } catch (emailErr) {
                     console.error('[Signup] Email service error:', emailErr);
@@ -196,7 +205,12 @@ export async function POST(request) {
                 console.log(`[TESTING] Verification token for ${email}: ${verificationToken}`);
                 
                 // Still create notification even in testing mode
-                await notifyEmailVerificationSent(data.user.id, email, { locale: 'en' });
+                try {
+                    await notifyEmailVerificationSent(data.user.id, email, { locale: 'en' });
+                    console.log('[Signup] Notification created (testing mode)');
+                } catch (notifErr) {
+                    console.error('[Signup] Failed to create notification:', notifErr);
+                }
             }
 
             // Create default settings for the new user
