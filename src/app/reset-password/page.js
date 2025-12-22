@@ -17,6 +17,7 @@ export default function ResetPasswordPage() {
     const [isValidSession, setIsValidSession] = useState(false);
     const [checkingSession, setCheckingSession] = useState(true);
     const [locale, setLocale] = useState('en');
+    const [localeLoaded, setLocaleLoaded] = useState(false);
     
     // Custom token-based flow state
     const [useCustomFlow, setUseCustomFlow] = useState(false);
@@ -26,17 +27,56 @@ export default function ResetPasswordPage() {
     // Use ref to track if recovery was validated (avoids stale closure issue)
     const recoveryValidatedRef = useRef(false);
 
-    // Get user's locale preference
+    // Function to fetch user's language from database
+    const fetchUserLanguage = async (userId) => {
+        try {
+            console.log('[ResetPassword] Fetching language for user:', userId);
+            const response = await fetch(`/api/user/settings?userId=${userId}`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.language && (data.language === 'en' || data.language === 'ar')) {
+                    console.log('[ResetPassword] User language from DB:', data.language);
+                    setLocale(data.language);
+                    return;
+                }
+            }
+        } catch (err) {
+            console.error('[ResetPassword] Error fetching user language:', err);
+        }
+        
+        // Fallback to localStorage or browser language
+        const savedLocale = localStorage.getItem('locale');
+        if (savedLocale && (savedLocale === 'en' || savedLocale === 'ar')) {
+            setLocale(savedLocale);
+        } else {
+            const browserLang = navigator.language?.split('-')[0];
+            if (browserLang === 'ar') {
+                setLocale('ar');
+            }
+        }
+    };
+
+    // Get user's locale preference - check URL params first for user_id
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            const savedLocale = localStorage.getItem('locale');
-            if (savedLocale && (savedLocale === 'en' || savedLocale === 'ar')) {
-                setLocale(savedLocale);
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('user_id');
+            
+            if (userId) {
+                // Custom flow - fetch language from database
+                fetchUserLanguage(userId).finally(() => setLocaleLoaded(true));
             } else {
-                const browserLang = navigator.language?.split('-')[0];
-                if (browserLang === 'ar') {
-                    setLocale('ar');
+                // Supabase flow - use localStorage/browser
+                const savedLocale = localStorage.getItem('locale');
+                if (savedLocale && (savedLocale === 'en' || savedLocale === 'ar')) {
+                    setLocale(savedLocale);
+                } else {
+                    const browserLang = navigator.language?.split('-')[0];
+                    if (browserLang === 'ar') {
+                        setLocale('ar');
+                    }
                 }
+                setLocaleLoaded(true);
             }
         }
     }, []);

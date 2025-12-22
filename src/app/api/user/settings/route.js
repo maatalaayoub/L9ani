@@ -10,6 +10,32 @@ export async function GET(request) {
             return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
         }
 
+        // Check for userId query param (for password reset page - returns only language)
+        const { searchParams } = new URL(request.url);
+        const userIdParam = searchParams.get('userId');
+        
+        if (userIdParam) {
+            // Public endpoint for fetching just the language by userId
+            // This is used by the password reset page before user is authenticated
+            console.log('[Settings] Fetching language for userId:', userIdParam);
+            
+            const { data: settings, error: fetchError } = await supabaseAdmin
+                .from('user_settings')
+                .select('language')
+                .eq('user_id', userIdParam)
+                .single();
+
+            if (fetchError && fetchError.code !== 'PGRST116') {
+                console.error('[Settings] Error fetching language:', fetchError);
+                return NextResponse.json({ language: 'en' });
+            }
+
+            return NextResponse.json({
+                language: settings?.language || 'en',
+            });
+        }
+
+        // Authenticated endpoint - requires Bearer token
         const authHeader = request.headers.get('authorization');
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
