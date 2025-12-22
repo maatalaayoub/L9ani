@@ -49,10 +49,13 @@ export default function ProfilePage() {
 
     // Email Change State
     const [isEmailChangeModalOpen, setIsEmailChangeModalOpen] = useState(false);
-    const [emailChangeStep, setEmailChangeStep] = useState(1); // 1: Input New Email, 2: Email Sent Success
+    const [emailChangeStep, setEmailChangeStep] = useState(1); // 1: Password Verification, 2: Input New Email, 3: Email Sent Success
     const [newEmail, setNewEmail] = useState('');
     const [emailChangeError, setEmailChangeError] = useState('');
     const [isChangingEmail, setIsChangingEmail] = useState(false);
+    const [emailChangePassword, setEmailChangePassword] = useState('');
+    const [showEmailChangePassword, setShowEmailChangePassword] = useState(false);
+    const [isVerifyingPassword, setIsVerifyingPassword] = useState(false);
 
     // Password Setup State (for OAuth users)
     const [showPasswordSetup, setShowPasswordSetup] = useState(false);
@@ -422,6 +425,45 @@ export default function ProfilePage() {
     };
 
     // --- Email Change Logic ---
+    
+    // Step 1: Verify password before allowing email change
+    const handleVerifyPasswordForEmailChange = async () => {
+        if (!emailChangePassword) {
+            setEmailChangeError(t('emailChange.errors.passwordRequired') || 'Please enter your password');
+            return;
+        }
+        
+        setIsVerifyingPassword(true);
+        setEmailChangeError('');
+
+        try {
+            const response = await fetch('/api/auth/verify-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    email: profile?.email || user?.email,
+                    password: emailChangePassword 
+                }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.valid) {
+                throw new Error(result.error || t('emailChange.errors.incorrectPassword') || 'Incorrect password');
+            }
+
+            // Password verified, move to step 2 (enter new email)
+            setEmailChangeStep(2);
+            setEmailChangeError('');
+        } catch (err) {
+            console.error('Password verification error:', err);
+            setEmailChangeError(err.message || t('emailChange.errors.verificationFailed') || 'Password verification failed');
+        } finally {
+            setIsVerifyingPassword(false);
+        }
+    };
+
+    // Step 2: Request email change (send confirmation link)
     const handleRequestEmailChange = async () => {
         if (!newEmail || !newEmail.includes('@')) {
             setEmailChangeError(t('errors.invalidEmail'));
@@ -475,8 +517,8 @@ export default function ProfilePage() {
                 throw new Error(errorMsg);
             }
 
-            // Move to step 2 (email sent success)
-            setEmailChangeStep(2);
+            // Move to step 3 (email sent success)
+            setEmailChangeStep(3);
         } catch (err) {
             console.error('Email change request error:', err);
             const errorMessage = err.message || t('errors.requestFailed');
@@ -1251,6 +1293,7 @@ export default function ProfilePage() {
                                                 setIsEmailChangeModalOpen(true);
                                                 setEmailChangeStep(1);
                                                 setNewEmail('');
+                                                setEmailChangePassword('');
                                                 setEmailChangeError('');
                                             }}
                                             className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-gray-400 hover:text-blue-500 transition-colors"
@@ -1429,7 +1472,84 @@ export default function ProfilePage() {
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                             </button>
 
+                            {/* Step 1: Password Verification (or prompt to set password for OAuth users) */}
                             {emailChangeStep === 1 && (
+                                <>
+                                    {/* OAuth users without password - prompt to set password first */}
+                                    {isOAuthUser && !hasPassword ? (
+                                        <div className="text-center py-4">
+                                            <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                                <svg className="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t('emailChange.passwordRequired.title') || 'Password Required'}</h3>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                                                {t('emailChange.passwordRequired.description') || 'You need to set a password for your account before you can change your email address.'}
+                                            </p>
+                                            <button
+                                                onClick={() => {
+                                                    setIsEmailChangeModalOpen(false);
+                                                    setShowPasswordSetup(true);
+                                                }}
+                                                className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition-colors"
+                                            >
+                                                {t('emailChange.passwordRequired.button') || 'Set Password'}
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        /* Users with password - verify password */
+                                        <>
+                                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('emailChange.title')}</h3>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{t('emailChange.verifyPassword.description') || 'Enter your password to continue'}</p>
+
+                                            <div className="relative mb-4">
+                                                <input
+                                                    type={showEmailChangePassword ? "text" : "password"}
+                                                    value={emailChangePassword}
+                                                    onChange={(e) => setEmailChangePassword(e.target.value)}
+                                                    placeholder={t('emailChange.verifyPassword.placeholder') || 'Enter your password'}
+                                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none ltr:pr-12 rtl:pl-12"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowEmailChangePassword(!showEmailChangePassword)}
+                                                    className="absolute ltr:right-3 rtl:left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                                >
+                                                    {showEmailChangePassword ? (
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
+                                                    ) : (
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                                    )}
+                                                </button>
+                                            </div>
+
+                                            {emailChangeError && (
+                                                <p className="text-sm text-red-500 mb-4">{emailChangeError}</p>
+                                            )}
+
+                                            <button
+                                                onClick={handleVerifyPasswordForEmailChange}
+                                                disabled={isVerifyingPassword || !emailChangePassword}
+                                                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors disabled:opacity-50 flex justify-center items-center gap-2"
+                                            >
+                                                {isVerifyingPassword ? (
+                                                    <>
+                                                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                        {t('emailChange.verifyPassword.verifying') || 'Verifying...'}
+                                                    </>
+                                                ) : (t('emailChange.verifyPassword.button') || 'Continue')}
+                                            </button>
+                                        </>
+                                    )}
+                                </>
+                            )}
+
+                            {/* Step 2: Enter New Email */}
+                            {emailChangeStep === 2 && (
                                 <>
                                     <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('emailChange.title')}</h3>
                                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{t('emailChange.step1.description')}</p>
@@ -1456,7 +1576,8 @@ export default function ProfilePage() {
                                 </>
                             )}
 
-                            {emailChangeStep === 2 && (
+                            {/* Step 3: Email Sent Success */}
+                            {emailChangeStep === 3 && (
                                 <div className="text-center py-4">
                                     <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                                         <svg className="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -134,6 +134,17 @@
     },
     "emailChange": {
         "title": "Change Email",
+        "verifyPassword": {
+            "description": "Enter your password to continue with changing your email address.",
+            "placeholder": "Enter your password",
+            "button": "Continue",
+            "verifying": "Verifying..."
+        },
+        "passwordRequired": {
+            "title": "Password Required",
+            "description": "You need to set a password for your account before you can change your email address.",
+            "button": "Set Password"
+        },
         "step1": {
             "description": "Enter your new email address. We'll send a confirmation link to verify the change.",
             "placeholder": "New Email Address",
@@ -153,7 +164,10 @@
             "invalidLink": "Invalid confirmation link",
             "tokenExpired": "Confirmation link has expired. Please request a new one.",
             "updateFailed": "Failed to update email. Please try again.",
-            "userNotFound": "User not found"
+            "userNotFound": "User not found",
+            "passwordRequired": "Please enter your password",
+            "incorrectPassword": "Incorrect password. Please try again.",
+            "verificationFailed": "Password verification failed"
         }
     },
     "dangerZone": {
