@@ -147,7 +147,7 @@ function getEmailTemplate(confirmUrl) {
 
                     <tr>
                         <td align="center" style="padding: 0 0 32px 0;">
-                            <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 50%; display: inline-block;">
+                            <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 50%; display: inline-block;">
                                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="80" height="80">
                                     <tr>
                                         <td align="center" valign="middle">
@@ -179,7 +179,7 @@ function getEmailTemplate(confirmUrl) {
                         <td align="center" style="padding: 0 0 40px 0;">
                             <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                                 <tr>
-                                    <td align="center" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 14px;">
+                                    <td align="center" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 14px;">
                                         <a href="${confirmUrl}" 
                                            target="_blank"
                                            style="display: inline-block; padding: 18px 56px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600;">
@@ -195,14 +195,14 @@ function getEmailTemplate(confirmUrl) {
                         <td align="center" style="padding: 0 0 40px 0;">
                             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                                 <tr>
-                                    <td style="background-color: #fef3c7; border-radius: 12px; padding: 16px 20px;">
+                                    <td style="background-color: #dbeafe; border-radius: 12px; padding: 16px 20px;">
                                         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                                             <tr>
                                                 <td width="32" valign="top">
                                                     <span style="font-size: 20px;">⏰</span>
                                                 </td>
                                                 <td style="padding-left: 12px;">
-                                                    <p style="margin: 0; font-size: 14px; color: #92400e; line-height: 1.6;">
+                                                    <p style="margin: 0; font-size: 14px; color: #1e40af; line-height: 1.6;">
                                                         This link expires in <strong>24 hours</strong>
                                                     </p>
                                                 </td>
