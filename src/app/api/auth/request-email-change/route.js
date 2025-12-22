@@ -49,6 +49,34 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Email is already in use' }, { status: 400 });
         }
 
+        // Check if user has changed email in the last 24 hours
+        const { data: profile, error: profileError } = await supabaseAdmin
+            .from('profiles')
+            .select('last_email_change')
+            .eq('auth_user_id', userId)
+            .single();
+
+        if (profileError) {
+            console.error('[RequestEmailChange] Error fetching profile:', profileError);
+            return NextResponse.json({ error: 'Failed to fetch profile' }, { status: 500 });
+        }
+
+        if (profile?.last_email_change) {
+            const lastChange = new Date(profile.last_email_change);
+            const now = new Date();
+            const hoursSinceLastChange = (now - lastChange) / (1000 * 60 * 60);
+            
+            if (hoursSinceLastChange < 24) {
+                const hoursRemaining = Math.ceil(24 - hoursSinceLastChange);
+                console.log('[RequestEmailChange] Rate limit: user changed email', hoursSinceLastChange.toFixed(1), 'hours ago');
+                return NextResponse.json({ 
+                    error: 'rate_limit',
+                    hoursRemaining: hoursRemaining,
+                    message: `You can only change your email once every 24 hours. Please try again in ${hoursRemaining} hour${hoursRemaining > 1 ? 's' : ''}.`
+                }, { status: 429 });
+            }
+        }
+
         // Generate a secure token for email verification
         const token = crypto.randomBytes(32).toString('hex');
         const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours

@@ -506,6 +506,10 @@ export default function ProfilePage() {
             const result = await response.json();
             
             if (!response.ok) {
+                // Handle rate limit error specially
+                if (result.error === 'rate_limit') {
+                    throw new Error(result.message || t('emailChange.errors.rateLimit'));
+                }
                 const errorMsg = result.details 
                     ? `${result.error}: ${result.details}` 
                     : (result.error || 'Failed to request email change');
@@ -519,8 +523,8 @@ export default function ProfilePage() {
             const errorMessage = err.message || t('errors.requestFailed');
             setEmailChangeError(errorMessage);
 
-            // Check for 48h error
-            if (errorMessage.includes('48 hours')) {
+            // Check for rate limit or 48h error
+            if (errorMessage.includes('24 hours') || errorMessage.includes('48 hours')) {
                 setEmailChangeError(
                     <span>
                         {errorMessage} <br />

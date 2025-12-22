@@ -161,7 +161,8 @@
             "userNotFound": "User not found",
             "passwordRequired": "Please enter your password",
             "incorrectPassword": "Incorrect password. Please try again.",
-            "verificationFailed": "Password verification failed"
+            "verificationFailed": "Password verification failed",
+            "rateLimit": "You can only change your email once every 24 hours. Please try again later."
         }
     },
     "dangerZone": {
