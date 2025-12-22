@@ -1124,7 +1124,7 @@ export default function ProfilePage() {
                 {/* 2. Content Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Left Column: Personal Info */}
-                    <div className={`col-span-2 rounded-2xl p-6 border relative overflow-hidden ${
+                    <div className={`md:col-span-2 rounded-2xl p-6 border relative overflow-hidden ${
                         isAdmin 
                             ? 'bg-gradient-to-br from-amber-50 via-white to-orange-50 dark:from-amber-950/30 dark:via-gray-900 dark:to-orange-950/30 border-amber-200 dark:border-amber-800/50' 
                             : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800'
@@ -1252,7 +1252,7 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Right Column: Account & Actions */}
-                    <div className="space-y-6">
+                    <div className="col-span-1 space-y-6">
                         {/* Account Details */}
                         <div className={`rounded-2xl p-6 border relative overflow-hidden ${
                             isAdmin 
