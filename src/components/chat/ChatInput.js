@@ -47,7 +47,7 @@ export default function ChatInput({ onSend, disabled, placeholder, isRTL }) {
                 rounded-2xl
                 border-2 transition-all duration-300
                 ${isFocused 
-                    ? 'border-orange-400 dark:border-orange-500 shadow-lg shadow-orange-100 dark:shadow-orange-900/20' 
+                    ? 'border-blue-400 dark:border-blue-500 shadow-lg shadow-blue-100 dark:shadow-blue-900/20' 
                     : 'border-gray-200 dark:border-gray-700 shadow-sm'
                 }`}>
                 
@@ -90,7 +90,7 @@ export default function ChatInput({ onSend, disabled, placeholder, isRTL }) {
                         flex items-center justify-center
                         transition-all duration-300
                         ${hasText && !disabled
-                            ? 'bg-gradient-to-br from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-md shadow-orange-200 dark:shadow-orange-900/30 hover:shadow-lg transform hover:scale-105 active:scale-95'
+                            ? 'bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 text-white shadow-md shadow-blue-500/25 hover:shadow-lg transform hover:scale-105 active:scale-95'
                             : 'bg-gray-100 dark:bg-gray-700 text-gray-300 dark:text-gray-600 cursor-not-allowed'
                         }`}
                     aria-label={isRTL ? 'إرسال' : 'Send'}

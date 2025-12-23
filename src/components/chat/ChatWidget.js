@@ -367,8 +367,8 @@ export default function ChatWidget() {
         <button
           onClick={toggleChat}
           className={`fixed ${isRTL ? 'left-4' : 'right-4'} z-[100] 
-            w-14 h-14 rounded-full bg-gradient-to-r from-orange-500 to-orange-600
-            text-white shadow-lg hover:shadow-xl 
+            w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600
+            text-white shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/40
             transform hover:scale-110 transition-all duration-300 ease-in-out
             flex items-center justify-center group
             bottom-20 md:bottom-6`}
@@ -401,8 +401,8 @@ export default function ChatWidget() {
             bottom-20 md:bottom-6`}
           onClick={maximizeChat}
         >
-          <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-            <Bot className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+          <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+            <Bot className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           </div>
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
             {locale === 'ar' ? 'المساعد الذكي' : 'Smart Assistant'}
@@ -436,9 +436,9 @@ export default function ChatWidget() {
         >
           {/* Header */}
           <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 
-            bg-gradient-to-r from-orange-500 to-orange-600 text-white min-h-[60px]">
+            bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white min-h-[60px]">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/10">
                 <Bot className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -500,14 +500,14 @@ export default function ChatWidget() {
             {/* Loading Indicator */}
             {isLoading && (
               <div className={`flex items-start gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0">
-                  <Bot className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                  <Bot className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div className="bg-white dark:bg-gray-800 rounded-2xl px-4 py-3 shadow-sm border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-1">
-                    <span className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
                 </div>
               </div>

@@ -65,9 +65,9 @@ function ChatQuickReplies({ replies, onSelect, isRTL }) {
         const text = (reply.text || '').toLowerCase();
         const route = reply.route || '';
         
-        // Report Missing - Orange
+        // Report Missing - Blue
         if (route.includes('report-missing') || text.includes('missing') || text.includes('ضايع') || text.includes('مفقود')) {
-            return 'bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800 hover:bg-orange-100 dark:hover:bg-orange-900/50';
+            return 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/50';
         }
         // Report Sighting - Teal
         if (route.includes('report-sighting') || text.includes('sighting') || text.includes('لقية') || text.includes('مشاهدة')) {

@@ -38,8 +38,8 @@ function ChatMessage({ message, isRTL, onResultClick, onNavigate, onAction }) {
             {/* Avatar */}
             <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center
                 ${isUser 
-                    ? 'bg-orange-500 text-white' 
-                    : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
+                    ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/20' 
+                    : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
                 }`}>
                 {isUser ? <User className="w-4 h-4" /> : <Bot className="w-5 h-5" />}
             </div>
@@ -48,7 +48,7 @@ function ChatMessage({ message, isRTL, onResultClick, onNavigate, onAction }) {
             <div
                 className={`max-w-[80%] ${
                     isUser
-                        ? 'bg-orange-500 text-white rounded-2xl rounded-tr-sm'
+                        ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-2xl rounded-tr-sm shadow-md shadow-blue-500/20'
                         : isError
                         ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-2xl rounded-tl-sm border border-red-200 dark:border-red-800'
                         : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-2xl rounded-tl-sm shadow-sm border border-gray-200 dark:border-gray-700'
@@ -83,8 +83,8 @@ function ChatMessage({ message, isRTL, onResultClick, onNavigate, onAction }) {
                 {navigateTo && !action?.route && (
                     <button
                         onClick={() => onNavigate?.(navigateTo, prefillData)}
-                        className="mt-3 w-full py-2 px-4 bg-orange-500 hover:bg-orange-600 
-                            text-white text-sm font-medium rounded-lg transition-colors
+                        className="mt-3 w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 
+                            text-white text-sm font-medium rounded-lg transition-all shadow-md shadow-blue-500/20
                             flex items-center justify-center gap-2"
                     >
                         {isRTL ? (
@@ -104,8 +104,8 @@ function ChatMessage({ message, isRTL, onResultClick, onNavigate, onAction }) {
                 {action?.type === 'navigate_with_data' && action.route && (
                     <button
                         onClick={() => onNavigate?.(action.route, action.params || action.data)}
-                        className="mt-3 w-full py-2 px-4 bg-orange-500 hover:bg-orange-600 
-                            text-white text-sm font-medium rounded-lg transition-colors
+                        className="mt-3 w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 
+                            text-white text-sm font-medium rounded-lg transition-all shadow-md shadow-blue-500/20
                             flex items-center justify-center gap-2"
                     >
                         {isRTL ? '← الذهاب للنموذج' : 'Go to Form →'}
@@ -149,7 +149,7 @@ function formatContent(content) {
         if (line.trim().startsWith('•') || line.trim().startsWith('-')) {
             return (
                 <div key={index} className="flex items-start gap-2 my-1">
-                    <span className="text-orange-500 mt-0.5">•</span>
+                    <span className="text-blue-500 mt-0.5">•</span>
                     <span dangerouslySetInnerHTML={{ __html: processedLine.replace(/^[•-]\s*/, '') }} />
                 </div>
             );
