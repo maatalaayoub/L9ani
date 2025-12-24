@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from '@/i18n/navigation';
 import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
@@ -98,11 +98,12 @@ const largeTypeIcons = {
 export default function ReportCard({ report, onShare, onShowOnMap }) {
     const t = useTranslations('reports');
     const { locale } = useLanguage();
-    const { user } = useAuth();
+    const { user, getAccessToken } = useAuth();
     const [imageError, setImageError] = useState(false);
     const [liked, setLiked] = useState(false);
-    const [likeCount, setLikeCount] = useState(0);
+    const [likeCount, setLikeCount] = useState(report.reactions_count || 0);
     const [likeAnimation, setLikeAnimation] = useState(false);
+    const [isLikeLoading, setIsLikeLoading] = useState(false);
 
     const isRTL = locale === 'ar';
     
@@ -112,6 +113,29 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
     
     // Get report type
     const reportType = report.type || report.report_type || 'other';
+
+    // Fetch reactions data on mount
+    useEffect(() => {
+        const fetchReactions = async () => {
+            try {
+                const token = await getAccessToken();
+                const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+                const response = await fetch(
+                    `/api/reports/${report.id}/reactions?source=${report.source}`,
+                    { headers }
+                );
+                if (response.ok) {
+                    const data = await response.json();
+                    setLikeCount(data.total || 0);
+                    setLiked(data.userReactions?.includes('support') || false);
+                }
+            } catch (err) {
+                console.error('Error fetching reactions:', err);
+            }
+        };
+        
+        fetchReactions();
+    }, [report.id, report.source, getAccessToken]);
     
     // Get type labels
     const typeLabels = {
@@ -267,14 +291,61 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
 
     // Handle like
     const handleLike = async () => {
-        if (!user) return;
+        if (!user || isLikeLoading) return;
         
         setLikeAnimation(true);
         setTimeout(() => setLikeAnimation(false), 300);
         
+        // Optimistic update
         const newLiked = !liked;
         setLiked(newLiked);
         setLikeCount(prev => newLiked ? prev + 1 : Math.max(0, prev - 1));
+        
+        setIsLikeLoading(true);
+        try {
+            const token = await getAccessToken();
+            const headers = {
+                'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            };
+            
+            if (newLiked) {
+                // Add reaction
+                const response = await fetch(`/api/reports/${report.id}/reactions`, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({
+                        reaction_type: 'support',
+                        source: report.source
+                    })
+                });
+                
+                if (!response.ok && response.status !== 409) {
+                    // Revert on error (409 means already liked, which is fine)
+                    setLiked(false);
+                    setLikeCount(prev => Math.max(0, prev - 1));
+                }
+            } else {
+                // Remove reaction
+                const response = await fetch(
+                    `/api/reports/${report.id}/reactions?reaction_type=support&source=${report.source}`,
+                    { method: 'DELETE', headers }
+                );
+                
+                if (!response.ok) {
+                    // Revert on error
+                    setLiked(true);
+                    setLikeCount(prev => prev + 1);
+                }
+            }
+        } catch (err) {
+            console.error('Error toggling like:', err);
+            // Revert on error
+            setLiked(!newLiked);
+            setLikeCount(prev => newLiked ? Math.max(0, prev - 1) : prev + 1);
+        } finally {
+            setIsLikeLoading(false);
+        }
     };
 
     const details = getDetails();
@@ -458,7 +529,7 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                         >
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
-                        <span>{locale === 'ar' ? 'إعجاب' : 'Like'}</span>
+                        <span>{likeCount > 0 ? likeCount : ''} {locale === 'ar' ? 'إعجاب' : 'Like'}</span>
                     </button>
 
                     {/* Comment Button */}

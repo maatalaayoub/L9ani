@@ -204,7 +204,7 @@ function Comment({ comment, reportId, source, onReply, onDelete, onLike, depth =
 export default function CommentsSection({ reportId, source = 'missing' }) {
     const t = useTranslations('reports');
     const { locale } = useLanguage();
-    const { user } = useAuth();
+    const { user, getAccessToken } = useAuth();
     
     const [comments, setComments] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -216,12 +216,20 @@ export default function CommentsSection({ reportId, source = 'missing' }) {
     const [offset, setOffset] = useState(0);
     const limit = 10;
 
+    // Helper to get auth headers
+    const getAuthHeaders = async () => {
+        const token = await getAccessToken();
+        return token ? { 'Authorization': `Bearer ${token}` } : {};
+    };
+
     // Fetch comments
     const fetchComments = async (reset = false) => {
         try {
             const currentOffset = reset ? 0 : offset;
+            const authHeaders = await getAuthHeaders();
             const response = await fetch(
-                `/api/reports/${reportId}/comments?source=${source}&limit=${limit}&offset=${currentOffset}`
+                `/api/reports/${reportId}/comments?source=${source}&limit=${limit}&offset=${currentOffset}`,
+                { headers: authHeaders }
             );
             
             if (!response.ok) throw new Error('Failed to fetch comments');
@@ -255,9 +263,13 @@ export default function CommentsSection({ reportId, source = 'missing' }) {
 
         setIsSubmitting(true);
         try {
+            const authHeaders = await getAuthHeaders();
             const response = await fetch(`/api/reports/${reportId}/comments`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    ...authHeaders
+                },
                 body: JSON.stringify({
                     content: newComment,
                     source
@@ -281,9 +293,13 @@ export default function CommentsSection({ reportId, source = 'missing' }) {
     const handleReply = async (content, parentId) => {
         if (!user) return;
 
+        const authHeaders = await getAuthHeaders();
         const response = await fetch(`/api/reports/${reportId}/comments`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                ...authHeaders
+            },
             body: JSON.stringify({
                 content,
                 parent_comment_id: parentId,
@@ -309,9 +325,10 @@ export default function CommentsSection({ reportId, source = 'missing' }) {
 
     // Delete a comment
     const handleDelete = async (commentId) => {
+        const authHeaders = await getAuthHeaders();
         const response = await fetch(
             `/api/reports/${reportId}/comments?comment_id=${commentId}`,
-            { method: 'DELETE' }
+            { method: 'DELETE', headers: authHeaders }
         );
 
         if (!response.ok) throw new Error('Failed to delete comment');
@@ -328,6 +345,7 @@ export default function CommentsSection({ reportId, source = 'missing' }) {
     const handleLike = async (commentId, isCurrentlyLiked) => {
         if (!user) return;
 
+        const authHeaders = await getAuthHeaders();
         const method = isCurrentlyLiked ? 'DELETE' : 'POST';
         const url = isCurrentlyLiked 
             ? `/api/reports/${reportId}/comments/likes?comment_id=${commentId}`
@@ -335,8 +353,11 @@ export default function CommentsSection({ reportId, source = 'missing' }) {
 
         const options = {
             method,
+            headers: {
+                ...(method === 'POST' ? { 'Content-Type': 'application/json' } : {}),
+                ...authHeaders
+            },
             ...(method === 'POST' ? {
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ comment_id: commentId })
             } : {})
         };
