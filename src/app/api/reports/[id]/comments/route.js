@@ -87,32 +87,34 @@ export async function GET(request, { params }) {
             }, { status: 500 });
         }
 
-        // Get replies for all top-level comments
+        // Get comment IDs for top-level comments
         const commentIds = comments?.map(c => c.id) || [];
-        let replies = [];
-        
-        if (commentIds.length > 0) {
-            const { data: replyData } = await supabaseAdmin
-                .from('report_comments')
-                .select(`
-                    id,
-                    content,
-                    user_id,
-                    parent_comment_id,
-                    is_deleted,
-                    is_edited,
-                    created_at,
-                    updated_at
-                `)
-                .in('parent_comment_id', commentIds)
-                .eq('is_deleted', false)
-                .order('created_at', { ascending: true });
-            
-            replies = replyData || [];
-        }
 
-        // Get likes count for all comments
-        const allCommentIds = [...commentIds, ...replies.map(r => r.id)];
+        // Get ALL replies for this report (not just direct children)
+        // This fetches all comments that have a parent_comment_id (i.e., all replies at any depth)
+        let allReplies = [];
+        
+        const { data: replyData } = await supabaseAdmin
+            .from('report_comments')
+            .select(`
+                id,
+                content,
+                user_id,
+                parent_comment_id,
+                is_deleted,
+                is_edited,
+                created_at,
+                updated_at
+            `)
+            .eq(column, reportId)
+            .not('parent_comment_id', 'is', null) // All replies (has parent)
+            .eq('is_deleted', false)
+            .order('created_at', { ascending: true });
+        
+        allReplies = replyData || [];
+
+        // Get likes count for all comments (top-level + all replies)
+        const allCommentIds = [...commentIds, ...allReplies.map(r => r.id)];
         let likesMap = {};
         
         if (allCommentIds.length > 0) {
@@ -143,7 +145,7 @@ export async function GET(request, { params }) {
         // Get user profiles for all commenters
         const userIds = [...new Set([
             ...comments?.map(c => c.user_id) || [],
-            ...replies.map(r => r.user_id)
+            ...allReplies.map(r => r.user_id)
         ])];
         
         let profilesMap = {};
@@ -162,20 +164,27 @@ export async function GET(request, { params }) {
             });
         }
 
-        // Build nested structure
-        const enrichedComments = comments?.map(comment => ({
+        // Helper function to enrich a comment with user info and likes
+        const enrichComment = (comment) => ({
             ...comment,
             user: profilesMap[comment.user_id] || { full_name: 'Anonymous', avatar_url: null },
             likes_count: likesMap[comment.id] || 0,
-            is_liked: userLikes.includes(comment.id),
-            replies: replies
-                .filter(r => r.parent_comment_id === comment.id)
+            is_liked: userLikes.includes(comment.id)
+        });
+
+        // Build nested structure recursively
+        const buildNestedReplies = (parentId) => {
+            return allReplies
+                .filter(r => r.parent_comment_id === parentId)
                 .map(reply => ({
-                    ...reply,
-                    user: profilesMap[reply.user_id] || { full_name: 'Anonymous', avatar_url: null },
-                    likes_count: likesMap[reply.id] || 0,
-                    is_liked: userLikes.includes(reply.id)
-                }))
+                    ...enrichComment(reply),
+                    replies: buildNestedReplies(reply.id)
+                }));
+        };
+
+        const enrichedComments = comments?.map(comment => ({
+            ...enrichComment(comment),
+            replies: buildNestedReplies(comment.id)
         })) || [];
 
         return NextResponse.json({

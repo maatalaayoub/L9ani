@@ -24,50 +24,38 @@ function formatRelativeTime(dateString, locale) {
     });
 }
 
-// Single Comment Component
-function Comment({ comment, reportId, source, onReply, onDelete, onLike, depth = 0, locale }) {
+// Single Comment Component - Facebook Style
+function Comment({ comment, reportId, source, onReply, onDelete, onLike, depth = 0, locale, replyingToId, parentUserName = null }) {
     const t = useTranslations('reports');
     const { user } = useAuth();
-    const [isReplying, setIsReplying] = useState(false);
-    const [replyContent, setReplyContent] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [showReplies, setShowReplies] = useState(depth === 0);
+    const [showReplies, setShowReplies] = useState(true);
 
-    const maxDepth = 2; // Maximum nesting level
+    const maxDepth = 3;
     const canReply = depth < maxDepth;
     const isOwner = user?.id === comment.user_id;
-
-    const handleSubmitReply = async (e) => {
-        e.preventDefault();
-        if (!replyContent.trim() || isSubmitting) return;
-
-        setIsSubmitting(true);
-        try {
-            await onReply(replyContent, comment.id);
-            setReplyContent('');
-            setIsReplying(false);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+    const isReplyingToThis = replyingToId === comment.id;
 
     const handleLike = () => {
         onLike(comment.id, comment.is_liked);
     };
 
+    // Facebook-style: replies are smaller
+    const isReply = depth > 0;
+    const avatarSize = isReply ? 'w-7 h-7' : 'w-8 h-8';
+
     return (
-        <div className={`${depth > 0 ? 'ml-8 pl-4 border-l-2 border-gray-100 dark:border-gray-700' : ''}`}>
-            <div className="flex gap-3 py-3">
+        <div className="py-0.5">
+            <div className="flex gap-2 items-start">
                 {/* Avatar */}
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0 mt-0.5">
                     {comment.user?.avatar_url ? (
                         <img
                             src={comment.user.avatar_url}
                             alt={comment.user.full_name}
-                            className="w-10 h-10 rounded-full object-cover"
+                            className={`${avatarSize} rounded-full object-cover`}
                         />
                     ) : (
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+                        <div className={`${avatarSize} rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-xs`}>
                             {comment.user?.full_name?.charAt(0)?.toUpperCase() || '?'}
                         </div>
                     )}
@@ -75,54 +63,66 @@ function Comment({ comment, reportId, source, onReply, onDelete, onLike, depth =
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl px-4 py-3">
-                        {/* Header */}
-                        <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold text-gray-900 dark:text-white text-sm">
-                                {comment.user?.full_name || 'Anonymous'}
-                            </span>
-                            <span className="text-xs text-gray-400">
-                                {formatRelativeTime(comment.created_at, locale)}
-                            </span>
-                            {comment.is_edited && (
-                                <span className="text-xs text-gray-400 italic">
-                                    ({t('comments.edited')})
-                                </span>
+                    {/* Comment bubble */}
+                    <span className={`inline-block bg-gray-100 dark:bg-gray-700 rounded-2xl px-3 py-1.5 max-w-[85%] ${isReplyingToThis ? 'ring-2 ring-blue-500' : ''}`}>
+                        {/* Username */}
+                        <span className="font-semibold text-gray-900 dark:text-white text-[13px] block">
+                            {comment.user?.full_name || 'Anonymous'}
+                        </span>
+                        {/* Comment text with @mention */}
+                        <span className="text-gray-800 dark:text-gray-200 text-[14px]">
+                            {parentUserName && (
+                                <span className="text-blue-500 dark:text-blue-400 font-medium">@{parentUserName} </span>
                             )}
-                        </div>
-
-                        {/* Comment text */}
-                        <p className="text-gray-700 dark:text-gray-200 text-sm whitespace-pre-wrap break-words">
                             {comment.content}
-                        </p>
-                    </div>
+                        </span>
+                    </span>
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-4 mt-2 px-2">
+                    {/* Like count badge - positioned next to bubble */}
+                    {comment.likes_count > 0 && (
+                        <span className="inline-flex items-center gap-0.5 bg-white dark:bg-gray-600 rounded-full px-1 py-0.5 shadow-sm border border-gray-200 dark:border-gray-500 ml-1 align-top">
+                            <span className="text-[10px]">👍</span>
+                            <span className="text-gray-600 dark:text-gray-300 text-[11px]">{comment.likes_count}</span>
+                        </span>
+                    )}
+
+                    {/* Actions row - Facebook style: time · Like · Reply */}
+                    <div className="flex items-center gap-1 mt-0.5 ml-3 text-[12px]">
+                        {/* Time */}
+                        <span className="text-gray-500 dark:text-gray-400">
+                            {formatRelativeTime(comment.created_at, locale)}
+                        </span>
+                        <span className="text-gray-400 dark:text-gray-500">·</span>
+
                         {/* Like */}
                         <button
                             onClick={handleLike}
                             disabled={!user}
-                            className={`flex items-center gap-1 text-xs font-medium transition-colors ${
+                            className={`font-semibold transition-colors ${
                                 comment.is_liked 
-                                    ? 'text-red-500' 
-                                    : 'text-gray-500 dark:text-gray-400 hover:text-red-500'
+                                    ? 'text-blue-600 dark:text-blue-400' 
+                                    : 'text-gray-500 dark:text-gray-400 hover:underline'
                             } ${!user ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                            <svg className="w-4 h-4" fill={comment.is_liked ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                            </svg>
-                            {comment.likes_count > 0 && <span>{comment.likes_count}</span>}
+                            {locale === 'ar' ? 'إعجاب' : 'Like'}
                         </button>
+                        <span className="text-gray-400 dark:text-gray-500">·</span>
 
                         {/* Reply */}
                         {canReply && user && (
-                            <button
-                                onClick={() => setIsReplying(!isReplying)}
-                                className="text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-blue-500 transition-colors"
-                            >
-                                {t('comments.reply')}
-                            </button>
+                            <>
+                                <button
+                                    onClick={() => onReply(comment.id, comment.user?.full_name)}
+                                    className={`font-semibold transition-colors ${
+                                        isReplyingToThis 
+                                            ? 'text-blue-600 dark:text-blue-400' 
+                                            : 'text-gray-500 dark:text-gray-400 hover:underline'
+                                    }`}
+                                >
+                                    {locale === 'ar' ? 'رد' : 'Reply'}
+                                </button>
+                                <span className="text-gray-400 dark:text-gray-500">·</span>
+                            </>
                         )}
 
                         {/* Delete (for owner) */}
@@ -133,64 +133,68 @@ function Comment({ comment, reportId, source, onReply, onDelete, onLike, depth =
                                         onDelete(comment.id);
                                     }
                                 }}
-                                className="text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors"
+                                className="font-semibold text-gray-500 dark:text-gray-400 hover:text-red-500 hover:underline transition-colors"
                             >
-                                {t('comments.delete')}
+                                {locale === 'ar' ? 'حذف' : 'Delete'}
                             </button>
                         )}
                     </div>
 
-                    {/* Reply Form */}
-                    {isReplying && (
-                        <form onSubmit={handleSubmitReply} className="mt-3 flex gap-2">
-                            <input
-                                type="text"
-                                value={replyContent}
-                                onChange={(e) => setReplyContent(e.target.value)}
-                                placeholder={t('comments.placeholder')}
-                                className="flex-1 px-4 py-2 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 dark:text-white placeholder-gray-500"
-                                disabled={isSubmitting}
-                            />
-                            <button
-                                type="submit"
-                                disabled={!replyContent.trim() || isSubmitting}
-                                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            >
-                                {isSubmitting ? '...' : t('comments.submit')}
-                            </button>
-                        </form>
-                    )}
-
-                    {/* Replies */}
-                    {comment.replies && comment.replies.length > 0 && (
-                        <div className="mt-2">
-                            {!showReplies && (
+                    {/* Replies - Facebook style with connection lines */}
+                    {comment.replies && comment.replies.length > 0 && depth === 0 && (
+                        <div className="mt-1 relative">
+                            {!showReplies ? (
                                 <button
                                     onClick={() => setShowReplies(true)}
-                                    className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                                    className="flex items-center gap-1 text-[13px] font-semibold text-gray-500 dark:text-gray-400 hover:underline ml-10"
                                 >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                    <svg className="w-3 h-3 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                                     </svg>
-                                    {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}
+                                    {locale === 'ar' 
+                                        ? `${comment.replies.length} ${comment.replies.length === 1 ? 'رد' : 'ردود'}`
+                                        : `${comment.replies.length} ${comment.replies.length === 1 ? 'reply' : 'replies'}`
+                                    }
                                 </button>
-                            )}
-                            {showReplies && (
-                                <div className="space-y-1">
-                                    {comment.replies.map(reply => (
-                                        <Comment
-                                            key={reply.id}
-                                            comment={reply}
-                                            reportId={reportId}
-                                            source={source}
-                                            onReply={onReply}
-                                            onDelete={onDelete}
-                                            onLike={onLike}
-                                            depth={depth + 1}
-                                            locale={locale}
+                            ) : (
+                                <>
+                                    {comment.replies.length > 1 && (
+                                        <button
+                                            onClick={() => setShowReplies(false)}
+                                            className="flex items-center gap-1 text-[13px] font-semibold text-gray-500 dark:text-gray-400 hover:underline mb-1 ml-10"
+                                        >
+                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" />
+                                            </svg>
+                                            {locale === 'ar' ? 'إخفاء الردود' : 'Hide replies'}
+                                        </button>
+                                    )}
+                                    <div className="relative">
+                                        {/* Vertical connection line */}
+                                        <div 
+                                            className="absolute left-4 top-0 bottom-4 w-0.5 bg-gray-200 dark:bg-gray-600"
+                                            style={{ height: 'calc(100% - 16px)' }}
                                         />
-                                    ))}
-                                </div>
+                                        {comment.replies.map((reply, index) => (
+                                            <div key={reply.id} className="relative ml-10">
+                                                {/* Curved connector line */}
+                                                <div className="absolute -left-6 top-4 w-5 h-4 border-l-2 border-b-2 border-gray-200 dark:border-gray-600 rounded-bl-lg" />
+                                                <Comment
+                                                    comment={reply}
+                                                    reportId={reportId}
+                                                    source={source}
+                                                    onReply={onReply}
+                                                    onDelete={onDelete}
+                                                    onLike={onLike}
+                                                    depth={1}
+                                                    locale={locale}
+                                                    replyingToId={replyingToId}
+                                                    parentUserName={comment.user?.full_name}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </>
                             )}
                         </div>
                     )}
@@ -205,6 +209,7 @@ export default function CommentsSection({ reportId, source = 'missing' }) {
     const t = useTranslations('reports');
     const { locale } = useLanguage();
     const { user, getAccessToken } = useAuth();
+    const inputRef = useRef(null);
     
     const [comments, setComments] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -214,6 +219,7 @@ export default function CommentsSection({ reportId, source = 'missing' }) {
     const [total, setTotal] = useState(0);
     const [hasMore, setHasMore] = useState(false);
     const [offset, setOffset] = useState(0);
+    const [replyingTo, setReplyingTo] = useState(null); // { id, name }
     const limit = 10;
 
     // Helper to get auth headers
@@ -256,7 +262,7 @@ export default function CommentsSection({ reportId, source = 'missing' }) {
         fetchComments(true);
     }, [reportId, source]);
 
-    // Add a new comment
+    // Add a new comment or reply
     const handleAddComment = async (e) => {
         e.preventDefault();
         if (!newComment.trim() || isSubmitting || !user) return;
@@ -272,16 +278,44 @@ export default function CommentsSection({ reportId, source = 'missing' }) {
                 },
                 body: JSON.stringify({
                     content: newComment,
-                    source
+                    source,
+                    ...(replyingTo?.id ? { parent_comment_id: replyingTo.id } : {})
                 })
             });
 
             if (!response.ok) throw new Error('Failed to add comment');
 
             const data = await response.json();
-            setComments(prev => [data.comment, ...prev]);
-            setTotal(prev => prev + 1);
+            
+            if (replyingTo?.id) {
+                // Helper function to recursively add reply at any depth
+                const addReplyToComment = (comments) => {
+                    return comments.map(comment => {
+                        if (comment.id === replyingTo.id) {
+                            return {
+                                ...comment,
+                                replies: [...(comment.replies || []), data.comment]
+                            };
+                        }
+                        if (comment.replies && comment.replies.length > 0) {
+                            return {
+                                ...comment,
+                                replies: addReplyToComment(comment.replies)
+                            };
+                        }
+                        return comment;
+                    });
+                };
+                
+                setComments(prev => addReplyToComment(prev));
+            } else {
+                // Add new top-level comment
+                setComments(prev => [data.comment, ...prev]);
+                setTotal(prev => prev + 1);
+            }
+            
             setNewComment('');
+            setReplyingTo(null);
         } catch (err) {
             console.error('Error adding comment:', err);
         } finally {
@@ -289,38 +323,35 @@ export default function CommentsSection({ reportId, source = 'missing' }) {
         }
     };
 
-    // Add a reply
-    const handleReply = async (content, parentId) => {
-        if (!user) return;
+    // Set reply target and focus input
+    const handleSetReplyTo = (commentId, userName) => {
+        if (replyingTo?.id === commentId) {
+            // Toggle off if clicking same comment
+            setReplyingTo(null);
+        } else {
+            setReplyingTo({ id: commentId, name: userName });
+            // Focus the input and scroll to it
+            setTimeout(() => {
+                inputRef.current?.focus();
+                inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+    };
 
-        const authHeaders = await getAuthHeaders();
-        const response = await fetch(`/api/reports/${reportId}/comments`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                ...authHeaders
-            },
-            body: JSON.stringify({
-                content,
-                parent_comment_id: parentId,
-                source
-            })
-        });
+    // Cancel reply
+    const handleCancelReply = () => {
+        setReplyingTo(null);
+        setNewComment('');
+    };
 
-        if (!response.ok) throw new Error('Failed to add reply');
-
-        const data = await response.json();
-        
-        // Add reply to the parent comment
-        setComments(prev => prev.map(comment => {
-            if (comment.id === parentId) {
-                return {
-                    ...comment,
-                    replies: [...(comment.replies || []), data.comment]
-                };
-            }
-            return comment;
-        }));
+    // Helper function to recursively delete a comment at any depth
+    const deleteCommentRecursive = (comments, commentId) => {
+        return comments
+            .filter(c => c.id !== commentId)
+            .map(comment => ({
+                ...comment,
+                replies: comment.replies ? deleteCommentRecursive(comment.replies, commentId) : []
+            }));
     };
 
     // Delete a comment
@@ -333,11 +364,8 @@ export default function CommentsSection({ reportId, source = 'missing' }) {
 
         if (!response.ok) throw new Error('Failed to delete comment');
 
-        // Remove from UI
-        setComments(prev => prev.filter(c => c.id !== commentId).map(comment => ({
-            ...comment,
-            replies: comment.replies?.filter(r => r.id !== commentId)
-        })));
+        // Remove from UI at any nesting level
+        setComments(prev => deleteCommentRecursive(prev, commentId));
         setTotal(prev => prev - 1);
     };
 
@@ -365,25 +393,27 @@ export default function CommentsSection({ reportId, source = 'missing' }) {
         const response = await fetch(url, options);
         if (!response.ok) return;
 
-        // Update UI
-        const updateLike = (comment) => {
-            if (comment.id === commentId) {
-                return {
-                    ...comment,
-                    is_liked: !isCurrentlyLiked,
-                    likes_count: comment.likes_count + (isCurrentlyLiked ? -1 : 1)
-                };
-            }
-            if (comment.replies) {
-                return {
-                    ...comment,
-                    replies: comment.replies.map(updateLike)
-                };
-            }
-            return comment;
+        // Update UI recursively at any depth
+        const updateLikeRecursive = (comments) => {
+            return comments.map(comment => {
+                if (comment.id === commentId) {
+                    return {
+                        ...comment,
+                        is_liked: !isCurrentlyLiked,
+                        likes_count: (comment.likes_count || 0) + (isCurrentlyLiked ? -1 : 1)
+                    };
+                }
+                if (comment.replies && comment.replies.length > 0) {
+                    return {
+                        ...comment,
+                        replies: updateLikeRecursive(comment.replies)
+                    };
+                }
+                return comment;
+            });
         };
 
-        setComments(prev => prev.map(updateLike));
+        setComments(prev => updateLikeRecursive(prev));
     };
 
     if (loading) {
@@ -396,74 +426,24 @@ export default function CommentsSection({ reportId, source = 'missing' }) {
 
     return (
         <div id="comments" className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-            {/* Header */}
-            <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-                <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    </svg>
+            {/* Header - Facebook style */}
+            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                <h3 className="font-semibold text-gray-900 dark:text-white text-[15px]">
                     {t('comments.title')}
                     {total > 0 && (
-                        <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                        <span className="font-normal text-gray-500 dark:text-gray-400 ml-1">
                             ({total})
                         </span>
                     )}
                 </h3>
             </div>
 
-            {/* Add Comment Form */}
-            <div className="p-4 border-b border-gray-100 dark:border-gray-700">
-                {user ? (
-                    <form onSubmit={handleAddComment} className="flex gap-3">
-                        <div className="flex-shrink-0">
-                            {user.user_metadata?.avatar_url ? (
-                                <img
-                                    src={user.user_metadata.avatar_url}
-                                    alt="You"
-                                    className="w-10 h-10 rounded-full object-cover"
-                                />
-                            ) : (
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
-                                    {user.email?.charAt(0)?.toUpperCase() || '?'}
-                                </div>
-                            )}
-                        </div>
-                        <div className="flex-1 flex gap-2">
-                            <input
-                                type="text"
-                                value={newComment}
-                                onChange={(e) => setNewComment(e.target.value)}
-                                placeholder={t('comments.placeholder')}
-                                className="flex-1 px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 dark:text-white placeholder-gray-500"
-                                disabled={isSubmitting}
-                            />
-                            <button
-                                type="submit"
-                                disabled={!newComment.trim() || isSubmitting}
-                                className="px-5 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-full hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
-                            >
-                                {isSubmitting ? t('comments.submitting') : t('comments.submit')}
-                            </button>
-                        </div>
-                    </form>
-                ) : (
-                    <p className="text-center text-gray-500 dark:text-gray-400 py-2">
-                        {t('comments.loginToComment')}
-                    </p>
-                )}
-            </div>
-
-            {/* Comments List */}
-            <div className="divide-y divide-gray-100 dark:divide-gray-700">
+            {/* Comments List - Tighter spacing like Facebook */}
+            <div>
                 {comments.length === 0 ? (
-                    <div className="p-8 text-center">
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                            </svg>
-                        </div>
-                        <p className="text-gray-500 dark:text-gray-400">{t('comments.noComments')}</p>
-                        <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">{t('comments.beFirst')}</p>
+                    <div className="p-6 text-center">
+                        <p className="text-gray-500 dark:text-gray-400 text-sm">{t('comments.noComments')}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{t('comments.beFirst')}</p>
                     </div>
                 ) : (
                     <div className="px-4 py-2">
@@ -473,25 +453,100 @@ export default function CommentsSection({ reportId, source = 'missing' }) {
                                 comment={comment}
                                 reportId={reportId}
                                 source={source}
-                                onReply={handleReply}
+                                onReply={handleSetReplyTo}
                                 onDelete={handleDelete}
                                 onLike={handleLike}
                                 locale={locale}
+                                replyingToId={replyingTo?.id}
                             />
                         ))}
                     </div>
                 )}
 
-                {/* Load More */}
+                {/* Load More - Facebook style */}
                 {hasMore && (
-                    <div className="p-4 text-center">
+                    <div className="px-4 pb-2">
                         <button
                             onClick={() => fetchComments()}
-                            className="px-6 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-colors"
+                            className="text-[13px] font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                         >
-                            {t('loading.more')}
+                            {locale === 'ar' ? 'عرض المزيد من التعليقات...' : 'View more comments...'}
                         </button>
                     </div>
+                )}
+            </div>
+
+            {/* Add Comment Form - Facebook style */}
+            <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-700">
+                {user ? (
+                    <div>
+                        {/* Reply indicator - minimal style */}
+                        {replyingTo && (
+                            <div className="flex items-center gap-2 mb-2 text-xs">
+                                <span className="text-gray-500 dark:text-gray-400">
+                                    {locale === 'ar' ? 'الرد على' : 'Replying to'}
+                                </span>
+                                <span className="font-semibold text-blue-600 dark:text-blue-400">
+                                    {replyingTo.name}
+                                </span>
+                                <button
+                                    onClick={handleCancelReply}
+                                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 ml-auto"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        )}
+                        <form onSubmit={handleAddComment} className="flex gap-2 items-center">
+                            {/* Avatar */}
+                            <div className="flex-shrink-0">
+                                {user.user_metadata?.avatar_url ? (
+                                    <img
+                                        src={user.user_metadata.avatar_url}
+                                        alt="You"
+                                        className="w-8 h-8 rounded-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-xs">
+                                        {user.email?.charAt(0)?.toUpperCase() || '?'}
+                                    </div>
+                                )}
+                            </div>
+                            {/* Input - Facebook bubble style */}
+                            <div className="flex-1 relative">
+                                <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={newComment}
+                                    onChange={(e) => setNewComment(e.target.value)}
+                                    placeholder={replyingTo 
+                                        ? (locale === 'ar' ? `اكتب ردًا...` : `Write a reply...`)
+                                        : (locale === 'ar' ? 'اكتب تعليقًا...' : 'Write a comment...')
+                                    }
+                                    className="w-full px-4 py-2 text-[15px] bg-gray-100 dark:bg-gray-700 border-0 rounded-full focus:ring-0 outline-none text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                    disabled={isSubmitting}
+                                />
+                                {/* Send button inside input */}
+                                {newComment.trim() && (
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-700 disabled:opacity-50"
+                                    >
+                                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                                        </svg>
+                                    </button>
+                                )}
+                            </div>
+                        </form>
+                    </div>
+                ) : (
+                    <p className="text-center text-gray-500 dark:text-gray-400 text-sm py-1">
+                        {t('comments.loginToComment')}
+                    </p>
                 )}
             </div>
         </div>

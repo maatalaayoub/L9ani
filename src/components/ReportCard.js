@@ -534,14 +534,14 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
             </div>
 
             {/* Action Buttons */}
-            <div className="border-t border-gray-100 dark:border-gray-700 px-2 py-2">
-                <div className="flex items-center justify-between">
+            <div className="border-t border-gray-100 dark:border-gray-700 px-2 sm:px-3 py-2">
+                <div className="flex items-center justify-between gap-1 sm:gap-2">
                     {/* Like Button */}
                     <button
                         onClick={handleLike}
                         disabled={!user}
                         className={`
-                            flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all
+                            flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all
                             ${liked 
                                 ? 'text-red-500 bg-red-50 dark:bg-red-900/20' 
                                 : 'text-gray-600 dark:text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
@@ -551,38 +551,59 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                         `}
                     >
                         <svg 
-                            className={`w-5 h-5 transition-transform ${likeAnimation ? 'scale-125' : ''}`} 
+                            className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${likeAnimation ? 'scale-125' : ''}`} 
                             fill={liked ? "currentColor" : "none"} 
                             stroke="currentColor" 
                             viewBox="0 0 24 24"
                         >
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
-                        <span>{likeCount > 0 ? likeCount : ''} {locale === 'ar' ? 'إعجاب' : 'Like'}</span>
+                        <span className="flex items-center gap-0.5">
+                            {likeCount > 0 && <span>{likeCount}</span>}
+                            <span>{locale === 'ar' ? 'إعجاب' : 'Like'}</span>
+                        </span>
                     </button>
 
                     {/* Comment Button */}
                     <Link
                         href={`/reports/${report.id}?source=${report.source}#comments`}
-                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+                        className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
                     >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
-                        <span>{commentsCount > 0 ? commentsCount : ''} {locale === 'ar' ? 'تعليق' : 'Comment'}</span>
+                        <span className="flex items-center gap-0.5">
+                            {commentsCount > 0 && <span>{commentsCount}</span>}
+                            <span>{locale === 'ar' ? 'تعليق' : 'Comment'}</span>
+                        </span>
                     </Link>
 
                     {/* Spacer */}
-                    <div className="flex-1"></div>
+                    <div className="flex-1 min-w-0"></div>
+
+                    {/* View Details */}
+                    <Link
+                        href={`/reports/${report.id}?source=${report.source}`}
+                        className={`flex-shrink-0 flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold text-white shadow-sm hover:shadow transition-all ${
+                            isSighting 
+                                ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600' 
+                                : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+                        }`}
+                    >
+                        <span>{locale === 'ar' ? 'التفاصيل' : 'Details'}</span>
+                        <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isRTL ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </Link>
 
                     {/* More Options Button (Three dots) */}
-                    <div className="relative" ref={shareMenuRef}>
+                    <div className="relative flex-shrink-0" ref={shareMenuRef}>
                         <button
                             onClick={() => setShowShareMenu(!showShareMenu)}
-                            className="flex items-center justify-center w-9 h-9 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+                            className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
                             aria-label={locale === 'ar' ? 'خيارات المشاركة' : 'Share options'}
                         >
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24">
                                 <circle cx="12" cy="5" r="2" />
                                 <circle cx="12" cy="12" r="2" />
                                 <circle cx="12" cy="19" r="2" />
@@ -670,21 +691,6 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                             </div>
                         )}
                     </div>
-
-                    {/* View Details */}
-                    <Link
-                        href={`/reports/${report.id}?source=${report.source}`}
-                        className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white shadow-sm hover:shadow transition-all ${
-                            isSighting 
-                                ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600' 
-                                : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
-                        }`}
-                    >
-                        <span>{locale === 'ar' ? 'التفاصيل' : 'Details'}</span>
-                        <svg className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </Link>
                 </div>
             </div>
         </div>
