@@ -425,7 +425,7 @@ export default function CommentsSection({ reportId, source = 'missing', hideHead
     }
 
     return (
-        <div id="comments" className={`bg-white dark:bg-gray-800 overflow-hidden ${hideHeader ? '' : 'rounded-2xl border border-gray-200 dark:border-gray-700'}`}>
+        <div id="comments" className={`bg-white dark:bg-gray-800 ${hideHeader ? 'flex flex-col h-full min-h-0' : 'overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700'}`}>
             {/* Header - Facebook style (hidden when in dialog) */}
             {!hideHeader && (
                 <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
@@ -441,7 +441,7 @@ export default function CommentsSection({ reportId, source = 'missing', hideHead
             )}
 
             {/* Comments List - Tighter spacing like Facebook */}
-            <div>
+            <div className={hideHeader ? 'flex-1 min-h-0 overflow-y-auto' : ''}>
                 {comments.length === 0 ? (
                     <div className="p-6 text-center">
                         <p className="text-gray-500 dark:text-gray-400 text-sm">{t('comments.noComments')}</p>
@@ -478,8 +478,8 @@ export default function CommentsSection({ reportId, source = 'missing', hideHead
                 )}
             </div>
 
-            {/* Add Comment Form - Facebook style */}
-            <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-700">
+            {/* Add Comment Form - Facebook style - Fixed at bottom when in dialog */}
+            <div className={`px-4 py-3 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 ${hideHeader ? 'flex-shrink-0' : ''}`}>
                 {user ? (
                     <div>
                         {/* Reply indicator - minimal style */}

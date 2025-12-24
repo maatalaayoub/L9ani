@@ -432,6 +432,39 @@ export async function DELETE(request) {
             }
         }
 
+        // Delete associated comments
+        const { error: commentsError } = await supabaseAdmin
+            .from('report_comments')
+            .delete()
+            .eq('sighting_report_id', reportId);
+        if (commentsError) {
+            console.error('[API Admin Sighting Reports DELETE] Error deleting comments:', commentsError);
+        } else {
+            console.log('[API Admin Sighting Reports DELETE] Deleted associated comments');
+        }
+
+        // Delete associated reactions
+        const { error: reactionsError } = await supabaseAdmin
+            .from('report_reactions')
+            .delete()
+            .eq('sighting_report_id', reportId);
+        if (reactionsError) {
+            console.error('[API Admin Sighting Reports DELETE] Error deleting reactions:', reactionsError);
+        } else {
+            console.log('[API Admin Sighting Reports DELETE] Deleted associated reactions');
+        }
+
+        // Delete associated notifications
+        const { error: notificationsError } = await supabaseAdmin
+            .from('notifications')
+            .delete()
+            .filter('data->>reportId', 'eq', reportId);
+        if (notificationsError) {
+            console.error('[API Admin Sighting Reports DELETE] Error deleting notifications:', notificationsError);
+        } else {
+            console.log('[API Admin Sighting Reports DELETE] Deleted associated notifications');
+        }
+
         // Delete from detail table first (due to foreign key constraint)
         const detailTable = SIGHTING_DETAIL_TABLE_MAP[report.report_type];
         if (detailTable) {

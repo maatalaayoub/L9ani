@@ -442,6 +442,33 @@ export async function DELETE(request) {
             }
         }
 
+        // Delete associated comments
+        const { error: commentsError } = await supabaseAdmin
+            .from('report_comments')
+            .delete()
+            .eq('report_id', reportId);
+        if (commentsError) {
+            console.error('[API Reports DELETE] Error deleting comments:', commentsError);
+        }
+
+        // Delete associated reactions
+        const { error: reactionsError } = await supabaseAdmin
+            .from('report_reactions')
+            .delete()
+            .eq('report_id', reportId);
+        if (reactionsError) {
+            console.error('[API Reports DELETE] Error deleting reactions:', reactionsError);
+        }
+
+        // Delete associated notifications
+        const { error: notificationsError } = await supabaseAdmin
+            .from('notifications')
+            .delete()
+            .filter('data->>reportId', 'eq', reportId);
+        if (notificationsError) {
+            console.error('[API Reports DELETE] Error deleting notifications:', notificationsError);
+        }
+
         // Delete the report (cascade will delete detail record)
         const { error: deleteError } = await supabaseAdmin
             .from('reports')
