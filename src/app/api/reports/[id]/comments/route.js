@@ -41,7 +41,13 @@ async function getUserProfile(userId) {
 // GET - Get comments for a report with nested replies
 export async function GET(request, { params }) {
     try {
-        const { id: reportId } = params;
+        // Check if supabaseAdmin is available
+        if (!supabaseAdmin) {
+            console.error('Error: supabaseAdmin is not configured');
+            return NextResponse.json({ error: 'Database connection not available' }, { status: 500 });
+        }
+
+        const { id: reportId } = await params;
         const { searchParams } = new URL(request.url);
         const source = searchParams.get('source') || 'missing';
         const isSighting = source === 'sighting';
@@ -71,7 +77,14 @@ export async function GET(request, { params }) {
 
         if (error) {
             console.error('Error fetching comments:', error);
-            return NextResponse.json({ error: 'Failed to fetch comments' }, { status: 500 });
+            console.error('Error code:', error.code);
+            console.error('Error message:', error.message);
+            console.error('Error details:', error.details);
+            return NextResponse.json({ 
+                error: 'Failed to fetch comments',
+                details: error.message,
+                code: error.code
+            }, { status: 500 });
         }
 
         // Get replies for all top-level comments
@@ -174,7 +187,8 @@ export async function GET(request, { params }) {
         });
     } catch (error) {
         console.error('Error in comments GET:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        console.error('Error stack:', error.stack);
+        return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
     }
 }
 
@@ -186,7 +200,7 @@ export async function POST(request, { params }) {
             return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
         }
 
-        const { id: reportId } = params;
+        const { id: reportId } = await params;
         const body = await request.json();
         const { content, parent_comment_id, source = 'missing' } = body;
 

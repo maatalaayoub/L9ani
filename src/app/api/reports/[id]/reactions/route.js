@@ -22,7 +22,7 @@ async function getAuthUser(request) {
 // GET - Get reactions for a report
 export async function GET(request, { params }) {
     try {
-        const { id: reportId } = params;
+        const { id: reportId } = await params;
         const { searchParams } = new URL(request.url);
         const source = searchParams.get('source') || 'missing';
         const isSighting = source === 'sighting';
@@ -75,7 +75,7 @@ export async function POST(request, { params }) {
             return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
         }
 
-        const { id: reportId } = params;
+        const { id: reportId } = await params;
         const body = await request.json();
         const { reaction_type, source = 'missing' } = body;
 
@@ -151,9 +151,10 @@ export async function DELETE(request, { params }) {
             return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
         }
 
-        const { id: reportId } = params;
-        const body = await request.json();
-        const { reaction_type, source = 'missing' } = body;
+        const { id: reportId } = await params;
+        const { searchParams } = new URL(request.url);
+        const reaction_type = searchParams.get('reaction_type');
+        const source = searchParams.get('source') || 'missing';
 
         if (!reaction_type) {
             return NextResponse.json({ error: 'Reaction type is required' }, { status: 400 });
