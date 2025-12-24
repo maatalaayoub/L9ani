@@ -108,6 +108,7 @@ export async function GET(request) {
 
                     return {
                         id: report.id,
+                        user_id: report.user_id,
                         source: 'missing',
                         type: report.report_type,
                         report_type: report.report_type,
@@ -121,7 +122,8 @@ export async function GET(request) {
                         last_known_location: report.last_known_location,
                         title: getReportTitle(report.report_type, details),
                         description: report.additional_info,
-                        details: details
+                        details: details,
+                        owner: report.profiles || null
                     };
                 });
 
@@ -133,12 +135,53 @@ export async function GET(request) {
         if (source === 'all' || source === 'sighting') {
             let sightingQuery = supabaseAdmin
                 .from('sighting_reports')
-                .select('*')
+                .select(`
+                    *,
+                    sighting_details_person (
+                        first_name,
+                        last_name,
+                        approximate_age,
+                        gender,
+                        physical_description,
+                        clothing_description
+                    ),
+                    sighting_details_pet (
+                        pet_type,
+                        breed,
+                        color,
+                        size,
+                        has_collar,
+                        collar_description,
+                        condition
+                    ),
+                    sighting_details_vehicle (
+                        vehicle_type,
+                        brand,
+                        model,
+                        color,
+                        license_plate
+                    ),
+                    sighting_details_electronics (
+                        device_type,
+                        brand,
+                        model,
+                        color
+                    ),
+                    sighting_details_document (
+                        document_type,
+                        owner_name
+                    ),
+                    sighting_details_other (
+                        item_name,
+                        item_description,
+                        condition
+                    )
+                `)
                 .eq('status', 'approved');
 
             // Apply type filter
             if (type !== 'all') {
-                sightingQuery = sightingQuery.eq('sighting_type', type);
+                sightingQuery = sightingQuery.eq('report_type', type);
             }
 
             const { data: sightingReports, error: sightingError } = await sightingQuery;
@@ -147,27 +190,88 @@ export async function GET(request) {
                 console.error('Error fetching sighting reports:', sightingError);
             } else if (sightingReports) {
                 // Transform sighting reports
-                const transformedSighting = sightingReports.map(report => ({
-                    id: report.id,
-                    source: 'sighting',
-                    type: report.sighting_type,
-                    status: report.status,
-                    coordinates: report.coordinates,
-                    created_at: report.created_at,
-                    updated_at: report.updated_at,
-                    photo_url: report.photo_url,
-                    city: report.city || report.location_description,
-                    title: getSightingTitle(report.sighting_type, report),
-                    description: report.description,
-                    details: {
-                        location_description: report.location_description,
-                        sighting_date: report.sighting_date,
-                        sighting_time: report.sighting_time,
-                        contact_info: report.contact_info
+                const transformedSighting = sightingReports.map(report => {
+                    // Get type-specific details
+                    const typeDetails = 
+                        report.sighting_details_person ||
+                        report.sighting_details_pet ||
+                        report.sighting_details_vehicle ||
+                        report.sighting_details_electronics ||
+                        report.sighting_details_document ||
+                        report.sighting_details_other || {};
+
+                    // Generate title based on available data
+                    let title = getSightingTitle(report.report_type, report);
+                    if (report.report_type === 'person' && typeDetails.first_name) {
+                        title = `${typeDetails.first_name} ${typeDetails.last_name || ''}`.trim();
+                    } else if (report.report_type === 'pet' && typeDetails.breed) {
+                        title = `${typeDetails.breed} ${typeDetails.pet_type || ''}`.trim();
+                    } else if ((report.report_type === 'vehicle' || report.report_type === 'electronics') && typeDetails.brand) {
+                        title = `${typeDetails.brand} ${typeDetails.model || ''}`.trim();
+                    } else if (report.report_type === 'document' && typeDetails.document_type) {
+                        title = typeDetails.document_type;
+                    } else if (report.report_type === 'other' && typeDetails.item_name) {
+                        title = typeDetails.item_name;
                     }
-                }));
+
+                    return {
+                        id: report.id,
+                        user_id: report.user_id,
+                        source: 'sighting',
+                        type: report.report_type,
+                        report_type: report.report_type,
+                        status: report.status,
+                        coordinates: report.coordinates,
+                        created_at: report.created_at,
+                        updated_at: report.updated_at,
+                        photo_url: report.photos && report.photos.length > 0 ? report.photos[0] : null,
+                        photos: report.photos || [],
+                        city: report.city || report.location_description,
+                        last_known_location: report.location_description,
+                        title: title,
+                        description: report.additional_info,
+                        details: {
+                            ...typeDetails,
+                            location_description: report.location_description,
+                            sighting_date: report.created_at,
+                            contact_info: report.reporter_phone
+                        },
+                        owner: report.profiles || null
+                    };
+                });
 
                 allReports = [...allReports, ...transformedSighting];
+            }
+        }
+
+        // Fetch user profiles for all reports
+        if (allReports.length > 0) {
+            const userIds = [...new Set(allReports.map(r => r.user_id).filter(Boolean))];
+            if (userIds.length > 0) {
+                // Fetch profiles using auth_user_id
+                const { data: profiles, error: profilesError } = await supabaseAdmin
+                    .from('profiles')
+                    .select('auth_user_id, first_name, last_name, username, avatar_url')
+                    .in('auth_user_id', userIds);
+
+                if (profiles && profiles.length > 0) {
+                    const profilesMap = {};
+                    profiles.forEach(p => {
+                        // Construct full_name from first_name and last_name
+                        const fullName = [p.first_name, p.last_name].filter(Boolean).join(' ').trim();
+                        profilesMap[p.auth_user_id] = {
+                            full_name: fullName || p.username || null,
+                            username: p.username,
+                            avatar_url: p.avatar_url
+                        };
+                    });
+
+                    // Attach owner info to each report
+                    allReports = allReports.map(report => ({
+                        ...report,
+                        owner: report.owner || profilesMap[report.user_id] || null
+                    }));
+                }
             }
         }
 

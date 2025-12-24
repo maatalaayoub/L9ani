@@ -234,10 +234,10 @@ export default function ReportsFeed({
                 </div>
             )}
 
-            {/* Reports Grid */}
+            {/* Reports Feed - Single Column Layout */}
             {!loading && !error && filteredReports.length > 0 && (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <div className="flex flex-col gap-6 max-w-2xl mx-auto">
                         {filteredReports.map(report => (
                             <ReportCard
                                 key={`${report.source}-${report.id}`}

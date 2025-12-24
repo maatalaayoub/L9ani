@@ -23,9 +23,18 @@ async function getAuthUser(request) {
 async function getUserProfile(userId) {
     const { data } = await supabaseAdmin
         .from('profiles')
-        .select('full_name, avatar_url')
-        .eq('id', userId)
+        .select('first_name, last_name, avatar_url')
+        .eq('auth_user_id', userId)
         .single();
+    
+    if (data) {
+        // Construct full_name from first_name and last_name
+        const fullName = [data.first_name, data.last_name].filter(Boolean).join(' ').trim();
+        return {
+            full_name: fullName || 'Anonymous',
+            avatar_url: data.avatar_url
+        };
+    }
     return data;
 }
 
@@ -128,11 +137,15 @@ export async function GET(request, { params }) {
         if (userIds.length > 0) {
             const { data: profiles } = await supabaseAdmin
                 .from('profiles')
-                .select('id, full_name, avatar_url')
-                .in('id', userIds);
+                .select('auth_user_id, first_name, last_name, avatar_url')
+                .in('auth_user_id', userIds);
             
             profiles?.forEach(p => {
-                profilesMap[p.id] = p;
+                const fullName = [p.first_name, p.last_name].filter(Boolean).join(' ').trim();
+                profilesMap[p.auth_user_id] = {
+                    full_name: fullName || 'Anonymous',
+                    avatar_url: p.avatar_url
+                };
             });
         }
 

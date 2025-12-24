@@ -59,12 +59,16 @@ export async function POST(request, { params }) {
             .single();
 
         if (comment && comment.user_id !== user.id) {
-            // Get liker's profile
+            // Get liker's profile using auth_user_id
             const { data: profile } = await supabaseAdmin
                 .from('profiles')
-                .select('full_name')
-                .eq('id', user.id)
+                .select('first_name, last_name')
+                .eq('auth_user_id', user.id)
                 .single();
+
+            const fullName = profile 
+                ? [profile.first_name, profile.last_name].filter(Boolean).join(' ').trim() 
+                : null;
 
             await supabaseAdmin
                 .from('notifications')
@@ -72,7 +76,7 @@ export async function POST(request, { params }) {
                     user_id: comment.user_id,
                     type: 'like',
                     title: 'Comment Liked',
-                    message: `${profile?.full_name || 'Someone'} liked your comment`,
+                    message: `${fullName || 'Someone'} liked your comment`,
                     data: {
                         comment_id,
                         actor_id: user.id
