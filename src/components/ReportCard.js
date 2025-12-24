@@ -108,6 +108,8 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
     const [isLikeLoading, setIsLikeLoading] = useState(false);
     const [showShareMenu, setShowShareMenu] = useState(false);
     const [showCommentsDialog, setShowCommentsDialog] = useState(false);
+    const [previewImages, setPreviewImages] = useState([]);
+    const [previewIndex, setPreviewIndex] = useState(0);
     const shareMenuRef = useRef(null);
 
     const isRTL = locale === 'ar';
@@ -468,13 +470,27 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
             {/* Main Content Area - Photo Only */}
             <div>
                 {photoUrl ? (
-                    <div className="aspect-video relative overflow-hidden bg-gray-100 dark:bg-gray-700">
+                    <button
+                        onClick={() => {
+                            if (report.photos && report.photos.length > 0) {
+                                setPreviewImages(report.photos);
+                                setPreviewIndex(0);
+                            }
+                        }}
+                        className="w-full aspect-video relative overflow-hidden bg-gray-100 dark:bg-gray-700 cursor-pointer group"
+                    >
                         <img
                             src={photoUrl}
                             alt={getDisplayTitle()}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             onError={() => setImageError(true)}
                         />
+                        {/* Hover overlay */}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                            <svg className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                            </svg>
+                        </div>
                         {/* Photo count badge */}
                         {report.photos && report.photos.length > 1 && (
                             <div className="absolute top-2 right-2">
@@ -486,7 +502,7 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                                 </span>
                             </div>
                         )}
-                    </div>
+                    </button>
                 ) : (
                     <div className={`
                         aspect-video flex items-center justify-center
@@ -724,6 +740,117 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                             <CommentsSection reportId={report.id} source={report.source} hideHeader />
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* Image Gallery Modal */}
+            {previewImages.length > 0 && (
+                <div 
+                    className="fixed inset-0 z-[110] flex items-center justify-center p-4"
+                    onClick={() => setPreviewImages([])}
+                    onKeyDown={(e) => {
+                        if (e.key === 'ArrowLeft') {
+                            setPreviewIndex(prev => prev > 0 ? prev - 1 : previewImages.length - 1);
+                        } else if (e.key === 'ArrowRight') {
+                            setPreviewIndex(prev => prev < previewImages.length - 1 ? prev + 1 : 0);
+                        } else if (e.key === 'Escape') {
+                            setPreviewImages([]);
+                        }
+                    }}
+                    tabIndex={0}
+                    ref={(el) => el?.focus()}
+                >
+                    {/* Backdrop */}
+                    <div className="absolute inset-0 bg-gray-900/95 backdrop-blur-sm" />
+                    
+                    {/* Close Button */}
+                    <button
+                        onClick={() => setPreviewImages([])}
+                        className="absolute top-4 right-4 z-20 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+
+                    {/* Image Counter */}
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 px-3 py-1.5 bg-black/50 backdrop-blur-sm rounded-full text-white text-sm font-medium">
+                        {previewIndex + 1} / {previewImages.length}
+                    </div>
+
+                    {/* Previous Button */}
+                    {previewImages.length > 1 && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setPreviewIndex(prev => prev > 0 ? prev - 1 : previewImages.length - 1);
+                            }}
+                            className="absolute left-4 z-20 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                    )}
+
+                    {/* Next Button */}
+                    {previewImages.length > 1 && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setPreviewIndex(prev => prev < previewImages.length - 1 ? prev + 1 : 0);
+                            }}
+                            className="absolute right-4 z-20 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    )}
+                    
+                    {/* Image Container with Touch Support */}
+                    <div 
+                        className="relative z-10 bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-2xl max-w-[90vw] max-h-[90vh] touch-pan-y"
+                        onClick={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => {
+                            const touch = e.touches[0];
+                            e.currentTarget.dataset.touchStartX = touch.clientX;
+                        }}
+                        onTouchEnd={(e) => {
+                            const touchStartX = parseFloat(e.currentTarget.dataset.touchStartX);
+                            const touchEndX = e.changedTouches[0].clientX;
+                            const diff = touchStartX - touchEndX;
+                            if (Math.abs(diff) > 50) {
+                                if (diff > 0) {
+                                    setPreviewIndex(prev => prev < previewImages.length - 1 ? prev + 1 : 0);
+                                } else {
+                                    setPreviewIndex(prev => prev > 0 ? prev - 1 : previewImages.length - 1);
+                                }
+                            }
+                        }}
+                    >
+                        <img
+                            src={previewImages[previewIndex]}
+                            alt={`Preview ${previewIndex + 1}`}
+                            className="max-w-full max-h-[85vh] object-contain rounded-xl"
+                        />
+                    </div>
+
+                    {/* Dot Indicators */}
+                    {previewImages.length > 1 && (
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+                            {previewImages.map((_, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setPreviewIndex(idx);
+                                    }}
+                                    className={`w-2 h-2 rounded-full transition-all ${idx === previewIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/75'}`}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
         </div>
