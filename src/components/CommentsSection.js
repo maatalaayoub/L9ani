@@ -31,8 +31,8 @@ function Comment({ comment, reportId, source, onReply, onDelete, onLike, depth =
     const [showReplies, setShowReplies] = useState(true);
 
     const maxDepth = 3;
-    const canReply = depth < maxDepth;
     const isOwner = user?.id === comment.user_id;
+    const canReply = depth < maxDepth && !isOwner; // Can't reply to own comment
     const isReplyingToThis = replyingToId === comment.id;
 
     const handleLike = () => {
@@ -205,7 +205,7 @@ function Comment({ comment, reportId, source, onReply, onDelete, onLike, depth =
 }
 
 // Main Comments Section Component
-export default function CommentsSection({ reportId, source = 'missing' }) {
+export default function CommentsSection({ reportId, source = 'missing', hideHeader = false }) {
     const t = useTranslations('reports');
     const { locale } = useLanguage();
     const { user, getAccessToken } = useAuth();
@@ -425,18 +425,20 @@ export default function CommentsSection({ reportId, source = 'missing' }) {
     }
 
     return (
-        <div id="comments" className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-            {/* Header - Facebook style */}
-            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-                <h3 className="font-semibold text-gray-900 dark:text-white text-[15px]">
-                    {t('comments.title')}
-                    {total > 0 && (
-                        <span className="font-normal text-gray-500 dark:text-gray-400 ml-1">
-                            ({total})
-                        </span>
-                    )}
-                </h3>
-            </div>
+        <div id="comments" className={`bg-white dark:bg-gray-800 overflow-hidden ${hideHeader ? '' : 'rounded-2xl border border-gray-200 dark:border-gray-700'}`}>
+            {/* Header - Facebook style (hidden when in dialog) */}
+            {!hideHeader && (
+                <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                    <h3 className="font-semibold text-gray-900 dark:text-white text-[15px]">
+                        {t('comments.title')}
+                        {total > 0 && (
+                            <span className="font-normal text-gray-500 dark:text-gray-400 ml-1">
+                                ({total})
+                            </span>
+                        )}
+                    </h3>
+                </div>
+            )}
 
             {/* Comments List - Tighter spacing like Facebook */}
             <div>

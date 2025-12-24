@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from '@/i18n/navigation';
 import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
+import CommentsSection from './CommentsSection';
 
 // Helper to format relative time
 function formatRelativeTime(dateString, locale) {
@@ -106,6 +107,7 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
     const [likeAnimation, setLikeAnimation] = useState(false);
     const [isLikeLoading, setIsLikeLoading] = useState(false);
     const [showShareMenu, setShowShareMenu] = useState(false);
+    const [showCommentsDialog, setShowCommentsDialog] = useState(false);
     const shareMenuRef = useRef(null);
 
     const isRTL = locale === 'ar';
@@ -565,8 +567,8 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                     </button>
 
                     {/* Comment Button */}
-                    <Link
-                        href={`/reports/${report.id}?source=${report.source}#comments`}
+                    <button
+                        onClick={() => setShowCommentsDialog(true)}
                         className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
                     >
                         <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -576,7 +578,7 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                             {commentsCount > 0 && <span>{commentsCount}</span>}
                             <span>{locale === 'ar' ? 'تعليق' : 'Comment'}</span>
                         </span>
-                    </Link>
+                    </button>
 
                     {/* Spacer */}
                     <div className="flex-1 min-w-0"></div>
@@ -693,6 +695,37 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                     </div>
                 </div>
             </div>
+
+            {/* Comments Dialog */}
+            {showCommentsDialog && (
+                <div 
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 pb-20 sm:pb-4 bg-black/50 backdrop-blur-sm"
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) setShowCommentsDialog(false);
+                    }}
+                >
+                    <div className="relative w-full max-w-2xl max-h-[80vh] sm:max-h-[85vh] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+                        {/* Dialog Header */}
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                            <h2 className="font-semibold text-gray-900 dark:text-white">
+                                {locale === 'ar' ? 'التعليقات' : 'Comments'}
+                            </h2>
+                            <button
+                                onClick={() => setShowCommentsDialog(false)}
+                                className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            >
+                                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        {/* Comments Content */}
+                        <div className="flex-1 overflow-y-auto">
+                            <CommentsSection reportId={report.id} source={report.source} hideHeader />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

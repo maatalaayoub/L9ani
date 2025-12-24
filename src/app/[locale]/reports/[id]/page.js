@@ -4,7 +4,7 @@ import { useState, useEffect, use, Suspense } from 'react';
 import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import CommentsSection from '@/components/CommentsSection';
 import ShareDialog from '@/components/ShareDialog';
 
