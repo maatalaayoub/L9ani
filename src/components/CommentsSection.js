@@ -4,6 +4,64 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 
+// Confirmation Dialog Component
+function ConfirmDialog({ isOpen, onClose, onConfirm, title, message, confirmText, cancelText, isDestructive = false, locale }) {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+            {/* Backdrop */}
+            <div 
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                onClick={onClose}
+            />
+            
+            {/* Dialog */}
+            <div 
+                className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+                dir={locale === 'ar' ? 'rtl' : 'ltr'}
+            >
+                {/* Header */}
+                <div className="px-6 pt-6 pb-2">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        {title}
+                    </h3>
+                </div>
+                
+                {/* Content */}
+                <div className="px-6 pb-4">
+                    <p className="text-gray-600 dark:text-gray-300 text-sm">
+                        {message}
+                    </p>
+                </div>
+                
+                {/* Actions */}
+                <div className={`px-6 pb-6 flex gap-3 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
+                    <button
+                        onClick={onClose}
+                        className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl transition-colors"
+                    >
+                        {cancelText}
+                    </button>
+                    <button
+                        onClick={() => {
+                            onConfirm();
+                            onClose();
+                        }}
+                        className={`flex-1 px-4 py-2.5 text-sm font-medium text-white rounded-xl transition-colors ${
+                            isDestructive 
+                                ? 'bg-red-500 hover:bg-red-600' 
+                                : 'bg-blue-500 hover:bg-blue-600'
+                        }`}
+                    >
+                        {confirmText}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 // Format relative time
 function formatRelativeTime(dateString, locale) {
     const date = new Date(dateString);
@@ -25,23 +83,40 @@ function formatRelativeTime(dateString, locale) {
 }
 
 // Single Comment Component - Facebook Style
-function Comment({ comment, reportId, source, onReply, onDelete, onLike, depth = 0, locale, replyingToId, parentUserName = null }) {
+function Comment({ comment, reportId, source, onReply, onDelete, onLike, depth = 0, locale, replyingToId, parentUserName = null, isAdmin = false }) {
     const t = useTranslations('reports');
     const { user } = useAuth();
     const [showReplies, setShowReplies] = useState(true);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-    const maxDepth = 3;
+    const maxDepth = 5; // Allow up to 5 levels of nesting for replies
+    const maxVisualDepth = 2; // Only indent visually up to 2 levels to prevent layout breaking
     const isOwner = user?.id === comment.user_id;
-    const canReply = depth < maxDepth && !isOwner; // Can't reply to own comment
+    const canDelete = isOwner || isAdmin; // Owner or admin can delete
+    const canReply = depth < maxDepth && user; // Can reply if within depth limit and logged in
     const isReplyingToThis = replyingToId === comment.id;
+    const hasReplies = comment.replies && comment.replies.length > 0;
+    const isAdminDelete = isAdmin && !isOwner;
+    
+    // Limit visual indentation to prevent layout breaking
+    const visualDepth = Math.min(depth, maxVisualDepth);
+    const shouldIndent = depth > 0 && depth <= maxVisualDepth;
 
     const handleLike = () => {
         onLike(comment.id, comment.is_liked);
     };
 
-    // Facebook-style: replies are smaller
+    const handleDeleteClick = () => {
+        setShowDeleteConfirm(true);
+    };
+
+    const handleDeleteConfirm = () => {
+        onDelete(comment.id, isAdminDelete);
+    };
+
+    // Facebook-style: replies get progressively smaller, capped at visual depth 2
     const isReply = depth > 0;
-    const avatarSize = isReply ? 'w-7 h-7' : 'w-8 h-8';
+    const avatarSize = visualDepth === 0 ? 'w-8 h-8' : visualDepth === 1 ? 'w-7 h-7' : 'w-6 h-6';
 
     return (
         <div className="py-0.5">
@@ -62,9 +137,9 @@ function Comment({ comment, reportId, source, onReply, onDelete, onLike, depth =
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 min-w-0">
+                <div className="flex-1">
                     {/* Comment bubble */}
-                    <span className={`inline-block bg-gray-100 dark:bg-gray-700 rounded-2xl px-3 py-1.5 max-w-[85%] ${isReplyingToThis ? 'ring-2 ring-blue-500' : ''}`}>
+                    <div className={`bg-gray-100 dark:bg-gray-700 rounded-2xl px-3 py-1.5 ${isReplyingToThis ? 'ring-2 ring-blue-500' : ''}`}>
                         {/* Username */}
                         <span className="font-semibold text-gray-900 dark:text-white text-[13px] block">
                             {comment.user?.full_name || 'Anonymous'}
@@ -72,11 +147,12 @@ function Comment({ comment, reportId, source, onReply, onDelete, onLike, depth =
                         {/* Comment text with @mention */}
                         <span className="text-gray-800 dark:text-gray-200 text-[14px]">
                             {parentUserName && (
-                                <span className="text-blue-500 dark:text-blue-400 font-medium">@{parentUserName} </span>
+                                <span dir="ltr" className="text-blue-500 dark:text-blue-400 font-medium inline-block">@{parentUserName}</span>
                             )}
+                            {parentUserName && ' '}
                             {comment.content}
                         </span>
-                    </span>
+                    </div>
 
                     {/* Like count badge - positioned next to bubble */}
                     {comment.likes_count > 0 && (
@@ -125,30 +201,50 @@ function Comment({ comment, reportId, source, onReply, onDelete, onLike, depth =
                             </>
                         )}
 
-                        {/* Delete (for owner) */}
-                        {isOwner && (
+                        {/* Delete (for owner or admin) */}
+                        {canDelete && (
                             <button
-                                onClick={() => {
-                                    if (confirm(t('comments.deleteConfirm'))) {
-                                        onDelete(comment.id);
-                                    }
-                                }}
-                                className="font-semibold text-gray-500 dark:text-gray-400 hover:text-red-500 hover:underline transition-colors"
+                                onClick={handleDeleteClick}
+                                className={`font-semibold transition-colors ${
+                                    isAdminDelete 
+                                        ? 'text-red-500 dark:text-red-400 hover:text-red-600 hover:underline' 
+                                        : 'text-gray-500 dark:text-gray-400 hover:text-red-500 hover:underline'
+                                }`}
                             >
-                                {locale === 'ar' ? 'حذف' : 'Delete'}
+                                {isAdminDelete 
+                                    ? (locale === 'ar' ? 'حذف (مشرف)' : 'Delete (Admin)')
+                                    : (locale === 'ar' ? 'حذف' : 'Delete')
+                                }
                             </button>
                         )}
                     </div>
 
-                    {/* Replies - Facebook style with connection lines */}
-                    {comment.replies && comment.replies.length > 0 && depth === 0 && (
+                    {/* Delete Confirmation Dialog */}
+                    <ConfirmDialog
+                        isOpen={showDeleteConfirm}
+                        onClose={() => setShowDeleteConfirm(false)}
+                        onConfirm={handleDeleteConfirm}
+                        title={locale === 'ar' ? 'حذف التعليق' : 'Delete Comment'}
+                        message={
+                            isAdminDelete
+                                ? (locale === 'ar' ? 'هل أنت متأكد من حذف هذا التعليق كمشرف؟ سيتم حذف التعليق وجميع الردود عليه نهائياً.' : 'Are you sure you want to delete this comment as admin? The comment and all replies will be permanently removed.')
+                                : (locale === 'ar' ? 'هل أنت متأكد من حذف هذا التعليق؟ سيتم حذف التعليق وجميع الردود عليه نهائياً.' : 'Are you sure you want to delete this comment? The comment and all replies will be permanently removed.')
+                        }
+                        confirmText={locale === 'ar' ? 'حذف' : 'Delete'}
+                        cancelText={locale === 'ar' ? 'إلغاء' : 'Cancel'}
+                        isDestructive={true}
+                        locale={locale}
+                    />
+
+                    {/* Replies - Only indent first level, then flatten */}
+                    {hasReplies && (
                         <div className="mt-1 relative">
                             {!showReplies ? (
                                 <button
                                     onClick={() => setShowReplies(true)}
-                                    className="flex items-center gap-1 text-[13px] font-semibold text-gray-500 dark:text-gray-400 hover:underline ml-10"
+                                    className={`flex items-center gap-1 text-[13px] font-semibold text-gray-500 dark:text-gray-400 hover:underline ${depth === 0 ? (locale === 'ar' ? 'mr-6' : 'ml-6') : ''}`}
                                 >
-                                    <svg className="w-3 h-3 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className={`w-3 h-3 ${locale === 'ar' ? '-rotate-180 scale-x-[-1]' : 'rotate-180'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                                     </svg>
                                     {locale === 'ar' 
@@ -161,7 +257,7 @@ function Comment({ comment, reportId, source, onReply, onDelete, onLike, depth =
                                     {comment.replies.length > 1 && (
                                         <button
                                             onClick={() => setShowReplies(false)}
-                                            className="flex items-center gap-1 text-[13px] font-semibold text-gray-500 dark:text-gray-400 hover:underline mb-1 ml-10"
+                                            className={`flex items-center gap-1 text-[13px] font-semibold text-gray-500 dark:text-gray-400 hover:underline mb-1 ${depth === 0 ? (locale === 'ar' ? 'mr-6' : 'ml-6') : ''}`}
                                         >
                                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" />
@@ -170,15 +266,26 @@ function Comment({ comment, reportId, source, onReply, onDelete, onLike, depth =
                                         </button>
                                     )}
                                     <div className="relative">
-                                        {/* Vertical connection line */}
-                                        <div 
-                                            className="absolute left-4 top-0 bottom-4 w-0.5 bg-gray-200 dark:bg-gray-600"
-                                            style={{ height: 'calc(100% - 16px)' }}
-                                        />
+                                        {/* Only show connection line for first level */}
+                                        {depth === 0 && (
+                                            <div 
+                                                className={`absolute top-0 bottom-4 w-0.5 bg-gray-200 dark:bg-gray-600 ${locale === 'ar' ? 'right-2' : 'left-2'}`}
+                                                style={{ height: 'calc(100% - 16px)' }}
+                                            />
+                                        )}
                                         {comment.replies.map((reply, index) => (
-                                            <div key={reply.id} className="relative ml-10">
-                                                {/* Curved connector line */}
-                                                <div className="absolute -left-6 top-4 w-5 h-4 border-l-2 border-b-2 border-gray-200 dark:border-gray-600 rounded-bl-lg" />
+                                            <div 
+                                                key={reply.id} 
+                                                className={`relative ${depth === 0 ? (locale === 'ar' ? 'mr-6' : 'ml-6') : ''}`}
+                                            >
+                                                {/* Only show curved connector for first level */}
+                                                {depth === 0 && (
+                                                    <div className={`absolute top-4 w-3 h-3 border-gray-200 dark:border-gray-600 ${
+                                                        locale === 'ar' 
+                                                            ? '-right-4 border-r-2 border-b-2 rounded-br-lg' 
+                                                            : '-left-4 border-l-2 border-b-2 rounded-bl-lg'
+                                                    }`} />
+                                                )}
                                                 <Comment
                                                     comment={reply}
                                                     reportId={reportId}
@@ -186,10 +293,11 @@ function Comment({ comment, reportId, source, onReply, onDelete, onLike, depth =
                                                     onReply={onReply}
                                                     onDelete={onDelete}
                                                     onLike={onLike}
-                                                    depth={1}
+                                                    depth={depth + 1}
                                                     locale={locale}
                                                     replyingToId={replyingToId}
                                                     parentUserName={comment.user?.full_name}
+                                                    isAdmin={isAdmin}
                                                 />
                                             </div>
                                         ))}
@@ -208,7 +316,7 @@ function Comment({ comment, reportId, source, onReply, onDelete, onLike, depth =
 export default function CommentsSection({ reportId, source = 'missing', hideHeader = false }) {
     const t = useTranslations('reports');
     const { locale } = useLanguage();
-    const { user, getAccessToken } = useAuth();
+    const { user, getAccessToken, isAdmin } = useAuth();
     const inputRef = useRef(null);
     
     const [comments, setComments] = useState([]);
@@ -354,15 +462,16 @@ export default function CommentsSection({ reportId, source = 'missing', hideHead
             }));
     };
 
-    // Delete a comment
-    const handleDelete = async (commentId) => {
+    // Delete a comment (supports admin deletion)
+    const handleDelete = async (commentId, isAdminDelete = false) => {
         const authHeaders = await getAuthHeaders();
-        const response = await fetch(
-            `/api/reports/${reportId}/comments?comment_id=${commentId}`,
-            { method: 'DELETE', headers: authHeaders }
-        );
+        const url = `/api/reports/${reportId}/comments?comment_id=${commentId}${isAdminDelete ? '&admin=true' : ''}`;
+        const response = await fetch(url, { method: 'DELETE', headers: authHeaders });
 
-        if (!response.ok) throw new Error('Failed to delete comment');
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to delete comment');
+        }
 
         // Remove from UI at any nesting level
         setComments(prev => deleteCommentRecursive(prev, commentId));
@@ -441,14 +550,14 @@ export default function CommentsSection({ reportId, source = 'missing', hideHead
             )}
 
             {/* Comments List - Tighter spacing like Facebook */}
-            <div className={hideHeader ? 'flex-1 min-h-0 overflow-y-auto' : ''}>
+            <div className={hideHeader ? 'flex-1 min-h-0 overflow-auto' : ''}>
                 {comments.length === 0 ? (
                     <div className="p-6 text-center">
                         <p className="text-gray-500 dark:text-gray-400 text-sm">{t('comments.noComments')}</p>
                         <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{t('comments.beFirst')}</p>
                     </div>
                 ) : (
-                    <div className="px-4 py-2">
+                    <div className="py-2 px-4">
                         {comments.map(comment => (
                             <Comment
                                 key={comment.id}
@@ -460,6 +569,7 @@ export default function CommentsSection({ reportId, source = 'missing', hideHead
                                 onLike={handleLike}
                                 locale={locale}
                                 replyingToId={replyingTo?.id}
+                                isAdmin={isAdmin}
                             />
                         ))}
                     </div>

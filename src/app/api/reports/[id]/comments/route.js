@@ -56,8 +56,15 @@ export async function GET(request, { params }) {
 
         const column = isSighting ? 'sighting_report_id' : 'report_id';
 
-        // Get top-level comments first
-        const { data: comments, error, count } = await supabaseAdmin
+        // Get total count of ALL comments (including replies) for this report
+        const { count: totalCount } = await supabaseAdmin
+            .from('report_comments')
+            .select('id', { count: 'exact', head: true })
+            .eq(column, reportId)
+            .eq('is_deleted', false);
+
+        // Get top-level comments first (for pagination)
+        const { data: comments, error, count: topLevelCount } = await supabaseAdmin
             .from('report_comments')
             .select(`
                 id,
@@ -189,10 +196,11 @@ export async function GET(request, { params }) {
 
         return NextResponse.json({
             comments: enrichedComments,
-            total: count || 0,
+            total: totalCount || 0, // Total includes all comments and replies
+            topLevelCount: topLevelCount || 0, // For pagination of top-level comments
             limit,
             offset,
-            hasMore: offset + limit < (count || 0)
+            hasMore: offset + limit < (topLevelCount || 0) // Pagination based on top-level comments
         });
     } catch (error) {
         console.error('Error in comments GET:', error);
@@ -361,7 +369,32 @@ export async function PUT(request, { params }) {
     }
 }
 
-// DELETE - Soft delete a comment
+// Helper to verify if user is an admin
+async function verifyAdmin(userId) {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('admin_users')
+            .select('id, auth_user_id, is_active, role')
+            .eq('auth_user_id', userId)
+            .eq('is_active', true)
+            .maybeSingle();
+        
+        if (error) {
+            if (error.code === '42P01' || error.message?.includes('does not exist')) {
+                return false;
+            }
+            console.error('Error verifying admin:', error);
+            return false;
+        }
+        
+        return !!data;
+    } catch (err) {
+        console.error('Exception verifying admin:', err);
+        return false;
+    }
+}
+
+// DELETE - Soft delete a comment (owner or admin)
 export async function DELETE(request, { params }) {
     try {
         const user = await getAuthUser(request);
@@ -371,29 +404,43 @@ export async function DELETE(request, { params }) {
 
         const { searchParams } = new URL(request.url);
         const comment_id = searchParams.get('comment_id');
+        const isAdminDelete = searchParams.get('admin') === 'true';
 
         if (!comment_id) {
             return NextResponse.json({ error: 'Comment ID is required' }, { status: 400 });
         }
 
-        // Check ownership
+        // Get the comment to check ownership
         const { data: existingComment } = await supabaseAdmin
             .from('report_comments')
             .select('user_id')
             .eq('id', comment_id)
             .single();
 
-        if (!existingComment || existingComment.user_id !== user.id) {
+        if (!existingComment) {
+            return NextResponse.json({ error: 'Comment not found' }, { status: 404 });
+        }
+
+        // Check if user is owner or admin
+        const isOwner = existingComment.user_id === user.id;
+        let canDelete = isOwner;
+
+        if (!isOwner && isAdminDelete) {
+            // Verify admin status
+            const isAdmin = await verifyAdmin(user.id);
+            if (isAdmin) {
+                canDelete = true;
+            }
+        }
+
+        if (!canDelete) {
             return NextResponse.json({ error: 'Not authorized to delete this comment' }, { status: 403 });
         }
 
-        // Soft delete
+        // Hard delete the comment and all its replies (cascade delete)
         const { error } = await supabaseAdmin
             .from('report_comments')
-            .update({ 
-                is_deleted: true,
-                deleted_at: new Date().toISOString()
-            })
+            .delete()
             .eq('id', comment_id);
 
         if (error) {
@@ -401,7 +448,7 @@ export async function DELETE(request, { params }) {
             return NextResponse.json({ error: 'Failed to delete comment' }, { status: 500 });
         }
 
-        return NextResponse.json({ success: true });
+        return NextResponse.json({ success: true, deletedBy: isOwner ? 'owner' : 'admin' });
     } catch (error) {
         console.error('Error in comments DELETE:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

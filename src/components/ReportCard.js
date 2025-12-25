@@ -736,7 +736,7 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                             </button>
                         </div>
                         {/* Comments Content */}
-                        <div className="flex-1 min-h-0 flex flex-col">
+                        <div className="flex-1 min-h-0 flex flex-col overflow-x-auto">
                             <CommentsSection reportId={report.id} source={report.source} hideHeader />
                         </div>
                     </div>
