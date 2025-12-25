@@ -43,21 +43,27 @@ function createMarkerSvg(colors, reportType, isSighting) {
     `;
 }
 
-// Get icon path for each type
+// Get icon path for each type - clear and recognizable icons
 function getTypeIconPath(type) {
     switch (type) {
         case 'person':
-            return '<path d="M8 4a3 3 0 100 6 3 3 0 000-6zM8 12c-3.3 0-6 1.8-6 4v1h12v-1c0-2.2-2.7-4-6-4z"/>';
+            // Person silhouette - clear human figure
+            return '<path d="M8 2a3 3 0 100 6 3 3 0 000-6zM8 10c-4 0-6 2-6 4v2h12v-2c0-2-2-4-6-4z"/>';
         case 'pet':
-            return '<path d="M4.5 3.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm7 0a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM8 7c-2.2 0-4 1.8-4 4 0 1.5.8 2.8 2 3.5V16h4v-1.5c1.2-.7 2-2 2-3.5 0-2.2-1.8-4-4-4z"/>';
+            // Paw print - universally recognized for animals
+            return '<path d="M8 12c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-4-2c-.83 0-1.5.67-1.5 1.5S3.17 13 4 13s1.5-.67 1.5-1.5S4.83 10 4 10zm8 0c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zM5.5 6C4.67 6 4 6.67 4 7.5S4.67 9 5.5 9 7 8.33 7 7.5 6.33 6 5.5 6zm5 0c-.83 0-1.5.67-1.5 1.5S9.67 9 10.5 9s1.5-.67 1.5-1.5S11.33 6 10.5 6z"/>';
         case 'document':
-            return '<path d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V6l-4-4H4zm5 0v4h4M5 9h6m-6 3h6"/>';
+            // Document/ID card - paper with lines
+            return '<path d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V6l-4-4H4zm0 2h5v3h3v9H4V4zm2 5v1h4V9H6zm0 3v1h4v-1H6z"/>';
         case 'electronics':
-            return '<path d="M5 2a1 1 0 00-1 1v10a1 1 0 001 1h6a1 1 0 001-1V3a1 1 0 00-1-1H5zm3 11a.5.5 0 100-1 .5.5 0 000 1z"/>';
+            // Smartphone - modern electronics symbol
+            return '<path d="M5 1a2 2 0 00-2 2v14a2 2 0 002 2h6a2 2 0 002-2V3a2 2 0 00-2-2H5zm0 2h6v12H5V3zm3 13a1 1 0 100-2 1 1 0 000 2z"/>';
         case 'vehicle':
-            return '<path d="M3 6l1.5-3h7L13 6m-10 0h10v5H3V6zm1 6a1 1 0 100-2 1 1 0 000 2zm8 0a1 1 0 100-2 1 1 0 000 2z"/>';
+            // Car - side view, clear vehicle shape
+            return '<path d="M14 7l-2-4H4L2 7H1v6h2a2 2 0 104 0h2a2 2 0 104 0h2V7h-1zM4 12a1 1 0 110-2 1 1 0 010 2zm8 0a1 1 0 110-2 1 1 0 010 2zM3 7l1.5-3h7L13 7H3z"/>';
         default:
-            return '<path d="M8 2L2 5v6l6 3 6-3V5L8 2zm0 2l4 2-4 2-4-2 4-2zm-4 4l4 2v4l-4-2V8zm8 0v4l-4 2V10l4-2z"/>';
+            // Box/package icon - for "other" items
+            return '<path d="M2 4l6-3 6 3v8l-6 3-6-3V4zm6-1L4 5v6l4 2 4-2V5L8 3zM4 5l4 2m0 0l4-2m-4 2v6"/>';
     }
 }
 

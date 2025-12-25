@@ -137,9 +137,9 @@ function Comment({ comment, reportId, source, onReply, onDelete, onLike, depth =
                 </div>
 
                 {/* Content */}
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                     {/* Comment bubble */}
-                    <div className={`bg-gray-100 dark:bg-gray-700 rounded-2xl px-3 py-1.5 ${isReplyingToThis ? 'ring-2 ring-blue-500' : ''}`}>
+                    <span className={`inline-block bg-gray-100 dark:bg-gray-700 rounded-2xl px-3 py-1.5 ${isReplyingToThis ? 'ring-2 ring-blue-500' : ''}`}>
                         {/* Username */}
                         <span className="font-semibold text-gray-900 dark:text-white text-[13px] block">
                             {comment.user?.full_name || 'Anonymous'}
@@ -152,7 +152,7 @@ function Comment({ comment, reportId, source, onReply, onDelete, onLike, depth =
                             {parentUserName && ' '}
                             {comment.content}
                         </span>
-                    </div>
+                    </span>
 
                     {/* Like count badge - positioned next to bubble */}
                     {comment.likes_count > 0 && (
