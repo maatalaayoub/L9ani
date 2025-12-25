@@ -527,7 +527,7 @@ export default function CommentsSection({ reportId, source = 'missing', hideHead
                                         ? (locale === 'ar' ? `اكتب ردًا...` : `Write a reply...`)
                                         : (locale === 'ar' ? 'اكتب تعليقًا...' : 'Write a comment...')
                                     }
-                                    className="w-full px-4 py-2 text-[15px] bg-gray-100 dark:bg-gray-700 border-0 rounded-full focus:ring-0 outline-none text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                    className={`w-full py-2 text-[15px] bg-gray-100 dark:bg-gray-700 border-0 rounded-full focus:ring-0 outline-none text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 ${locale === 'ar' ? 'pr-4 pl-10' : 'pl-4 pr-10'}`}
                                     disabled={isSubmitting}
                                 />
                                 {/* Send button inside input */}
@@ -535,9 +535,9 @@ export default function CommentsSection({ reportId, source = 'missing', hideHead
                                     <button
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-700 disabled:opacity-50"
+                                        className={`absolute top-1/2 -translate-y-1/2 p-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-700 disabled:opacity-50 ${locale === 'ar' ? 'left-2' : 'right-2'}`}
                                     >
-                                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                                        <svg className={`w-5 h-5 ${locale === 'ar' ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="currentColor">
                                             <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                                         </svg>
                                     </button>

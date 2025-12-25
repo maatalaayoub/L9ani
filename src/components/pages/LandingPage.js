@@ -115,63 +115,129 @@ export default function LandingPage() {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-[#0a0f1e] overflow-hidden">
             {/* Hero Section */}
-            <section className="relative bg-white dark:bg-gray-900/50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 lg:pt-28 lg:pb-16">
-                    <div className={`flex flex-col lg:flex-row items-center gap-8 lg:gap-12 ${isRTL ? 'lg:flex-row-reverse' : ''}`} ref={heroRef}>
-                        {/* Left Content */}
-                        <div className={`flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>
-                            <h1 style={animations.fadeUp(heroVisible)} className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
-                                {t('hero.title')}
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-                                    {' '}{t('hero.titleHighlight')}
-                                </span>
-                            </h1>
-                            <p style={{ ...animations.fadeUp(heroVisible), transitionDelay: '0.1s' }} className="text-lg text-gray-600 dark:text-gray-300 mb-6 leading-relaxed max-w-xl">
-                                {t('hero.subtitle')}
-                            </p>
+            <section className="relative bg-white dark:bg-gray-900/50 overflow-hidden">
+                {/* Animated Background - visible on all devices */}
+                <div className="absolute inset-0 overflow-hidden">
+                    {/* Gradient base */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50/50 to-purple-50 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-purple-950/30"></div>
+                    
+                    {/* Animated blobs */}
+                    <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-200 dark:bg-purple-800/20 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-xl opacity-70 animate-blob"></div>
+                    <div className="absolute top-0 -right-4 w-72 h-72 bg-yellow-200 dark:bg-yellow-800/20 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+                    <div className="absolute -bottom-8 left-20 w-72 h-72 bg-blue-200 dark:bg-blue-800/20 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+                    <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-pink-200 dark:bg-pink-800/20 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-xl opacity-50 animate-blob animation-delay-2000"></div>
+                    
+                    {/* Subtle grid pattern */}
+                    <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
+                </div>
 
-                            <div style={{ ...animations.fadeUp(heroVisible), transitionDelay: '0.2s' }} className={`flex flex-col sm:flex-row gap-3 ${isRTL ? 'sm:justify-end' : 'sm:justify-start'}`}>
-                                <Link href="/report-missing" className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                                    </svg>
-                                    {t('hero.reportMissing')}
-                                </Link>
-                                <Link href="/report-sighting" className="px-6 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2">
-                                    <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                    {t('hero.reportSighting')}
-                                </Link>
-                            </div>
-                        </div>
-
-                        {/* Right Image - Hero SVG */}
-                        <div className="flex-shrink-0 hidden md:block" style={{ ...animations.fadeUp(heroVisible), transitionDelay: '0.3s' }}>
-                            <div className="relative">
-                                {/* Background decoration - slightly darker for line visibility */}
-                                <div className="absolute inset-0 bg-gradient-to-br from-blue-200 via-indigo-100 to-purple-200 dark:from-blue-800/30 dark:via-indigo-800/30 dark:to-purple-800/30 rounded-3xl transform rotate-2 scale-105"></div>
-                                <div className="absolute inset-0 bg-gradient-to-tr from-slate-100/80 via-blue-50/60 to-slate-100/80 dark:from-slate-800/40 dark:via-blue-900/30 dark:to-slate-800/40 rounded-3xl"></div>
+                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 md:pt-28 md:pb-16">
+                    <div 
+                        className="grid grid-cols-1 md:grid-cols-2 items-center gap-8 md:gap-10 lg:gap-12"
+                        style={{ direction: 'ltr' }}
+                        ref={heroRef}
+                    >
+                        {/* For Arabic: Image first (LEFT), then Text (RIGHT) */}
+                        {/* For English: Text first (LEFT), then Image (RIGHT) */}
+                        
+                        {isRTL ? (
+                            <>
+                                {/* Hero Image - LEFT side for Arabic */}
+                                <div className="relative w-full max-w-md md:max-w-lg mx-auto">
+                                    <div style={{ ...animations.fadeUp(heroVisible), transitionDelay: '0.3s' }} className="relative">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-500/20 dark:from-blue-600/20 dark:to-purple-600/20 rounded-3xl blur-2xl transform scale-110"></div>
+                                        <img 
+                                            src="/icons/hero-image.svg" 
+                                            alt="Find lost items" 
+                                            className="relative w-full h-auto drop-shadow-xl"
+                                        />
+                                    </div>
+                                </div>
                                 
-                                {/* Floating dots decoration */}
-                                <div className="absolute -top-4 -left-4 w-8 h-8 bg-blue-400/40 rounded-full blur-sm"></div>
-                                <div className="absolute -bottom-6 -right-6 w-12 h-12 bg-purple-400/40 rounded-full blur-sm"></div>
-                                <div className="absolute top-1/2 -right-8 w-6 h-6 bg-orange-400/40 rounded-full blur-sm"></div>
+                                {/* Text Content - RIGHT side for Arabic */}
+                                <div className="text-center md:text-right">
+                                    <h1 style={animations.fadeUp(heroVisible)} className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
+                                        {t('hero.title')}
+                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                                            {' '}{t('hero.titleHighlight')}
+                                        </span>
+                                    </h1>
+                                    <p style={{ ...animations.fadeUp(heroVisible), transitionDelay: '0.1s' }} className="text-lg text-gray-600 dark:text-gray-300 mb-6 leading-relaxed max-w-xl md:max-w-none">
+                                        {t('hero.subtitle')}
+                                    </p>
+                                    <div style={{ ...animations.fadeUp(heroVisible), transitionDelay: '0.2s' }} className="flex flex-row flex-wrap gap-3 justify-center md:justify-end">
+                                        <Link href="/report-missing" className="group px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm sm:text-base sm:px-6 sm:py-3.5">
+                                            <span className="w-5 h-5 flex items-center justify-center bg-white/20 rounded-md flex-shrink-0">
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+                                                </svg>
+                                            </span>
+                                            <span className="whitespace-nowrap">{t('hero.reportMissing')}</span>
+                                        </Link>
+                                        <Link href="/report-sighting" className="group px-5 py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-700 dark:text-white border-2 border-gray-200 dark:border-gray-600 rounded-xl font-semibold hover:border-orange-400 dark:hover:border-orange-500 hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 hover:-translate-y-0.5 shadow-sm hover:shadow-md flex items-center justify-center gap-2 text-sm sm:text-base sm:px-6 sm:py-3.5">
+                                            <span className="w-5 h-5 flex items-center justify-center bg-orange-100 dark:bg-orange-900/30 rounded-md flex-shrink-0">
+                                                <svg className="w-3.5 h-3.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                            </span>
+                                            <span className="whitespace-nowrap">{t('hero.reportSighting')}</span>
+                                        </Link>
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                {/* Text Content - LEFT side for English */}
+                                <div className="text-center md:text-left">
+                                    <h1 style={animations.fadeUp(heroVisible)} className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
+                                        {t('hero.title')}
+                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                                            {' '}{t('hero.titleHighlight')}
+                                        </span>
+                                    </h1>
+                                    <p style={{ ...animations.fadeUp(heroVisible), transitionDelay: '0.1s' }} className="text-lg text-gray-600 dark:text-gray-300 mb-6 leading-relaxed max-w-xl md:max-w-none">
+                                        {t('hero.subtitle')}
+                                    </p>
+                                    <div style={{ ...animations.fadeUp(heroVisible), transitionDelay: '0.2s' }} className="flex flex-row flex-wrap gap-3 justify-center md:justify-start">
+                                        <Link href="/report-missing" className="group px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm sm:text-base sm:px-6 sm:py-3.5">
+                                            <span className="w-5 h-5 flex items-center justify-center bg-white/20 rounded-md flex-shrink-0">
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+                                                </svg>
+                                            </span>
+                                            <span className="whitespace-nowrap">{t('hero.reportMissing')}</span>
+                                        </Link>
+                                        <Link href="/report-sighting" className="group px-5 py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-700 dark:text-white border-2 border-gray-200 dark:border-gray-600 rounded-xl font-semibold hover:border-orange-400 dark:hover:border-orange-500 hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 hover:-translate-y-0.5 shadow-sm hover:shadow-md flex items-center justify-center gap-2 text-sm sm:text-base sm:px-6 sm:py-3.5">
+                                            <span className="w-5 h-5 flex items-center justify-center bg-orange-100 dark:bg-orange-900/30 rounded-md flex-shrink-0">
+                                                <svg className="w-3.5 h-3.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                            </span>
+                                            <span className="whitespace-nowrap">{t('hero.reportSighting')}</span>
+                                        </Link>
+                                    </div>
+                                </div>
                                 
-                                {/* SVG Image */}
-                                <img 
-                                    src="/icons/hero-image.svg" 
-                                    alt="L9ani - Find what's lost" 
-                                    className="relative z-10 w-[400px] lg:w-[500px] h-auto p-4"
-                                />
-                            </div>
-                        </div>
+                                {/* Hero Image - RIGHT side for English */}
+                                <div className="relative w-full max-w-md md:max-w-lg mx-auto">
+                                    <div style={{ ...animations.fadeUp(heroVisible), transitionDelay: '0.3s' }} className="relative">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-500/20 dark:from-blue-600/20 dark:to-purple-600/20 rounded-3xl blur-2xl transform scale-110"></div>
+                                        <img 
+                                            src="/icons/hero-image.svg" 
+                                            alt="Find lost items" 
+                                            className="relative w-full h-auto drop-shadow-xl"
+                                        />
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
 
                 {/* Stats bar */}
-                <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                <div className="relative border-t border-gray-200/50 dark:border-gray-700/50 bg-white/60 dark:bg-gray-800/40 backdrop-blur-sm">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                         <div ref={statsRef} style={animations.fadeUp(statsVisible)} className="flex justify-center gap-8 sm:gap-16">
                             <div className="text-center" style={animations.staggerChild(statsVisible, 0)}>
