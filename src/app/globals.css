@@ -312,6 +312,154 @@ html[dir="rtl"] .sidebar-item {
 .sidebar-item:nth-child(10) { animation-delay: 0.5s; }
 
 /* ============================================
+   DESKTOP PERSISTENT SIDEBAR (Supabase-style)
+   ============================================ */
+
+/* Desktop sidebar container - collapsed by default */
+.desktop-sidebar {
+  width: 60px;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: visible;
+}
+
+/* Expand sidebar on hover */
+.desktop-sidebar:hover {
+  width: 240px;
+}
+
+/* Sidebar inner content scrolling */
+.desktop-sidebar > div {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Push main content to account for sidebar width on md+ screens */
+@media (min-width: 768px) {
+  .main-content-with-sidebar {
+    margin-left: 60px;
+  }
+  
+  html[dir="rtl"] .main-content-with-sidebar {
+    margin-left: 0;
+    margin-right: 60px;
+  }
+}
+
+/* RTL support for desktop sidebar */
+html[dir="rtl"] .desktop-sidebar {
+  left: auto;
+  right: 0;
+}
+
+/* Hide text labels by default, show on sidebar hover */
+.desktop-sidebar-label {
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+              transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+/* RTL: Reverse the transform direction */
+html[dir="rtl"] .desktop-sidebar-label {
+  transform: translateX(8px);
+}
+
+/* Show labels when sidebar is hovered */
+.desktop-sidebar:hover .desktop-sidebar-label {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* Stagger animation for labels on hover */
+.desktop-sidebar:hover .desktop-sidebar-item:nth-child(1) .desktop-sidebar-label {
+  transition-delay: 0.02s;
+}
+.desktop-sidebar:hover .desktop-sidebar-item:nth-child(2) .desktop-sidebar-label {
+  transition-delay: 0.04s;
+}
+.desktop-sidebar:hover .desktop-sidebar-item:nth-child(3) .desktop-sidebar-label {
+  transition-delay: 0.06s;
+}
+.desktop-sidebar:hover .desktop-sidebar-item:nth-child(4) .desktop-sidebar-label {
+  transition-delay: 0.08s;
+}
+.desktop-sidebar:hover .desktop-sidebar-item:nth-child(5) .desktop-sidebar-label {
+  transition-delay: 0.1s;
+}
+.desktop-sidebar:hover .desktop-sidebar-item:nth-child(6) .desktop-sidebar-label {
+  transition-delay: 0.12s;
+}
+.desktop-sidebar:hover .desktop-sidebar-item:nth-child(7) .desktop-sidebar-label {
+  transition-delay: 0.14s;
+}
+.desktop-sidebar:hover .desktop-sidebar-item:nth-child(8) .desktop-sidebar-label {
+  transition-delay: 0.16s;
+}
+.desktop-sidebar:hover .desktop-sidebar-item:nth-child(9) .desktop-sidebar-label {
+  transition-delay: 0.18s;
+}
+.desktop-sidebar:hover .desktop-sidebar-item:nth-child(10) .desktop-sidebar-label {
+  transition-delay: 0.2s;
+}
+.desktop-sidebar:hover .desktop-sidebar-item:nth-child(11) .desktop-sidebar-label {
+  transition-delay: 0.22s;
+}
+.desktop-sidebar:hover .desktop-sidebar-item:nth-child(12) .desktop-sidebar-label {
+  transition-delay: 0.24s;
+}
+
+/* Sidebar item hover effect */
+.desktop-sidebar-item {
+  position: relative;
+}
+
+.desktop-sidebar-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) scaleY(0);
+  width: 3px;
+  height: 60%;
+  background: linear-gradient(to bottom, #3b82f6, #6366f1);
+  border-radius: 0 4px 4px 0;
+  transition: transform 0.2s ease;
+}
+
+html[dir="rtl"] .desktop-sidebar-item::before {
+  left: auto;
+  right: 0;
+  border-radius: 4px 0 0 4px;
+}
+
+.desktop-sidebar-item:hover::before,
+.desktop-sidebar-item[class*="bg-blue-50"]::before,
+.desktop-sidebar-item[class*="bg-orange-50"]::before,
+.desktop-sidebar-item[class*="bg-amber-50"]::before {
+  transform: translateY(-50%) scaleY(1);
+}
+
+/* Orange/amber indicator for sighting and admin */
+.desktop-sidebar-item[class*="bg-orange-50"]::before {
+  background: linear-gradient(to bottom, #f97316, #ef4444);
+}
+
+.desktop-sidebar-item[class*="bg-amber-50"]::before {
+  background: linear-gradient(to bottom, #f59e0b, #f97316);
+}
+
+/* Icon pulse effect on hover */
+.desktop-sidebar-item svg {
+  transition: transform 0.2s ease;
+}
+
+.desktop-sidebar-item:hover svg {
+  transform: scale(1.1);
+}
+
+/* ============================================
    GENERAL UI ANIMATIONS
    ============================================ */
 
