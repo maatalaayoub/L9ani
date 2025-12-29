@@ -72,20 +72,22 @@ export async function POST(request) {
             }
         }
 
-        // Handle photo uploads - organized by report type
-        const photoUrls = [];
+        // Handle photo uploads - organized by report type (parallel uploads for performance)
         const photoFiles = formData.getAll('photos');
         const STORAGE_BUCKET = 'reports-photos';
+        let photoUrls = [];
         
         if (photoFiles && photoFiles.length > 0) {
             console.log('[API Reports] Processing', photoFiles.length, 'photos for type:', reportType);
             
-            for (const file of photoFiles) {
-                if (file && file.size > 0) {
+            // Process all photos in parallel using Promise.all
+            const uploadPromises = photoFiles
+                .filter(file => file && file.size > 0)
+                .map(async (file, index) => {
                     try {
                         const fileExt = file.name.split('.').pop() || 'jpg';
-                        // Organize by: reportType/userId/timestamp-random.ext
-                        const fileName = `${reportType}/${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+                        // Organize by: reportType/userId/timestamp-index-random.ext
+                        const fileName = `${reportType}/${user.id}/${Date.now()}-${index}-${Math.random().toString(36).substring(7)}.${fileExt}`;
                         
                         const arrayBuffer = await file.arrayBuffer();
                         const buffer = Buffer.from(arrayBuffer);
@@ -99,21 +101,26 @@ export async function POST(request) {
                         
                         if (uploadError) {
                             console.error('[API Reports] Photo upload error:', uploadError.message);
-                        } else {
-                            const { data: urlData } = supabaseAdmin.storage
-                                .from(STORAGE_BUCKET)
-                                .getPublicUrl(fileName);
-                            
-                            if (urlData?.publicUrl) {
-                                photoUrls.push(urlData.publicUrl);
-                                console.log('[API Reports] Photo uploaded:', fileName);
-                            }
+                            return null;
                         }
+                        
+                        const { data: urlData } = supabaseAdmin.storage
+                            .from(STORAGE_BUCKET)
+                            .getPublicUrl(fileName);
+                        
+                        if (urlData?.publicUrl) {
+                            console.log('[API Reports] Photo uploaded:', fileName);
+                            return urlData.publicUrl;
+                        }
+                        return null;
                     } catch (photoErr) {
                         console.error('[API Reports] Photo processing error:', photoErr);
+                        return null;
                     }
-                }
-            }
+                });
+            
+            const uploadResults = await Promise.all(uploadPromises);
+            photoUrls = uploadResults.filter(url => url !== null);
         }
 
         // STEP 1: Insert the main report record

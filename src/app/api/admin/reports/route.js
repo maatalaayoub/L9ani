@@ -83,6 +83,74 @@ async function getReportDetails(reportId, reportType) {
     }
 }
 
+// Batch helper to get details for multiple reports at once (avoids N+1 queries)
+async function getBatchReportDetails(reports) {
+    if (!reports || reports.length === 0) return {};
+    
+    // Group reports by type
+    const reportsByType = {};
+    reports.forEach(report => {
+        const type = report.report_type;
+        if (!reportsByType[type]) reportsByType[type] = [];
+        reportsByType[type].push(report.id);
+    });
+    
+    const detailsMap = {};
+    
+    // Fetch details for each type in parallel
+    const fetchPromises = Object.entries(reportsByType).map(async ([type, reportIds]) => {
+        const tableName = DETAIL_TABLE_MAP[type];
+        if (!tableName) return;
+        
+        try {
+            const { data, error } = await supabaseAdmin
+                .from(tableName)
+                .select('*')
+                .in('report_id', reportIds);
+            
+            if (!error && data) {
+                data.forEach(detail => {
+                    detailsMap[detail.report_id] = detail;
+                });
+            }
+        } catch (err) {
+            console.error(`[Admin Reports] Batch fetch error for ${tableName}:`, err);
+        }
+    });
+    
+    await Promise.all(fetchPromises);
+    return detailsMap;
+}
+
+// Batch helper to get profiles for multiple user IDs at once
+async function getBatchProfiles(userIds) {
+    if (!userIds || userIds.length === 0) return {};
+    
+    const uniqueUserIds = [...new Set(userIds.filter(Boolean))];
+    if (uniqueUserIds.length === 0) return {};
+    
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('profiles')
+            .select('user_id, auth_user_id, username, first_name, last_name, avatar_url, email, phone, created_at, email_verified')
+            .in('auth_user_id', uniqueUserIds);
+        
+        if (error) {
+            console.error('[Admin Reports] Batch profiles fetch error:', error);
+            return {};
+        }
+        
+        const profilesMap = {};
+        (data || []).forEach(profile => {
+            profilesMap[profile.auth_user_id] = profile;
+        });
+        return profilesMap;
+    } catch (err) {
+        console.error('[Admin Reports] Batch profiles exception:', err);
+        return {};
+    }
+}
+
 // Helper to get a display title for a report based on its type and details
 function getReportTitle(reportType, details) {
     if (!details) return null;
@@ -242,48 +310,39 @@ export async function GET(request) {
             return NextResponse.json({ error: reportsError.message }, { status: 500 });
         }
 
-        // Fetch details for each report based on its type, and include user profile
-        const reportsWithDetails = await Promise.all(
-            (reportsData || []).map(async (report) => {
-                const details = await getReportDetails(report.id, report.report_type);
-                
-                // Fetch user profile for the reporter from 'profiles' table
-                let userProfile = null;
-                if (report.user_id) {
-                    const { data: profileData, error: profileError } = await supabaseAdmin
-                        .from('profiles')
-                        .select('user_id, auth_user_id, username, first_name, last_name, avatar_url, email, phone, created_at, email_verified')
-                        .eq('auth_user_id', report.user_id)
-                        .maybeSingle();
-                    
-                    if (!profileError && profileData) {
-                        userProfile = profileData;
-                    }
+        // Batch fetch all details and profiles at once (avoids N+1 queries)
+        const [detailsMap, profilesMap] = await Promise.all([
+            getBatchReportDetails(reportsData || []),
+            getBatchProfiles((reportsData || []).map(r => r.user_id))
+        ]);
+
+        // Map reports with their details and profiles
+        const reportsWithDetails = (reportsData || []).map(report => {
+            const details = detailsMap[report.id] || {};
+            const userProfile = profilesMap[report.user_id] || null;
+            
+            return {
+                ...report,
+                details: details,
+                // Flatten common fields for display compatibility
+                first_name: details?.first_name || details?.pet_name || details?.item_name || details?.brand || null,
+                last_name: details?.last_name || details?.model || null,
+                // Include reporter info - always include auth user_id as fallback
+                reporter: {
+                    auth_id: report.user_id,
+                    user_id: userProfile?.user_id || null,
+                    username: userProfile?.username || null,
+                    name: userProfile ? ([userProfile.first_name, userProfile.last_name].filter(Boolean).join(' ') || userProfile.username) : null,
+                    first_name: userProfile?.first_name || null,
+                    last_name: userProfile?.last_name || null,
+                    profile_picture: userProfile?.avatar_url || null,
+                    email: userProfile?.email || null,
+                    phone: userProfile?.phone || null,
+                    created_at: userProfile?.created_at || null,
+                    email_verified: userProfile?.email_verified || false
                 }
-                
-                return {
-                    ...report,
-                    details: details || {},
-                    // Flatten common fields for display compatibility
-                    first_name: details?.first_name || details?.pet_name || details?.item_name || details?.brand || null,
-                    last_name: details?.last_name || details?.model || null,
-                    // Include reporter info - always include auth user_id as fallback
-                    reporter: {
-                        auth_id: report.user_id,
-                        user_id: userProfile?.user_id || null,
-                        username: userProfile?.username || null,
-                        name: userProfile ? ([userProfile.first_name, userProfile.last_name].filter(Boolean).join(' ') || userProfile.username) : null,
-                        first_name: userProfile?.first_name || null,
-                        last_name: userProfile?.last_name || null,
-                        profile_picture: userProfile?.avatar_url || null,
-                        email: userProfile?.email || null,
-                        phone: userProfile?.phone || null,
-                        created_at: userProfile?.created_at || null,
-                        email_verified: userProfile?.email_verified || false
-                    }
-                };
-            })
-        );
+            };
+        });
 
         console.log('[API Admin Reports] Found', count, 'reports');
 

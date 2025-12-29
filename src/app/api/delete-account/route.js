@@ -1,5 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export async function DELETE(request) {
     try {
@@ -10,16 +10,10 @@ export async function DELETE(request) {
             return NextResponse.json({ message: 'User ID is required' }, { status: 400 });
         }
 
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-        if (!supabaseUrl || !serviceRoleKey) {
-            console.error('Missing Supabase environment variables');
+        if (!supabaseAdmin) {
+            console.error('[Delete Account] supabaseAdmin is not configured');
             return NextResponse.json({ message: 'Server configuration error' }, { status: 500 });
         }
-
-        // Initialize Supabase with Service Role Key for admin privileges
-        const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
         // First, delete related data to avoid foreign key issues
         console.log('[Delete Account] Deleting user data for userId:', userId);

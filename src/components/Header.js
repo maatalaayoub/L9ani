@@ -29,7 +29,6 @@ export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
     const [initialTab, setInitialTab] = useState("login");
-    const [isAdmin, setIsAdmin] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     
     // Notification state
@@ -39,7 +38,8 @@ export default function Header() {
     const [selectedNotification, setSelectedNotification] = useState(null);
     
     const pathname = usePathname();
-    const { user, profile, logout, isAuthLoading } = useAuth();
+    // Use isAdmin from AuthContext instead of making a duplicate API call
+    const { user, profile, logout, isAuthLoading, isAdmin } = useAuth();
     const t = useTranslations('header');
     const tNotif = useTranslations('notifications');
     const { locale } = useLanguage();
@@ -72,25 +72,6 @@ export default function Header() {
         if (user && isLoginDialogOpen) {
             setIsLoginDialogOpen(false);
         }
-    }, [user]);
-
-    // Check if user is admin
-    useEffect(() => {
-        const checkAdminStatus = async () => {
-            if (!user) {
-                setIsAdmin(false);
-                return;
-            }
-            try {
-                const response = await fetch(`/api/admin/check?userId=${user.id}`);
-                const data = await response.json();
-                setIsAdmin(data.isAdmin);
-            } catch (err) {
-                console.error('Error checking admin status:', err);
-                setIsAdmin(false);
-            }
-        };
-        checkAdminStatus();
     }, [user]);
 
     // Fetch notifications function

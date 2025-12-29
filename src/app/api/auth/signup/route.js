@@ -86,16 +86,13 @@ export async function POST(request) {
             );
         }
 
-        // Also check auth.users table directly
-        const { data: authUsers, error: authCheckError } = await supabaseAdmin.auth.admin.listUsers();
-        if (!authCheckError && authUsers?.users) {
-            const emailExists = authUsers.users.some(u => u.email?.toLowerCase() === email.toLowerCase());
-            if (emailExists) {
-                return NextResponse.json(
-                    { error: 'Email is already registered' },
-                    { status: 400 }
-                );
-            }
+        // Also check auth.users table directly using getUserByEmail (efficient single-user lookup)
+        const { data: existingAuthUser, error: authCheckError } = await supabaseAdmin.auth.admin.getUserByEmail(email);
+        if (!authCheckError && existingAuthUser?.user) {
+            return NextResponse.json(
+                { error: 'Email is already registered' },
+                { status: 400 }
+            );
         }
 
         // 6. Create User using Service Role Key
