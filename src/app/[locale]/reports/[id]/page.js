@@ -91,16 +91,14 @@ export default function ReportDetailsPage({ params }) {
     const fetchReport = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`/api/reports/public?source=${source}`);
+            // Use dedicated single report API endpoint for efficiency
+            const res = await fetch(`/api/reports/${reportId}?source=${source}`);
             const data = await res.json();
             
-            if (data.reports) {
-                const foundReport = data.reports.find(r => r.id === reportId);
-                if (foundReport) {
-                    setReport(foundReport);
-                } else {
-                    setError('Report not found');
-                }
+            if (res.ok && data.report) {
+                setReport(data.report);
+            } else {
+                setError(data.error || 'Report not found');
             }
         } catch (err) {
             setError('Failed to load report');

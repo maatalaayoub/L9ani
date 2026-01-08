@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { processFaceRecognition } from '@/lib/faceRecognitionHelper';
 
 // Helper to get report details based on type
 async function getReportDetails(reportId, reportType) {
@@ -188,9 +189,29 @@ export async function POST(request) {
 
         console.log('[API Reports] Report created successfully:', report.id);
 
+        // Process face recognition for person reports with photos
+        let faceRecognitionResult = null;
+        let faceRecognitionError = null;
+        if (photoUrls.length > 0) {
+            try {
+                faceRecognitionResult = await processFaceRecognition(
+                    report.id,
+                    'missing',
+                    photoUrls
+                );
+                console.log('[API Reports] Face recognition result:', faceRecognitionResult);
+            } catch (faceError) {
+                // Don't fail the report creation if face recognition fails
+                console.error('[API Reports] Face recognition error (non-fatal):', faceError.message);
+                faceRecognitionError = faceError.message;
+            }
+        }
+
         return NextResponse.json({ 
             success: true, 
-            report: { ...report, first_name: firstName, last_name: lastName }
+            report: { ...report, first_name: firstName, last_name: lastName },
+            faceRecognition: faceRecognitionResult,
+            faceRecognitionError: faceRecognitionError
         }, { status: 201 });
 
     } catch (err) {

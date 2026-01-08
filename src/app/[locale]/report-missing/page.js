@@ -7,6 +7,7 @@ import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import dynamic from 'next/dynamic';
 import LoginDialog from '@/components/LoginDialog';
 import SelectDropdown from '@/components/SelectDropdown';
+import FaceMatchingDialog from '@/components/FaceMatchingDialog';
 import { getCitiesForDropdown } from '@/data/moroccanCities';
 
 // Dynamically import MapPicker to avoid SSR issues with Leaflet
@@ -41,6 +42,12 @@ export default function ReportMissingPage() {
     // Upload progress state
     const [uploadProgress, setUploadProgress] = useState(0);
     const [isUploading, setIsUploading] = useState(false);
+    
+    // Face matching dialog state
+    const [isFaceMatchingDialogOpen, setIsFaceMatchingDialogOpen] = useState(false);
+    const [faceRecognitionResult, setFaceRecognitionResult] = useState(null);
+    const [faceRecognitionError, setFaceRecognitionError] = useState(null);
+    const [submittedReportId, setSubmittedReportId] = useState(null);
     
     // Report type selection
     const [reportType, setReportType] = useState('');
@@ -662,11 +669,32 @@ export default function ReportMissingPage() {
             setLoading(false);
             setMessage(t('success.reportSubmitted'));
             
-            // Wait 3 seconds to show success message, then redirect
-            setTimeout(() => {
-                // Use window.location for reliable redirect with locale
-                window.location.href = `/${locale}/my-report`;
-            }, 3000);
+            // Store report ID for face matching dialog
+            setSubmittedReportId(result.report?.id);
+            
+            // For person reports with photos, show face matching dialog
+            if (reportType === 'person' && photos.length > 0) {
+                // Show face matching dialog
+                setIsFaceMatchingDialogOpen(true);
+                
+                // Set face recognition result or error from API response
+                if (result.faceRecognitionError) {
+                    setFaceRecognitionError(result.faceRecognitionError);
+                    setFaceRecognitionResult(null);
+                } else if (result.faceRecognition) {
+                    setFaceRecognitionResult(result.faceRecognition);
+                    setFaceRecognitionError(null);
+                } else {
+                    // If no face recognition result in response, set empty result
+                    setFaceRecognitionResult({ indexed: [], failed: [], matches: [] });
+                    setFaceRecognitionError(null);
+                }
+            } else {
+                // For non-person reports, redirect after delay
+                setTimeout(() => {
+                    window.location.href = `/${locale}/my-report`;
+                }, 3000);
+            }
 
         } catch (err) {
             console.error('Submit error:', err);
@@ -1890,6 +1918,21 @@ export default function ReportMissingPage() {
                     )}
                 </form>
             </div>
+            
+            {/* Face Matching Dialog */}
+            <FaceMatchingDialog
+                isOpen={isFaceMatchingDialogOpen}
+                onClose={() => {
+                    setIsFaceMatchingDialogOpen(false);
+                    // Redirect to my-report page after closing dialog
+                    window.location.href = `/${locale}/my-report`;
+                }}
+                reportId={submittedReportId}
+                reportType="missing"
+                faceRecognitionResult={faceRecognitionResult}
+                faceRecognitionError={faceRecognitionError}
+                locale={locale}
+            />
         </div>
     );
 }

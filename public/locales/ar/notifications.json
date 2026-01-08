@@ -24,16 +24,30 @@
     "types": {
         "REPORT_ACCEPTED": "تم قبول البلاغ",
         "REPORT_REJECTED": "تم رفض البلاغ",
-        "EMAIL_CHANGED": "تم تغيير البريد الإلكتروني"
+        "EMAIL_CHANGED": "تم تغيير البريد الإلكتروني",
+        "face_match": "تم العثور على تطابق الوجه"
     },
     "messages": {
         "reportAccepted": "تمت مراجعة بلاغك \"{{title}}\" وقبوله.",
         "reportRejected": "تم رفض بلاغك \"{{title}}\".",
         "reportRejectedWithReason": "تم رفض بلاغك \"{{title}}\". السبب: {{reason}}",
-        "emailChanged": "تم تغيير بريدك الإلكتروني من {{oldEmail}} إلى {{newEmail}}."
+        "emailChanged": "تم تغيير بريدك الإلكتروني من {{oldEmail}} إلى {{newEmail}}.",
+        "faceMatchFound": "تم العثور على تطابق محتمل للوجه (نسبة التشابه {{similarity}}%) لبلاغك."
     },
     "errors": {
         "fetchFailed": "فشل تحميل الإشعارات",
         "updateFailed": "فشل تحديث الإشعار"
+    },
+    "faceMatch": {
+        "title": "تطابق محتمل للوجه",
+        "viewMatch": "عرض التطابق",
+        "similarity": "نسبة التشابه",
+        "status": "الحالة",
+        "pending": "في انتظار المراجعة",
+        "confirmed": "مؤكد",
+        "rejected": "مرفوض",
+        "reviewing": "قيد المراجعة",
+        "confirmMatch": "تأكيد التطابق",
+        "rejectMatch": "رفض التطابق"
     }
 }

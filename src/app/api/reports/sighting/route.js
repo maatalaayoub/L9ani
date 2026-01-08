@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { processFaceRecognition } from '@/lib/faceRecognitionHelper';
 
 // Detail table names mapping for sighting reports
 const SIGHTING_DETAIL_TABLES = {
@@ -27,13 +28,14 @@ export async function POST(request) {
         }
 
         const token = authHeader.split(' ')[1];
+        console.log('[API Sighting Reports POST] Token received, length:', token?.length);
         
         // Verify user token using admin client
         const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
         
         if (authError || !user) {
-            console.error('[API Sighting Reports POST] Auth error:', authError?.message);
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            console.error('[API Sighting Reports POST] Auth error:', authError?.message, 'Code:', authError?.code);
+            return NextResponse.json({ error: 'Unauthorized', details: authError?.message }, { status: 401 });
         }
 
         console.log('[API Sighting Reports POST] Creating sighting report for user:', user.id);
@@ -344,12 +346,32 @@ export async function POST(request) {
 
         console.log('[API Sighting Reports] Sighting report created successfully:', report.id);
 
+        // Process face recognition for person sightings with photos
+        let faceRecognitionResult = null;
+        let faceRecognitionError = null;
+        if (reportType === 'person' && photoUrls.length > 0) {
+            try {
+                faceRecognitionResult = await processFaceRecognition(
+                    report.id,
+                    'sighting',
+                    photoUrls
+                );
+                console.log('[API Sighting Reports] Face recognition result:', faceRecognitionResult);
+            } catch (faceError) {
+                // Don't fail the report creation if face recognition fails
+                console.error('[API Sighting Reports] Face recognition error (non-fatal):', faceError.message);
+                faceRecognitionError = faceError.message;
+            }
+        }
+
         return NextResponse.json({ 
             success: true, 
             report: {
                 ...report,
                 details: detailData
-            }
+            },
+            faceRecognition: faceRecognitionResult,
+            faceRecognitionError: faceRecognitionError
         }, { status: 201 });
 
     } catch (err) {

@@ -24,16 +24,30 @@
     "types": {
         "REPORT_ACCEPTED": "Report Accepted",
         "REPORT_REJECTED": "Report Rejected",
-        "EMAIL_CHANGED": "Email Changed"
+        "EMAIL_CHANGED": "Email Changed",
+        "face_match": "Face Match Found"
     },
     "messages": {
         "reportAccepted": "Your report \"{{title}}\" has been reviewed and accepted.",
         "reportRejected": "Your report \"{{title}}\" has been rejected.",
         "reportRejectedWithReason": "Your report \"{{title}}\" has been rejected. Reason: {{reason}}",
-        "emailChanged": "Your email has been changed from {{oldEmail}} to {{newEmail}}."
+        "emailChanged": "Your email has been changed from {{oldEmail}} to {{newEmail}}.",
+        "faceMatchFound": "A potential face match ({{similarity}}% similarity) has been found for your report."
     },
     "errors": {
         "fetchFailed": "Failed to load notifications",
         "updateFailed": "Failed to update notification"
+    },
+    "faceMatch": {
+        "title": "Potential Face Match",
+        "viewMatch": "View Match",
+        "similarity": "Similarity",
+        "status": "Status",
+        "pending": "Pending Review",
+        "confirmed": "Confirmed",
+        "rejected": "Rejected",
+        "reviewing": "Under Review",
+        "confirmMatch": "Confirm Match",
+        "rejectMatch": "Reject Match"
     }
 }

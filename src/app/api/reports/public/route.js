@@ -81,10 +81,18 @@ export async function GET(request) {
                 `)
                 .eq('status', 'approved');
 
-            // Apply type filter
+            // Apply type filter at database level
             if (type !== 'all') {
                 missingQuery = missingQuery.eq('report_type', type);
             }
+
+            // Apply city filter at database level (case-insensitive)
+            if (city !== 'all') {
+                missingQuery = missingQuery.ilike('city', `%${city}%`);
+            }
+
+            // Apply sorting at database level
+            missingQuery = missingQuery.order('created_at', { ascending: sort === 'oldest' });
 
             const { data: missingReports, error: missingError } = await missingQuery;
 
@@ -179,10 +187,18 @@ export async function GET(request) {
                 `)
                 .eq('status', 'approved');
 
-            // Apply type filter
+            // Apply type filter at database level
             if (type !== 'all') {
                 sightingQuery = sightingQuery.eq('report_type', type);
             }
+
+            // Apply city filter at database level (case-insensitive) - check both city and location_description
+            if (city !== 'all') {
+                sightingQuery = sightingQuery.or(`city.ilike.%${city}%,location_description.ilike.%${city}%`);
+            }
+
+            // Apply sorting at database level
+            sightingQuery = sightingQuery.order('created_at', { ascending: sort === 'oldest' });
 
             const { data: sightingReports, error: sightingError } = await sightingQuery;
 
@@ -275,18 +291,14 @@ export async function GET(request) {
             }
         }
 
-        // Filter by city if specified
-        if (city !== 'all') {
-            allReports = allReports.filter(report => 
-                report.city && report.city.toLowerCase().includes(city.toLowerCase())
-            );
-        }
-
-        // Sort reports
-        if (sort === 'newest') {
-            allReports.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        } else if (sort === 'oldest') {
-            allReports.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        // Note: City filter and sorting are now applied at database level for better performance
+        // For 'all' source, we need to sort the combined results if both sources were fetched
+        if (source === 'all' && allReports.length > 0) {
+            allReports.sort((a, b) => {
+                const dateA = new Date(a.created_at);
+                const dateB = new Date(b.created_at);
+                return sort === 'oldest' ? dateA - dateB : dateB - dateA;
+            });
         }
 
         // Get total count before pagination
