@@ -297,6 +297,17 @@ export default function ReportSightingPage() {
                 xhr.upload.addEventListener('loadend', () => {
                     let currentProgress = 50;
                     setUploadProgress(50);
+                    
+                    // For person sightings with photos, show face matching dialog immediately
+                    // while server is still processing (face recognition happens on server)
+                    if (reportType === 'person' && photos.length > 0) {
+                        setIsUploading(false);
+                        setUploadProgress(0);
+                        setFaceRecognitionResult(null); // Keep null to show searching state
+                        setFaceRecognitionError(null);
+                        setIsFaceMatchingDialogOpen(true);
+                    }
+                    
                     processingInterval = setInterval(() => {
                         if (currentProgress < 95) {
                             currentProgress += 2;
@@ -352,12 +363,10 @@ export default function ReportSightingPage() {
             // Store report ID for face matching dialog
             setSubmittedReportId(result.report?.id);
             
-            // For person sightings with photos, show face matching dialog
+            // For person sightings with photos, update the face matching dialog with results
+            // (dialog was already opened when upload completed)
             if (reportType === 'person' && photos.length > 0) {
-                // Show face matching dialog
-                setIsFaceMatchingDialogOpen(true);
-                
-                // Set face recognition result or error from API response
+                // Update face recognition result or error from API response
                 if (result.faceRecognitionError) {
                     setFaceRecognitionError(result.faceRecognitionError);
                     setFaceRecognitionResult(null);

@@ -18,16 +18,14 @@ export const NotificationType = {
     REPORT_ACCEPTED: 'REPORT_ACCEPTED',
     REPORT_REJECTED: 'REPORT_REJECTED',
     
+    // Face matching notifications
+    FACE_MATCH_FOUND: 'FACE_MATCH_FOUND',
+    
     // Account-related notifications
     EMAIL_CHANGED: 'EMAIL_CHANGED',
     EMAIL_VERIFICATION_SENT: 'EMAIL_VERIFICATION_SENT',
     EMAIL_VERIFICATION_FAILED: 'EMAIL_VERIFICATION_FAILED',
     EMAIL_VERIFIED: 'EMAIL_VERIFIED',
-    
-    // Future notification types (add here as needed)
-    // REPORT_COMMENT: 'REPORT_COMMENT',
-    // REPORT_MATCH_FOUND: 'REPORT_MATCH_FOUND',
-    // SYSTEM_ANNOUNCEMENT: 'SYSTEM_ANNOUNCEMENT',
 };
 
 // =====================================================
@@ -161,6 +159,104 @@ export async function notifyReportRejected(userId, reportId, reportTitle, option
             reason: reason || null,
         },
     });
+}
+
+/**
+ * Creates a "Face Match Found" notification for both parties
+ * 
+ * @param {Object} params - Notification parameters
+ * @param {string} params.matchId - The face match record ID
+ * @param {number} params.similarity - Match similarity percentage
+ * @param {string} params.missingReportUserId - User ID of missing person reporter
+ * @param {string} params.sightingReportUserId - User ID of sighting reporter
+ * @param {string} params.missingReportId - Missing person report ID
+ * @param {string} params.sightingReportId - Sighting report ID
+ * @param {string} [params.locale='en'] - Locale for message translation
+ * @returns {Promise<{success: boolean, notifications?: Object[], errors?: string[]}>}
+ */
+export async function notifyFaceMatch({
+    matchId,
+    similarity,
+    missingReportUserId,
+    sightingReportUserId,
+    missingReportId,
+    sightingReportId,
+    locale = 'en'
+}) {
+    const messages = {
+        en: {
+            missingReporter: {
+                title: '🎉 Potential Match Found!',
+                message: `Great news! A potential sighting match (${similarity.toFixed(1)}% similarity) has been found for your missing person report. This could be a breakthrough in your search!`,
+            },
+            sightingReporter: {
+                title: '✨ Your Sighting May Help!',
+                message: `Your sighting report has been matched (${similarity.toFixed(1)}% similarity) with a missing person report. Your contribution may help reunite a family!`,
+            },
+        },
+        ar: {
+            missingReporter: {
+                title: '🎉 تم العثور على تطابق محتمل!',
+                message: `أخبار رائعة! تم العثور على تطابق محتمل في المشاهدات (${similarity.toFixed(1)}% تشابه) لبلاغ الشخص المفقود الخاص بك. قد يكون هذا تقدماً مهماً في بحثك!`,
+            },
+            sightingReporter: {
+                title: '✨ مشاهدتك قد تساعد!',
+                message: `تم مطابقة بلاغ المشاهدة الخاص بك (${similarity.toFixed(1)}% تشابه) مع بلاغ شخص مفقود. قد تساهم مساهمتك في لم شمل عائلة!`,
+            },
+        },
+    };
+
+    const msg = messages[locale] || messages.en;
+    const results = { success: true, notifications: [], errors: [] };
+
+    // Notify missing person reporter
+    if (missingReportUserId) {
+        const missingResult = await createNotification({
+            userId: missingReportUserId,
+            type: NotificationType.FACE_MATCH_FOUND,
+            title: msg.missingReporter.title,
+            message: msg.missingReporter.message,
+            data: {
+                matchId,
+                similarity,
+                reportType: 'missing',
+                reportId: missingReportId,
+                matchedReportId: sightingReportId,
+            },
+        });
+        
+        if (missingResult.success) {
+            results.notifications.push(missingResult.notification);
+        } else {
+            results.errors.push(`Missing reporter notification failed: ${missingResult.error}`);
+        }
+    }
+
+    // Notify sighting reporter (if different user)
+    if (sightingReportUserId && sightingReportUserId !== missingReportUserId) {
+        const sightingResult = await createNotification({
+            userId: sightingReportUserId,
+            type: NotificationType.FACE_MATCH_FOUND,
+            title: msg.sightingReporter.title,
+            message: msg.sightingReporter.message,
+            data: {
+                matchId,
+                similarity,
+                reportType: 'sighting',
+                reportId: sightingReportId,
+                matchedReportId: missingReportId,
+            },
+        });
+        
+        if (sightingResult.success) {
+            results.notifications.push(sightingResult.notification);
+        } else {
+            results.errors.push(`Sighting reporter notification failed: ${sightingResult.error}`);
+        }
+    }
+
+    results.success = results.errors.length === 0;
+    return results;
 }
 
 /**

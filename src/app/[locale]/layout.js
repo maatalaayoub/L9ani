@@ -7,6 +7,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ScrollToTop from '@/components/ScrollToTop';
 import TermsDialogWrapper from '@/components/TermsDialogWrapper';
+import FaceMatchAlert from '@/components/FaceMatchAlert';
 import { ChatWidget } from '@/components/chat';
 import { ThemeProvider } from 'next-themes';
 import localFont from 'next/font/local';
@@ -110,6 +111,7 @@ export default async function LocaleLayout({ children, params }) {
                                 <Footer />
                                 <TermsDialogWrapper />
                                 <ChatWidget />
+                                <FaceMatchAlert locale={locale} />
                             </SettingsProvider>
                         </AuthProvider>
                     </LanguageProvider>

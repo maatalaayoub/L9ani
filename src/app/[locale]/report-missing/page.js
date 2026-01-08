@@ -621,6 +621,17 @@ export default function ReportMissingPage() {
                 xhr.upload.addEventListener('loadend', () => {
                     let currentProgress = 50;
                     setUploadProgress(50);
+                    
+                    // For person reports with photos, show face matching dialog immediately
+                    // while server is still processing (face recognition happens on server)
+                    if (reportType === 'person' && photos.length > 0) {
+                        setIsUploading(false);
+                        setUploadProgress(0);
+                        setFaceRecognitionResult(null); // Keep null to show searching state
+                        setFaceRecognitionError(null);
+                        setIsFaceMatchingDialogOpen(true);
+                    }
+                    
                     processingInterval = setInterval(() => {
                         if (currentProgress < 95) {
                             currentProgress += 2;
@@ -672,20 +683,25 @@ export default function ReportMissingPage() {
             // Store report ID for face matching dialog
             setSubmittedReportId(result.report?.id);
             
-            // For person reports with photos, show face matching dialog
+            console.log('[Report Missing] API Result:', result);
+            console.log('[Report Missing] Face recognition result:', result.faceRecognition);
+            console.log('[Report Missing] Face recognition error:', result.faceRecognitionError);
+            
+            // For person reports with photos, update the face matching dialog with results
+            // (dialog was already opened when upload completed)
             if (reportType === 'person' && photos.length > 0) {
-                // Show face matching dialog
-                setIsFaceMatchingDialogOpen(true);
-                
-                // Set face recognition result or error from API response
+                // Update face recognition result or error from API response
                 if (result.faceRecognitionError) {
+                    console.log('[Report Missing] Setting face recognition error');
                     setFaceRecognitionError(result.faceRecognitionError);
                     setFaceRecognitionResult(null);
                 } else if (result.faceRecognition) {
+                    console.log('[Report Missing] Setting face recognition result:', result.faceRecognition);
                     setFaceRecognitionResult(result.faceRecognition);
                     setFaceRecognitionError(null);
                 } else {
                     // If no face recognition result in response, set empty result
+                    console.log('[Report Missing] No face recognition data in response, setting empty result');
                     setFaceRecognitionResult({ indexed: [], failed: [], matches: [] });
                     setFaceRecognitionError(null);
                 }

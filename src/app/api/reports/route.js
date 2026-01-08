@@ -320,10 +320,12 @@ export async function POST(request) {
         }
 
         console.log('[API Reports] Report created successfully:', report.id);
+        console.log('[API Reports] Report type:', reportType, 'Photos:', photoUrls.length);
 
         // Process face recognition for person reports with photos
         let faceRecognitionResult = null;
         let faceRecognitionError = null;
+        console.log('[API Reports] Checking if face recognition should run...', { reportType, photoCount: photoUrls.length, shouldRun: reportType === 'person' && photoUrls.length > 0 });
         if (reportType === 'person' && photoUrls.length > 0) {
             try {
                 console.log('[API Reports] Starting face recognition for person report...');
@@ -336,8 +338,11 @@ export async function POST(request) {
             } catch (faceError) {
                 // Don't fail the report creation if face recognition fails
                 console.error('[API Reports] Face recognition error (non-fatal):', faceError.message);
+                console.error('[API Reports] Face recognition error stack:', faceError.stack);
                 faceRecognitionError = faceError.message;
             }
+        } else {
+            console.log('[API Reports] Skipping face recognition - not a person report or no photos');
         }
 
         return NextResponse.json({ 

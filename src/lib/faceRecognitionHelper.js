@@ -6,6 +6,7 @@
  */
 
 import { supabaseAdmin } from '@/lib/supabase';
+import { notifyFaceMatch } from '@/lib/notifications';
 import {
     indexMissingPersonFace,
     indexSightingFace,
@@ -225,8 +226,8 @@ async function processMatch(savedFace, match, reportType, results) {
 
         console.log(`[Face Recognition Helper] Found match with ${match.Similarity}% similarity`);
 
-        // Create notification for the match
-        await createMatchNotification(savedMatch, matchedFace, reportType);
+        // Create notification for both parties
+        await createMatchNotification(savedMatch, savedFace, matchedFace, reportType);
 
     } catch (err) {
         console.error('[Face Recognition Helper] Error processing match:', err);
@@ -234,47 +235,54 @@ async function processMatch(savedFace, match, reportType, results) {
 }
 
 /**
- * Create a notification for a face match
+ * Create a notification for a face match - notifies both parties
  */
-async function createMatchNotification(match, matchedFace, reportType) {
+async function createMatchNotification(match, sourceFace, matchedFace, reportType) {
     try {
-        // Get the report owner based on report type
-        const reportTable = reportType === 'missing' ? 'reports' : 'sighting_reports';
-        const oppositeTable = reportType === 'missing' ? 'sighting_reports' : 'reports';
+        // Determine which report is missing and which is sighting
+        const missingTable = 'reports';
+        const sightingTable = 'sighting_reports';
+        
+        let missingReportId, sightingReportId;
+        
+        if (reportType === 'missing') {
+            // Source is missing report, matched is sighting
+            missingReportId = sourceFace.report_id;
+            sightingReportId = matchedFace.report_id;
+        } else {
+            // Source is sighting, matched is missing
+            sightingReportId = sourceFace.report_id;
+            missingReportId = matchedFace.report_id;
+        }
 
-        // Get both reports
-        const { data: ownReport } = await supabaseAdmin
-            .from(reportTable)
+        // Get the user IDs for both reports
+        const { data: missingReport } = await supabaseAdmin
+            .from(missingTable)
             .select('user_id')
-            .eq('id', matchedFace.report_id)
+            .eq('id', missingReportId)
             .single();
 
-        const oppositeReportId = reportType === 'missing' 
-            ? matchedFace.report_id 
-            : matchedFace.report_id;
+        const { data: sightingReport } = await supabaseAdmin
+            .from(sightingTable)
+            .select('user_id')
+            .eq('id', sightingReportId)
+            .single();
 
-        if (ownReport?.user_id) {
-            // Create notification
-            const { error: notifError } = await supabaseAdmin
-                .from('notifications')
-                .insert({
-                    user_id: ownReport.user_id,
-                    type: 'face_match',
-                    title: 'Potential Face Match Found',
-                    message: `A potential match (${match.similarity_score.toFixed(1)}% similarity) has been found for your ${reportType === 'missing' ? 'missing person' : 'sighting'} report.`,
-                    data: {
-                        match_id: match.id,
-                        similarity: match.similarity_score,
-                        report_type: reportType
-                    },
-                    read: false
-                });
+        // Use the centralized notification function to notify both parties
+        const result = await notifyFaceMatch({
+            matchId: match.id,
+            similarity: match.similarity_score,
+            missingReportUserId: missingReport?.user_id,
+            sightingReportUserId: sightingReport?.user_id,
+            missingReportId,
+            sightingReportId,
+        });
 
-            if (notifError) {
-                console.error('[Face Recognition Helper] Error creating notification:', notifError);
-            } else {
-                console.log('[Face Recognition Helper] Notification created for user:', ownReport.user_id);
-            }
+        if (result.notifications?.length > 0) {
+            console.log(`[Face Recognition Helper] Created ${result.notifications.length} notification(s) for match`);
+        }
+        if (result.errors?.length > 0) {
+            console.error('[Face Recognition Helper] Notification errors:', result.errors);
         }
     } catch (err) {
         console.error('[Face Recognition Helper] Error creating match notification:', err);

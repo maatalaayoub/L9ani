@@ -294,6 +294,91 @@ export async function deleteSightingFace(faceId) {
 }
 
 /**
+ * List all faces in a collection
+ * @param {string} collectionId - The collection to list faces from
+ * @returns {Array} Array of face IDs
+ */
+export async function listFacesInCollection(collectionId) {
+    const client = getRekognitionClient();
+    const allFaces = [];
+    let nextToken = null;
+    
+    try {
+        do {
+            const { ListFacesCommand } = await import('@aws-sdk/client-rekognition');
+            const response = await client.send(new ListFacesCommand({
+                CollectionId: collectionId,
+                MaxResults: 100,
+                NextToken: nextToken,
+            }));
+            
+            if (response.Faces) {
+                allFaces.push(...response.Faces.map(f => f.FaceId));
+            }
+            nextToken = response.NextToken;
+        } while (nextToken);
+        
+        console.log(`[Rekognition] Found ${allFaces.length} faces in ${collectionId}`);
+        return allFaces;
+    } catch (error) {
+        console.error('[Rekognition] Error listing faces:', error);
+        throw error;
+    }
+}
+
+/**
+ * Clear all faces from a collection
+ * @param {string} collectionId - The collection to clear
+ * @returns {number} Number of faces deleted
+ */
+export async function clearCollection(collectionId) {
+    const client = getRekognitionClient();
+    
+    try {
+        // First, list all faces
+        const faceIds = await listFacesInCollection(collectionId);
+        
+        if (faceIds.length === 0) {
+            console.log(`[Rekognition] Collection ${collectionId} is already empty`);
+            return 0;
+        }
+        
+        // Delete faces in batches of 100 (AWS limit)
+        let deletedCount = 0;
+        for (let i = 0; i < faceIds.length; i += 100) {
+            const batch = faceIds.slice(i, i + 100);
+            await client.send(new DeleteFacesCommand({
+                CollectionId: collectionId,
+                FaceIds: batch,
+            }));
+            deletedCount += batch.length;
+            console.log(`[Rekognition] Deleted ${deletedCount}/${faceIds.length} faces from ${collectionId}`);
+        }
+        
+        console.log(`[Rekognition] Cleared ${deletedCount} faces from ${collectionId}`);
+        return deletedCount;
+    } catch (error) {
+        console.error('[Rekognition] Error clearing collection:', error);
+        throw error;
+    }
+}
+
+/**
+ * Clear both missing persons and sightings collections
+ * @returns {Object} Number of faces deleted from each collection
+ */
+export async function clearAllCollections() {
+    const missingDeleted = await clearCollection(MISSING_PERSONS_COLLECTION);
+    const sightingsDeleted = await clearCollection(SIGHTINGS_COLLECTION);
+    
+    return {
+        missingPersons: missingDeleted,
+        sightings: sightingsDeleted,
+        total: missingDeleted + sightingsDeleted,
+    };
+}
+
+/**
  * Fetch an image from a URL and return as buffer
  * @param {string} url - The image URL
  * @returns {Buffer} The image buffer
