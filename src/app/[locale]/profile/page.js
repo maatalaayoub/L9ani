@@ -12,7 +12,8 @@ import LoginDialog from '@/components/LoginDialog';
 import Image from 'next/image';
 
 export default function ProfilePage() {
-    const { user, profile, isAuthLoading, logout, refreshProfile } = useAuth();
+    // Use isAdmin from AuthContext instead of making duplicate API call
+    const { user, profile, isAuthLoading, logout, refreshProfile, isAdmin } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
     const t = useTranslations('profile');
@@ -76,9 +77,6 @@ export default function ProfilePage() {
     const [isSendingResetEmail, setIsSendingResetEmail] = useState(false);
     const [resetEmailSent, setResetEmailSent] = useState(false);
     const [resetEmailError, setResetEmailError] = useState('');
-
-    // Admin Status State
-    const [isAdmin, setIsAdmin] = useState(false);
 
     // Check if user is OAuth-only (no password set)
     const isOAuthUser = user?.app_metadata?.provider === 'google' || 
@@ -206,25 +204,6 @@ export default function ProfilePage() {
             router.push('/');
         }
     }, [user, isAuthLoading, router]);
-
-    // Check admin status
-    useEffect(() => {
-        const checkAdminStatus = async () => {
-            if (!user) {
-                setIsAdmin(false);
-                return;
-            }
-            try {
-                const response = await fetch(`/api/admin/check?userId=${user.id}`);
-                const data = await response.json();
-                setIsAdmin(data.isAdmin);
-            } catch (err) {
-                console.error('Error checking admin status:', err);
-                setIsAdmin(false);
-            }
-        };
-        checkAdminStatus();
-    }, [user]);
 
     useEffect(() => {
         if (profile) {
