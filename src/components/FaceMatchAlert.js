@@ -54,6 +54,7 @@ export default function FaceMatchAlert({ locale = 'en' }) {
                 similarity: notification.data?.similarity,
                 matchId: notification.data?.matchId,
                 reportType: notification.data?.reportType,
+                matchedReportId: notification.data?.matchedReportId,
                 timestamp: Date.now(),
             };
             
@@ -113,7 +114,14 @@ export default function FaceMatchAlert({ locale = 'en' }) {
 
     const handleViewDetails = (alert) => {
         dismissAlert(alert.id);
-        router.push('/my-report?tab=matches');
+        // Navigate to the matched report's detail page
+        // If user's report type is 'missing', the matched report is 'sighting' and vice versa
+        if (alert.matchedReportId) {
+            const matchedSource = alert.reportType === 'missing' ? 'sighting' : 'missing';
+            router.push(`/reports/${alert.matchedReportId}?source=${matchedSource}`);
+        } else {
+            router.push('/my-report');
+        }
     };
 
     if (alerts.length === 0) return null;

@@ -2,8 +2,154 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 
 /**
- * GET /api/reports/[id]?source=missing|sighting
+ * Validate match access token
+ * Returns { valid: boolean, userId?: string, matchId?: string }
+ */
+async function validateMatchAccessToken(token, reportId, reportType) {
+    if (!token || !supabaseAdmin) {
+        return { valid: false };
+    }
+
+    try {
+        const { data: tokenData, error } = await supabaseAdmin
+            .from('match_access_tokens')
+            .select('id, user_id, match_id, expires_at, use_count')
+            .eq('token', token)
+            .eq('target_report_id', reportId)
+            .eq('target_report_type', reportType)
+            .maybeSingle();
+
+        if (error || !tokenData) {
+            return { valid: false };
+        }
+
+        // Check expiration
+        if (tokenData.expires_at && new Date(tokenData.expires_at) < new Date()) {
+            return { valid: false };
+        }
+
+        // Update usage tracking (don't await, fire and forget)
+        supabaseAdmin
+            .from('match_access_tokens')
+            .update({
+                last_used_at: new Date().toISOString(),
+                use_count: (tokenData.use_count || 0) + 1
+            })
+            .eq('id', tokenData.id)
+            .then(() => {})
+            .catch(err => console.error('[Report API] Error updating token usage:', err));
+
+        return {
+            valid: true,
+            userId: tokenData.user_id,
+            matchId: tokenData.match_id
+        };
+    } catch (err) {
+        console.error('[Report API] Error validating token:', err);
+        return { valid: false };
+    }
+}
+
+/**
+ * Check if user owns one of the matched reports and can access the other
+ */
+async function checkMatchAccess(userId, reportId, reportType) {
+    if (!userId || !supabaseAdmin) {
+        return { hasAccess: false };
+    }
+
+    try {
+        // Find face matches involving this report
+        if (reportType === 'missing') {
+            const { data: matches, error } = await supabaseAdmin
+                .from('face_matches')
+                .select(`
+                    id,
+                    similarity_score,
+                    missing_report_faces!inner (
+                        report_id,
+                        reports!inner (
+                            id,
+                            user_id
+                        )
+                    ),
+                    sighting_report_faces!inner (
+                        report_id,
+                        sighting_reports!inner (
+                            id,
+                            user_id
+                        )
+                    )
+                `)
+                .not('missing_report_faces', 'is', null)
+                .not('sighting_report_faces', 'is', null);
+
+            if (error || !matches) {
+                return { hasAccess: false };
+            }
+
+            // Check if user owns a sighting report that matches this missing report
+            for (const match of matches) {
+                const missingReport = match.missing_report_faces?.reports;
+                const sightingReport = match.sighting_report_faces?.sighting_reports;
+                
+                if (missingReport?.id === reportId && sightingReport?.user_id === userId) {
+                    return { hasAccess: true, matchId: match.id };
+                }
+            }
+        } else {
+            const { data: matches, error } = await supabaseAdmin
+                .from('face_matches')
+                .select(`
+                    id,
+                    similarity_score,
+                    missing_report_faces!inner (
+                        report_id,
+                        reports!inner (
+                            id,
+                            user_id
+                        )
+                    ),
+                    sighting_report_faces!inner (
+                        report_id,
+                        sighting_reports!inner (
+                            id,
+                            user_id
+                        )
+                    )
+                `)
+                .not('missing_report_faces', 'is', null)
+                .not('sighting_report_faces', 'is', null);
+
+            if (error || !matches) {
+                return { hasAccess: false };
+            }
+
+            // Check if user owns a missing report that matches this sighting report
+            for (const match of matches) {
+                const missingReport = match.missing_report_faces?.reports;
+                const sightingReport = match.sighting_report_faces?.sighting_reports;
+                
+                if (sightingReport?.id === reportId && missingReport?.user_id === userId) {
+                    return { hasAccess: true, matchId: match.id };
+                }
+            }
+        }
+
+        return { hasAccess: false };
+    } catch (err) {
+        console.error('[Report API] Error checking match access:', err);
+        return { hasAccess: false };
+    }
+}
+
+/**
+ * GET /api/reports/[id]?source=missing|sighting&match_token=xxx
  * Fetches a single report by ID - optimized to avoid fetching all reports
+ * 
+ * Query params:
+ *   - source: 'missing' or 'sighting' (default: 'missing')
+ *   - match_token: Optional secure token for accessing unapproved matched reports
  */
 export async function GET(request, { params }) {
     try {
@@ -17,6 +163,7 @@ export async function GET(request, { params }) {
         const { id } = await params;
         const { searchParams } = new URL(request.url);
         const source = searchParams.get('source') || 'missing';
+        const matchToken = searchParams.get('match_token');
 
         if (!id) {
             return NextResponse.json(
@@ -25,11 +172,50 @@ export async function GET(request, { params }) {
             );
         }
 
+        // Check if user is authenticated
+        let authenticatedUserId = null;
+        const authHeader = request.headers.get('authorization');
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.split(' ')[1];
+            const { data: { user } } = await supabaseAdmin.auth.getUser(token);
+            if (user) {
+                authenticatedUserId = user.id;
+            }
+        }
+
+        // Determine access level
+        let allowUnapproved = false;
+        let matchAccessInfo = null;
+
+        // Check match token if provided
+        if (matchToken) {
+            const tokenValidation = await validateMatchAccessToken(matchToken, id, source);
+            if (tokenValidation.valid) {
+                allowUnapproved = true;
+                matchAccessInfo = {
+                    via: 'token',
+                    matchId: tokenValidation.matchId
+                };
+            }
+        }
+
+        // Check if authenticated user has match access (without token)
+        if (!allowUnapproved && authenticatedUserId) {
+            const matchAccess = await checkMatchAccess(authenticatedUserId, id, source);
+            if (matchAccess.hasAccess) {
+                allowUnapproved = true;
+                matchAccessInfo = {
+                    via: 'ownership',
+                    matchId: matchAccess.matchId
+                };
+            }
+        }
+
         let report = null;
 
         if (source === 'missing') {
             // Fetch from reports table (missing reports)
-            const { data, error } = await supabaseAdmin
+            let query = supabaseAdmin
                 .from('reports')
                 .select(`
                     id,
@@ -88,9 +274,14 @@ export async function GET(request, { params }) {
                         item_description
                     )
                 `)
-                .eq('id', id)
-                .eq('status', 'approved')
-                .maybeSingle();
+                .eq('id', id);
+
+            // Only filter by approved status if user doesn't have match access
+            if (!allowUnapproved) {
+                query = query.eq('status', 'approved');
+            }
+
+            const { data, error } = await query.maybeSingle();
 
             if (error) {
                 console.error('[API Report Detail] Error fetching missing report:', error);
@@ -134,7 +325,7 @@ export async function GET(request, { params }) {
             }
         } else if (source === 'sighting') {
             // Fetch from sighting_reports table
-            const { data, error } = await supabaseAdmin
+            let query = supabaseAdmin
                 .from('sighting_reports')
                 .select(`
                     *,
@@ -178,9 +369,14 @@ export async function GET(request, { params }) {
                         condition
                     )
                 `)
-                .eq('id', id)
-                .eq('status', 'approved')
-                .maybeSingle();
+                .eq('id', id);
+
+            // Only filter by approved status if user doesn't have match access
+            if (!allowUnapproved) {
+                query = query.eq('status', 'approved');
+            }
+
+            const { data, error } = await query.maybeSingle();
 
             if (error) {
                 console.error('[API Report Detail] Error fetching sighting report:', error);
@@ -263,7 +459,13 @@ export async function GET(request, { params }) {
             );
         }
 
-        return NextResponse.json({ report });
+        // Add match access info to response if user accessed via match
+        const response = { report };
+        if (matchAccessInfo) {
+            response.matchAccess = matchAccessInfo;
+        }
+
+        return NextResponse.json(response);
 
     } catch (error) {
         console.error('[API Report Detail] Error:', error);

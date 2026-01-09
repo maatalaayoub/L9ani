@@ -182,7 +182,16 @@ export default function FaceMatchingDialog({
 
     const handleViewMatches = () => {
         onClose();
-        router.push('/my-report?tab=matches');
+        // Navigate to the first matched report's detail page
+        if (faceRecognitionResult?.matches?.length > 0) {
+            const firstMatch = faceRecognitionResult.matches[0];
+            // Determine the source type based on current report type
+            // If current report is 'missing', the matched report is 'sighting' and vice versa
+            const matchedSource = reportType === 'missing' ? 'sighting' : 'missing';
+            router.push(`/reports/${firstMatch.matchedReportId}?source=${matchedSource}`);
+        } else {
+            router.push('/my-report');
+        }
     };
 
     const handleContinue = () => {

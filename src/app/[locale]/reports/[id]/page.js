@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import CommentsSection from '@/components/CommentsSection';
 import ShareDialog from '@/components/ShareDialog';
+import { supabase } from '@/lib/supabase';
 
 // Type icons for report types
 const typeIcons = {
@@ -82,21 +83,41 @@ export default function ReportDetailsPage({ params }) {
 
     const reportId = resolvedParams.id;
     const source = searchParams.get('source') || 'missing';
+    const matchToken = searchParams.get('match_token');
     const isRTL = locale === 'ar';
+    const [matchAccessInfo, setMatchAccessInfo] = useState(null);
 
     useEffect(() => {
         fetchReport();
-    }, [reportId, source]);
+    }, [reportId, source, matchToken, user]);
 
     const fetchReport = async () => {
         setLoading(true);
         try {
-            // Use dedicated single report API endpoint for efficiency
-            const res = await fetch(`/api/reports/${reportId}?source=${source}`);
+            // Build URL with optional match_token
+            let url = `/api/reports/${reportId}?source=${source}`;
+            if (matchToken) {
+                url += `&match_token=${matchToken}`;
+            }
+
+            // Build headers with auth token if user is logged in
+            const headers = {};
+            if (user && supabase) {
+                const { data: session } = await supabase.auth.getSession();
+                if (session?.session?.access_token) {
+                    headers['Authorization'] = `Bearer ${session.session.access_token}`;
+                }
+            }
+
+            const res = await fetch(url, { headers });
             const data = await res.json();
             
             if (res.ok && data.report) {
                 setReport(data.report);
+                // Store match access info if present
+                if (data.matchAccess) {
+                    setMatchAccessInfo(data.matchAccess);
+                }
             } else {
                 setError(data.error || 'Report not found');
             }
@@ -221,6 +242,33 @@ export default function ReportDetailsPage({ params }) {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
+            {/* Match Access Banner - Show when viewing unapproved report via face match */}
+            {matchAccessInfo && report.status !== 'approved' && (
+                <div className="bg-emerald-50 dark:bg-emerald-900/20 border-b border-emerald-200 dark:border-emerald-800">
+                    <div className="max-w-4xl mx-auto px-4 py-3">
+                        <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse text-right' : ''}`}>
+                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                                <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
+                                    {locale === 'ar' 
+                                        ? 'أنت تعرض هذا البلاغ بصفتك مالك بلاغ مطابق' 
+                                        : 'You are viewing this report as a matched report owner'}
+                                </p>
+                                <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
+                                    {locale === 'ar' 
+                                        ? 'هذا البلاغ قيد المراجعة ولم تتم الموافقة عليه بعد'
+                                        : 'This report is pending approval and not yet publicly visible'}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Back Navigation */}
             <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                 <div className="max-w-4xl mx-auto px-4 py-3">

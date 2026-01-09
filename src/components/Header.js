@@ -1,6 +1,6 @@
 "use client"
 
-import { Link, usePathname } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useState, useEffect, useCallback, useRef } from "react";
 import LoginDialog from "./LoginDialog";
 import { useAuth } from "../context/AuthContext";
@@ -38,6 +38,7 @@ export default function Header() {
     const [selectedNotification, setSelectedNotification] = useState(null);
     
     const pathname = usePathname();
+    const router = useRouter();
     // Use isAdmin from AuthContext instead of making a duplicate API call
     const { user, profile, logout, isAuthLoading, isAdmin } = useAuth();
     const t = useTranslations('header');
@@ -220,6 +221,23 @@ export default function Header() {
         }
     };
 
+    // Handle "View Report" button click based on notification type
+    const handleViewNotificationReport = (notification) => {
+        closeNotificationDetail();
+        setIsNotificationsOpen(false);
+        
+        // For FACE_MATCH_FOUND notifications, navigate to the matched report
+        if (notification.type === 'FACE_MATCH_FOUND' && notification.data?.matchedReportId) {
+            // User's report type is stored in notification.data.reportType
+            // The matched report is the opposite type
+            const matchedSource = notification.data.reportType === 'missing' ? 'sighting' : 'missing';
+            router.push(`/reports/${notification.data.matchedReportId}?source=${matchedSource}`);
+        } else {
+            // For other notifications (REPORT_ACCEPTED, REPORT_REJECTED), go to My Reports
+            router.push('/my-report');
+        }
+    };
+
     // Get notification icon based on type
     const getNotificationIcon = (type) => {
         switch (type) {
@@ -236,6 +254,14 @@ export default function Header() {
                     <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
                         <svg className="w-4 h-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </div>
+                );
+            case 'FACE_MATCH_FOUND':
+                return (
+                    <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                 );
@@ -574,6 +600,8 @@ export default function Header() {
                                 ? 'bg-green-50 dark:bg-green-900/20' 
                                 : selectedNotification.type === 'REPORT_REJECTED'
                                 ? 'bg-red-50 dark:bg-red-900/20'
+                                : selectedNotification.type === 'FACE_MATCH_FOUND'
+                                ? 'bg-emerald-50 dark:bg-emerald-900/20'
                                 : 'bg-gray-50 dark:bg-gray-800/50'
                         }`}>
                             {getNotificationIcon(selectedNotification.type)}
@@ -616,35 +644,35 @@ export default function Header() {
 
                         {/* Modal Footer */}
                         <div className="px-4 sm:px-5 py-3 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex gap-2">
-                            {/* View Report button - only show if reportId exists */}
-                            {selectedNotification.data?.reportId && (
-                                <Link
-                                    href="/my-report"
-                                    onClick={() => {
-                                        closeNotificationDetail();
-                                        setIsNotificationsOpen(false);
-                                    }}
+                            {/* View Report button - show if reportId or matchedReportId exists */}
+                            {(selectedNotification.data?.reportId || selectedNotification.data?.matchedReportId) && (
+                                <button
+                                    onClick={() => handleViewNotificationReport(selectedNotification)}
                                     className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
                                 >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
-                                    <span className="hidden sm:inline">{tNotif('viewReport') || 'View Report'}</span>
-                                    <span className="sm:hidden">{tNotif('viewReport') || 'View'}</span>
-                                </Link>
+                                    <span className="hidden sm:inline">
+                                        {selectedNotification.type === 'FACE_MATCH_FOUND' 
+                                            ? (tNotif('viewMatchedReport') || 'View Matched Report')
+                                            : (tNotif('viewReport') || 'View Report')}
+                                    </span>
+                                    <span className="sm:hidden">{tNotif('view') || 'View'}</span>
+                                </button>
                             )}
                             <button
                                 onClick={() => {
                                     deleteNotification(selectedNotification.id);
                                     closeNotificationDetail();
                                 }}
-                                className={`${selectedNotification.data?.reportId ? '' : 'flex-1'} px-4 py-2.5 text-sm font-medium text-white bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 rounded-lg transition-colors`}
+                                className={`${(selectedNotification.data?.reportId || selectedNotification.data?.matchedReportId) ? '' : 'flex-1'} px-4 py-2.5 text-sm font-medium text-white bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 rounded-lg transition-colors`}
                             >
                                 {tNotif('delete') || 'Delete'}
                             </button>
                             <button
                                 onClick={closeNotificationDetail}
-                                className={`${selectedNotification.data?.reportId ? '' : 'flex-1'} px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-lg transition-colors`}
+                                className={`${(selectedNotification.data?.reportId || selectedNotification.data?.matchedReportId) ? '' : 'flex-1'} px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-lg transition-colors`}
                             >
                                 {tNotif('close') || 'Close'}
                             </button>
