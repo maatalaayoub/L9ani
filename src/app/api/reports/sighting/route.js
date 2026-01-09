@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { processFaceRecognition } from '@/lib/faceRecognitionHelper';
+import { processFaceRecognition, cleanupFacesOnReportDelete } from '@/lib/faceRecognitionHelper';
 
 // Detail table names mapping for sighting reports
 const SIGHTING_DETAIL_TABLES = {
@@ -833,6 +833,15 @@ export async function DELETE(request) {
                     console.error('[API Sighting Reports DELETE] Error deleting photo:', photoErr);
                 }
             }
+        }
+
+        // Clean up face recognition data (AWS Rekognition + database)
+        try {
+            const faceCleanupResult = await cleanupFacesOnReportDelete(reportId, 'sighting');
+            console.log('[API Sighting Reports DELETE] Face cleanup result:', faceCleanupResult);
+        } catch (faceErr) {
+            console.error('[API Sighting Reports DELETE] Error cleaning up faces:', faceErr);
+            // Continue with deletion even if face cleanup fails
         }
 
         // Delete associated comments

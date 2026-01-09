@@ -14,6 +14,8 @@ import {
     searchSightingsForMatch,
     fetchImageAsBuffer,
     initializeCollections,
+    deleteMissingPersonFace,
+    deleteSightingFace,
     THRESHOLDS
 } from '@/lib/rekognition';
 
@@ -316,4 +318,107 @@ export async function reprocessFaceRecognition(reportId, reportType) {
 
     // Process faces again
     return await processFaceRecognition(reportId, reportType, report.photos);
+}
+
+/**
+ * Clean up face data when a report is deleted
+ * Deletes faces from AWS Rekognition and the database
+ * 
+ * @param {string} reportId - The report ID being deleted
+ * @param {string} reportType - 'missing' or 'sighting'
+ * @returns {Object} Results of cleanup { deletedFromAWS: number, deletedFromDB: number, errors: string[] }
+ */
+export async function cleanupFacesOnReportDelete(reportId, reportType) {
+    const results = { deletedFromAWS: 0, deletedFromDB: 0, errors: [] };
+    
+    try {
+        const facesTable = reportType === 'missing' ? 'missing_report_faces' : 'sighting_report_faces';
+        const deleteFaceFromAWS = reportType === 'missing' ? deleteMissingPersonFace : deleteSightingFace;
+        
+        // Get all face records for this report
+        const { data: faces, error: fetchError } = await supabaseAdmin
+            .from(facesTable)
+            .select('id, aws_face_id')
+            .eq('report_id', reportId);
+        
+        if (fetchError) {
+            console.error(`[Face Recognition Helper] Error fetching faces for cleanup:`, fetchError);
+            results.errors.push(`Failed to fetch face records: ${fetchError.message}`);
+            return results;
+        }
+        
+        if (!faces || faces.length === 0) {
+            console.log(`[Face Recognition Helper] No faces to clean up for ${reportType} report:`, reportId);
+            return results;
+        }
+        
+        console.log(`[Face Recognition Helper] Cleaning up ${faces.length} faces for ${reportType} report:`, reportId);
+        
+        // Delete each face from AWS Rekognition
+        for (const face of faces) {
+            if (face.aws_face_id) {
+                try {
+                    await deleteFaceFromAWS(face.aws_face_id);
+                    results.deletedFromAWS++;
+                    console.log(`[Face Recognition Helper] Deleted AWS face: ${face.aws_face_id}`);
+                } catch (awsError) {
+                    console.error(`[Face Recognition Helper] Error deleting AWS face ${face.aws_face_id}:`, awsError);
+                    results.errors.push(`Failed to delete AWS face ${face.aws_face_id}: ${awsError.message}`);
+                }
+            }
+        }
+        
+        // Delete face records from database
+        // Note: This may already be handled by CASCADE on foreign key, but we do it explicitly just in case
+        const { error: deleteError, count } = await supabaseAdmin
+            .from(facesTable)
+            .delete()
+            .eq('report_id', reportId)
+            .select();
+        
+        if (deleteError) {
+            console.error(`[Face Recognition Helper] Error deleting face records:`, deleteError);
+            results.errors.push(`Failed to delete face records: ${deleteError.message}`);
+        } else {
+            results.deletedFromDB = faces.length;
+            console.log(`[Face Recognition Helper] Deleted ${results.deletedFromDB} face records from database`);
+        }
+        
+        // Also delete any face matches associated with these faces
+        if (reportType === 'missing') {
+            const faceIds = faces.map(f => f.id);
+            const { error: matchError } = await supabaseAdmin
+                .from('face_matches')
+                .delete()
+                .in('missing_face_id', faceIds);
+            
+            if (matchError) {
+                console.error(`[Face Recognition Helper] Error deleting face matches:`, matchError);
+                results.errors.push(`Failed to delete face matches: ${matchError.message}`);
+            } else {
+                console.log(`[Face Recognition Helper] Deleted face matches for missing faces`);
+            }
+        } else {
+            const faceIds = faces.map(f => f.id);
+            const { error: matchError } = await supabaseAdmin
+                .from('face_matches')
+                .delete()
+                .in('sighting_face_id', faceIds);
+            
+            if (matchError) {
+                console.error(`[Face Recognition Helper] Error deleting face matches:`, matchError);
+                results.errors.push(`Failed to delete face matches: ${matchError.message}`);
+            } else {
+                console.log(`[Face Recognition Helper] Deleted face matches for sighting faces`);
+            }
+        }
+        
+        console.log(`[Face Recognition Helper] Cleanup complete:`, results);
+        return results;
+        
+    } catch (err) {
+        console.error(`[Face Recognition Helper] Unexpected error during cleanup:`, err);
+        results.errors.push(`Unexpected error: ${err.message}`);
+        return results;
+    }
 }

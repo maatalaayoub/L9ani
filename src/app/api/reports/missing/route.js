@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { processFaceRecognition } from '@/lib/faceRecognitionHelper';
+import { processFaceRecognition, cleanupFacesOnReportDelete } from '@/lib/faceRecognitionHelper';
 
 // Helper to get report details based on type
 async function getReportDetails(reportId, reportType) {
@@ -661,6 +661,15 @@ export async function DELETE(request) {
                     console.error('[API Reports DELETE] Error deleting photo:', photoErr);
                 }
             }
+        }
+
+        // Clean up face recognition data (AWS Rekognition + database)
+        try {
+            const faceCleanupResult = await cleanupFacesOnReportDelete(reportId, 'missing');
+            console.log('[API Reports DELETE] Face cleanup result:', faceCleanupResult);
+        } catch (faceErr) {
+            console.error('[API Reports DELETE] Error cleaning up faces:', faceErr);
+            // Continue with deletion even if face cleanup fails
         }
 
         // Delete associated comments

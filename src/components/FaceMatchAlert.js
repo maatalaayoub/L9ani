@@ -70,7 +70,7 @@ export default function FaceMatchAlert({ locale = 'en' }) {
     useEffect(() => {
         if (!user?.id) return;
 
-        console.log('[FaceMatchAlert] Subscribing to notifications for user:', user.id);
+        console.log('[FaceMatchAlert] Setting up subscription for user:', user.id);
 
         const channel = supabase
             .channel(`face-match-alerts:${user.id}`)
@@ -83,11 +83,22 @@ export default function FaceMatchAlert({ locale = 'en' }) {
                     filter: `user_id=eq.${user.id}`,
                 },
                 (payload) => {
+                    console.log('[FaceMatchAlert] Received realtime payload:', payload);
                     handleNewNotification(payload.new);
                 }
             )
-            .subscribe((status) => {
+            .subscribe((status, err) => {
                 console.log('[FaceMatchAlert] Subscription status:', status);
+                if (err) {
+                    console.error('[FaceMatchAlert] Subscription error:', err);
+                }
+                if (status === 'SUBSCRIBED') {
+                    console.log('[FaceMatchAlert] Successfully subscribed to notifications channel');
+                } else if (status === 'CHANNEL_ERROR') {
+                    console.error('[FaceMatchAlert] Channel error - realtime may not be enabled for notifications table');
+                } else if (status === 'TIMED_OUT') {
+                    console.error('[FaceMatchAlert] Subscription timed out');
+                }
             });
 
         return () => {

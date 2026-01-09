@@ -50,8 +50,11 @@ export async function createNotification({ userId, type, title, message, data = 
     }
 
     if (!userId || !type || !title || !message) {
+        console.error('[NotificationService] Missing required fields:', { userId: !!userId, type: !!type, title: !!title, message: !!message });
         return { success: false, error: 'Missing required fields: userId, type, title, message' };
     }
+
+    console.log('[NotificationService] Creating notification:', { userId, type, title: title.substring(0, 50) });
 
     try {
         const { data: notification, error } = await supabaseAdmin
@@ -71,7 +74,11 @@ export async function createNotification({ userId, type, title, message, data = 
             return { success: false, error: error.message };
         }
 
-        console.log('[NotificationService] Notification created:', notification.id);
+        console.log('[NotificationService] ✅ Notification created successfully:', {
+            id: notification.id,
+            userId: notification.user_id,
+            type: notification.type
+        });
         return { success: true, notification };
     } catch (err) {
         console.error('[NotificationService] Unexpected error:', err);
