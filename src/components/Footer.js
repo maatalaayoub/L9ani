@@ -1,16 +1,17 @@
 "use client"
 
 import { Link } from "@/i18n/navigation";
-import { useTranslations } from "@/context/LanguageContext";
+import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import Image from "next/image";
 
 export default function Footer() {
     const t = useTranslations('footer');
+    const { locale } = useLanguage();
     const currentYear = new Date().getFullYear();
 
     return (
         <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 mt-auto pb-20 sm:pb-0">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 ${locale === 'ar' ? 'md:mr-[60px]' : 'md:ml-[60px]'}`}>
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
                     {/* Brand Section */}
