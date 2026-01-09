@@ -133,8 +133,11 @@ GRANT EXECUTE ON FUNCTION generate_match_access_token() TO authenticated;
 -- STEP 8: Create Helper View for Match Access
 -- =====================================================
 -- This view helps determine if a user can access a specific report through a face match
+-- Using SECURITY INVOKER to respect RLS policies of the querying user
 
-CREATE OR REPLACE VIEW match_access_rights AS
+CREATE OR REPLACE VIEW match_access_rights
+WITH (security_invoker = true)
+AS
 SELECT DISTINCT
     fm.id as match_id,
     r.id as missing_report_id,

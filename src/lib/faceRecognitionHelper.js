@@ -18,6 +18,14 @@ import {
     deleteSightingFace,
     THRESHOLDS
 } from '@/lib/rekognition';
+import crypto from 'crypto';
+
+/**
+ * Generate a secure random token for match access
+ */
+function generateSecureToken() {
+    return crypto.randomBytes(32).toString('hex');
+}
 
 /**
  * Process face recognition for a report
@@ -25,9 +33,10 @@ import {
  * @param {string} reportId - The report ID
  * @param {string} reportType - 'missing' or 'sighting'
  * @param {string[]} photoUrls - Array of photo URLs to process
+ * @param {string} userId - The user ID who submitted the report (for generating access tokens)
  * @returns {Object} Results of face processing
  */
-export async function processFaceRecognition(reportId, reportType, photoUrls) {
+export async function processFaceRecognition(reportId, reportType, photoUrls, userId = null) {
     if (!photoUrls || photoUrls.length === 0) {
         return { indexed: [], failed: [], matches: [] };
     }
@@ -140,7 +149,8 @@ export async function processFaceRecognition(reportId, reportType, photoUrls) {
                         savedFace,
                         match,
                         reportType,
-                        results
+                        results,
+                        userId
                     );
                 }
             }
@@ -162,7 +172,7 @@ export async function processFaceRecognition(reportId, reportType, photoUrls) {
 /**
  * Process a single face match
  */
-async function processMatch(savedFace, match, reportType, results) {
+async function processMatch(savedFace, match, reportType, results, userId) {
     try {
         // Get the face record from the opposite table
         const oppositeTable = reportType === 'missing' 
@@ -219,11 +229,42 @@ async function processMatch(savedFace, match, reportType, results) {
             return;
         }
 
+        // Generate access token for the user to view the matched report
+        let accessToken = null;
+        if (userId) {
+            // Determine target report type (opposite of current report type)
+            const targetReportType = reportType === 'missing' ? 'sighting' : 'missing';
+            
+            // Generate secure token
+            const token = generateSecureToken();
+            
+            const { data: tokenData, error: tokenError } = await supabaseAdmin
+                .from('match_access_tokens')
+                .insert({
+                    user_id: userId,
+                    match_id: savedMatch.id,
+                    target_report_id: matchedFace.report_id,
+                    target_report_type: targetReportType,
+                    token: token
+                })
+                .select('token')
+                .single();
+            
+            if (!tokenError && tokenData) {
+                accessToken = tokenData.token;
+                console.log(`[Face Recognition Helper] Generated access token for user ${userId} to view ${targetReportType} report ${matchedFace.report_id}`);
+            } else {
+                console.error('[Face Recognition Helper] Error generating access token:', tokenError);
+            }
+        }
+
         results.matches.push({
             matchId: savedMatch.id,
             similarity: match.Similarity,
             matchedReportId: matchedFace.report_id,
-            matchedPhotoUrl: matchedFace.photo_url
+            matchedPhotoUrl: matchedFace.photo_url,
+            matchedReportType: reportType === 'missing' ? 'sighting' : 'missing',
+            accessToken: accessToken
         });
 
         console.log(`[Face Recognition Helper] Found match with ${match.Similarity}% similarity`);
@@ -294,20 +335,27 @@ async function createMatchNotification(match, sourceFace, matchedFace, reportTyp
 /**
  * Re-process face recognition for an existing report
  * Useful for reprocessing after photo updates
+ * 
+ * @param {string} reportId - The report ID
+ * @param {string} reportType - 'missing' or 'sighting'
+ * @param {string} userId - Optional user ID for generating access tokens
  */
-export async function reprocessFaceRecognition(reportId, reportType) {
+export async function reprocessFaceRecognition(reportId, reportType, userId = null) {
     // Get the report with photos
     const tableName = reportType === 'missing' ? 'reports' : 'sighting_reports';
     
     const { data: report, error } = await supabaseAdmin
         .from(tableName)
-        .select('photos')
+        .select('photos, user_id')
         .eq('id', reportId)
         .single();
 
     if (error || !report?.photos) {
         throw new Error('Report not found or has no photos');
     }
+
+    // Use provided userId or fall back to report owner
+    const effectiveUserId = userId || report.user_id;
 
     // Delete existing face records (AWS faces will be deleted via API)
     const facesTable = reportType === 'missing' ? 'missing_report_faces' : 'sighting_report_faces';
@@ -317,7 +365,7 @@ export async function reprocessFaceRecognition(reportId, reportType) {
         .eq('report_id', reportId);
 
     // Process faces again
-    return await processFaceRecognition(reportId, reportType, report.photos);
+    return await processFaceRecognition(reportId, reportType, report.photos, effectiveUserId);
 }
 
 /**

@@ -8,6 +8,14 @@
  */
 
 import { supabaseAdmin } from './supabase';
+import crypto from 'crypto';
+
+/**
+ * Generate a secure random token for match access
+ */
+function generateSecureToken() {
+    return crypto.randomBytes(32).toString('hex');
+}
 
 // =====================================================
 // NOTIFICATION TYPES (Constants)
@@ -216,8 +224,31 @@ export async function notifyFaceMatch({
     const msg = messages[locale] || messages.en;
     const results = { success: true, notifications: [], errors: [] };
 
-    // Notify missing person reporter
+    // Notify missing person reporter (they need access to the sighting report)
     if (missingReportUserId) {
+        // Generate access token for the missing person reporter to view the sighting report
+        let accessToken = null;
+        try {
+            const token = generateSecureToken();
+            const { data: tokenData, error: tokenError } = await supabaseAdmin
+                .from('match_access_tokens')
+                .insert({
+                    user_id: missingReportUserId,
+                    match_id: matchId,
+                    target_report_id: sightingReportId,
+                    target_report_type: 'sighting',
+                    token: token
+                })
+                .select('token')
+                .single();
+            
+            if (!tokenError && tokenData) {
+                accessToken = tokenData.token;
+            }
+        } catch (tokenErr) {
+            console.error('[NotificationService] Error generating access token for missing reporter:', tokenErr);
+        }
+
         const missingResult = await createNotification({
             userId: missingReportUserId,
             type: NotificationType.FACE_MATCH_FOUND,
@@ -229,6 +260,8 @@ export async function notifyFaceMatch({
                 reportType: 'missing',
                 reportId: missingReportId,
                 matchedReportId: sightingReportId,
+                matchedReportType: 'sighting',
+                accessToken,  // Include access token to view the sighting report
             },
         });
         
@@ -239,8 +272,31 @@ export async function notifyFaceMatch({
         }
     }
 
-    // Notify sighting reporter (if different user)
+    // Notify sighting reporter (they need access to the missing person report)
     if (sightingReportUserId && sightingReportUserId !== missingReportUserId) {
+        // Generate access token for the sighting reporter to view the missing person report
+        let accessToken = null;
+        try {
+            const token = generateSecureToken();
+            const { data: tokenData, error: tokenError } = await supabaseAdmin
+                .from('match_access_tokens')
+                .insert({
+                    user_id: sightingReportUserId,
+                    match_id: matchId,
+                    target_report_id: missingReportId,
+                    target_report_type: 'missing',
+                    token: token
+                })
+                .select('token')
+                .single();
+            
+            if (!tokenError && tokenData) {
+                accessToken = tokenData.token;
+            }
+        } catch (tokenErr) {
+            console.error('[NotificationService] Error generating access token for sighting reporter:', tokenErr);
+        }
+
         const sightingResult = await createNotification({
             userId: sightingReportUserId,
             type: NotificationType.FACE_MATCH_FOUND,
@@ -252,6 +308,8 @@ export async function notifyFaceMatch({
                 reportType: 'sighting',
                 reportId: sightingReportId,
                 matchedReportId: missingReportId,
+                matchedReportType: 'missing',
+                accessToken,  // Include access token to view the missing person report
             },
         });
         

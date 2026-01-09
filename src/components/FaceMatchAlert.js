@@ -55,6 +55,8 @@ export default function FaceMatchAlert({ locale = 'en' }) {
                 matchId: notification.data?.matchId,
                 reportType: notification.data?.reportType,
                 matchedReportId: notification.data?.matchedReportId,
+                matchedReportType: notification.data?.matchedReportType,
+                accessToken: notification.data?.accessToken,  // Include access token
                 timestamp: Date.now(),
             };
             
@@ -114,11 +116,18 @@ export default function FaceMatchAlert({ locale = 'en' }) {
 
     const handleViewDetails = (alert) => {
         dismissAlert(alert.id);
-        // Navigate to the matched report's detail page
-        // If user's report type is 'missing', the matched report is 'sighting' and vice versa
+        // Navigate to the matched report's detail page with access token
         if (alert.matchedReportId) {
-            const matchedSource = alert.reportType === 'missing' ? 'sighting' : 'missing';
-            router.push(`/reports/${alert.matchedReportId}?source=${matchedSource}`);
+            // Use matchedReportType if available, otherwise derive from reportType
+            const matchedSource = alert.matchedReportType || (alert.reportType === 'missing' ? 'sighting' : 'missing');
+            
+            // Build URL with access token if available
+            let url = `/reports/${alert.matchedReportId}?source=${matchedSource}`;
+            if (alert.accessToken) {
+                url += `&match_token=${alert.accessToken}`;
+            }
+            
+            router.push(url);
         } else {
             router.push('/my-report');
         }

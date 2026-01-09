@@ -226,12 +226,19 @@ export default function Header() {
         closeNotificationDetail();
         setIsNotificationsOpen(false);
         
-        // For FACE_MATCH_FOUND notifications, navigate to the matched report
+        // For FACE_MATCH_FOUND notifications, navigate to the matched report with access token
         if (notification.type === 'FACE_MATCH_FOUND' && notification.data?.matchedReportId) {
-            // User's report type is stored in notification.data.reportType
-            // The matched report is the opposite type
-            const matchedSource = notification.data.reportType === 'missing' ? 'sighting' : 'missing';
-            router.push(`/reports/${notification.data.matchedReportId}?source=${matchedSource}`);
+            // Use matchedReportType if available, otherwise derive from reportType
+            const matchedSource = notification.data.matchedReportType || 
+                (notification.data.reportType === 'missing' ? 'sighting' : 'missing');
+            
+            // Build URL with access token if available
+            let url = `/reports/${notification.data.matchedReportId}?source=${matchedSource}`;
+            if (notification.data.accessToken) {
+                url += `&match_token=${notification.data.accessToken}`;
+            }
+            
+            router.push(url);
         } else {
             // For other notifications (REPORT_ACCEPTED, REPORT_REJECTED), go to My Reports
             router.push('/my-report');

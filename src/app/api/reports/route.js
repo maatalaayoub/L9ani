@@ -332,7 +332,8 @@ export async function POST(request) {
                 faceRecognitionResult = await processFaceRecognition(
                     report.id,
                     'missing',
-                    photoUrls
+                    photoUrls,
+                    user.id  // Pass userId to generate access tokens for matches
                 );
                 console.log('[API Reports] Face recognition result:', faceRecognitionResult);
             } catch (faceError) {

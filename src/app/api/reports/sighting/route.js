@@ -354,7 +354,8 @@ export async function POST(request) {
                 faceRecognitionResult = await processFaceRecognition(
                     report.id,
                     'sighting',
-                    photoUrls
+                    photoUrls,
+                    user.id  // Pass userId to generate access tokens for matches
                 );
                 console.log('[API Sighting Reports] Face recognition result:', faceRecognitionResult);
             } catch (faceError) {
@@ -771,7 +772,7 @@ export async function PUT(request) {
                 console.log('[API Sighting Reports PUT] Face cleanup result:', cleanupResult);
                 
                 // Then process face recognition with the new photos
-                faceRecognitionResult = await processFaceRecognition(reportId, 'sighting', finalPhotoUrls);
+                faceRecognitionResult = await processFaceRecognition(reportId, 'sighting', finalPhotoUrls, user.id);
                 console.log('[API Sighting Reports PUT] Face recognition result:', faceRecognitionResult);
             } catch (faceErr) {
                 console.error('[API Sighting Reports PUT] Face recognition error:', faceErr);
