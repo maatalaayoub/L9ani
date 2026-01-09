@@ -758,8 +758,35 @@ export async function PUT(request) {
             }
         }
 
+        // Re-process face recognition if photos changed and it's a person report
+        let faceRecognitionResult = null;
+        let faceRecognitionError = null;
+        
+        if (hasPhotoChanges && existingReport.report_type === 'person' && finalPhotoUrls.length > 0) {
+            console.log('[API Sighting Reports PUT] Photos changed for person report, re-processing face recognition');
+            
+            try {
+                // First, clean up existing face data
+                const cleanupResult = await cleanupFacesOnReportDelete(reportId, 'sighting');
+                console.log('[API Sighting Reports PUT] Face cleanup result:', cleanupResult);
+                
+                // Then process face recognition with the new photos
+                faceRecognitionResult = await processFaceRecognition(reportId, 'sighting', finalPhotoUrls);
+                console.log('[API Sighting Reports PUT] Face recognition result:', faceRecognitionResult);
+            } catch (faceErr) {
+                console.error('[API Sighting Reports PUT] Face recognition error:', faceErr);
+                faceRecognitionError = faceErr.message || 'Face recognition processing failed';
+            }
+        }
+
         console.log('[API Sighting Reports PUT] Report updated successfully');
-        return NextResponse.json({ success: true, report: updatedReport });
+        return NextResponse.json({ 
+            success: true, 
+            report: updatedReport,
+            photosChanged: hasPhotoChanges,
+            faceRecognition: faceRecognitionResult,
+            faceRecognitionError
+        });
 
     } catch (err) {
         console.error('[API Sighting Reports PUT] Exception:', err);

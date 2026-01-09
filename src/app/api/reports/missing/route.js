@@ -415,6 +415,12 @@ export async function PUT(request) {
         const oldPhotos = existingReport.photos || [];
         const photosToDelete = oldPhotos.filter(url => !existingPhotos.includes(url));
         
+        // Track if photos have changed for face recognition re-processing
+        const photoFiles = formData.getAll('photos');
+        const hasNewPhotos = photoFiles && photoFiles.length > 0 && photoFiles.some(f => f && f.size > 0);
+        const hasRemovedPhotos = photosToDelete.length > 0;
+        const photosChanged = hasNewPhotos || hasRemovedPhotos;
+        
         // Delete removed photos from storage
         for (const photoUrl of photosToDelete) {
             try {
@@ -433,7 +439,6 @@ export async function PUT(request) {
 
         // Upload new photos
         const newPhotoUrls = [...existingPhotos];
-        const photoFiles = formData.getAll('photos');
         
         if (photoFiles && photoFiles.length > 0) {
             console.log('[API Reports PUT] Processing', photoFiles.length, 'new photos');
@@ -581,8 +586,35 @@ export async function PUT(request) {
             }
         }
 
+        // Re-process face recognition if photos changed and it's a person report
+        let faceRecognitionResult = null;
+        let faceRecognitionError = null;
+        
+        if (photosChanged && existingReport.report_type === 'person' && newPhotoUrls.length > 0) {
+            console.log('[API Reports PUT] Photos changed for person report, re-processing face recognition');
+            
+            try {
+                // First, clean up existing face data
+                const cleanupResult = await cleanupFacesOnReportDelete(reportId, 'missing');
+                console.log('[API Reports PUT] Face cleanup result:', cleanupResult);
+                
+                // Then process face recognition with the new photos
+                faceRecognitionResult = await processFaceRecognition(reportId, 'missing', newPhotoUrls);
+                console.log('[API Reports PUT] Face recognition result:', faceRecognitionResult);
+            } catch (faceErr) {
+                console.error('[API Reports PUT] Face recognition error:', faceErr);
+                faceRecognitionError = faceErr.message || 'Face recognition processing failed';
+            }
+        }
+
         console.log('[API Reports PUT] Report updated successfully');
-        return NextResponse.json({ success: true, report: updatedReport });
+        return NextResponse.json({ 
+            success: true, 
+            report: updatedReport,
+            photosChanged,
+            faceRecognition: faceRecognitionResult,
+            faceRecognitionError
+        });
 
     } catch (err) {
         console.error('[API Reports PUT] Exception:', err);

@@ -6,6 +6,7 @@ import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import { Link } from '@/i18n/navigation';
 import LoginDialog from "@/components/LoginDialog";
 import SelectDropdown from "@/components/SelectDropdown";
+import FaceMatchingDialog from "@/components/FaceMatchingDialog";
 import { getCitiesForDropdown } from '@/data/moroccanCities';
 import { supabase } from '@/lib/supabase';
 
@@ -166,6 +167,13 @@ export default function MyReport() {
     const [deletingReport, setDeletingReport] = useState(null);
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [deleteError, setDeleteError] = useState('');
+    
+    // Face matching dialog state (for edit/resubmit with photo changes)
+    const [isFaceMatchingDialogOpen, setIsFaceMatchingDialogOpen] = useState(false);
+    const [faceRecognitionResult, setFaceRecognitionResult] = useState(null);
+    const [faceRecognitionError, setFaceRecognitionError] = useState(null);
+    const [editedReportId, setEditedReportId] = useState(null);
+    const [editedReportType, setEditedReportType] = useState('missing');
     
     // Copy Report ID state
     const [copiedReportId, setCopiedReportId] = useState(false);
@@ -1683,11 +1691,40 @@ export default function MyReport() {
             // Refresh reports list
             await fetchReports();
             
-            // Close modal after a short delay
-            setTimeout(() => {
+            // Check if face recognition was processed (for person reports with photo changes)
+            const currentReportType = editingReport?.report_type || 'person';
+            if (currentReportType === 'person' && data.photosChanged && (data.faceRecognition || data.faceRecognitionError)) {
+                console.log('[MyReport] Face recognition processed:', data.faceRecognition);
+                console.log('[MyReport] Face recognition error:', data.faceRecognitionError);
+                
+                // Store report info for face matching dialog
+                setEditedReportId(editingReport.id);
+                setEditedReportType(activeTab === 'sighting' ? 'sighting' : 'missing');
+                
+                // Set face recognition result or error
+                if (data.faceRecognitionError) {
+                    setFaceRecognitionError(data.faceRecognitionError);
+                    setFaceRecognitionResult(null);
+                } else if (data.faceRecognition) {
+                    setFaceRecognitionResult(data.faceRecognition);
+                    setFaceRecognitionError(null);
+                } else {
+                    // No face recognition data, set empty result
+                    setFaceRecognitionResult({ indexed: [], failed: [], matches: [] });
+                    setFaceRecognitionError(null);
+                }
+                
+                // Close edit modal and show face matching dialog
                 setShowEditModal(false);
                 setEditingReport(null);
-            }, 1500);
+                setIsFaceMatchingDialogOpen(true);
+            } else {
+                // Close modal after a short delay (for non-person reports or no photo changes)
+                setTimeout(() => {
+                    setShowEditModal(false);
+                    setEditingReport(null);
+                }, 1500);
+            }
 
         } catch (error) {
             console.error('[MyReport] Edit error:', error);
@@ -3525,6 +3562,22 @@ export default function MyReport() {
                     </div>
                 </div>
             )}
+
+            {/* Face Matching Dialog */}
+            <FaceMatchingDialog
+                isOpen={isFaceMatchingDialogOpen}
+                onClose={() => {
+                    setIsFaceMatchingDialogOpen(false);
+                    setFaceRecognitionResult(null);
+                    setFaceRecognitionError(null);
+                    setEditedReportId(null);
+                }}
+                reportId={editedReportId}
+                reportType={editedReportType}
+                faceRecognitionResult={faceRecognitionResult}
+                faceRecognitionError={faceRecognitionError}
+                locale={locale}
+            />
         </div>
     );
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { notifyReportAccepted, notifyReportRejected } from '@/lib/notifications';
+import { cleanupFacesOnReportDelete } from '@/lib/faceRecognitionHelper';
 
 // Detail table names mapping
 const DETAIL_TABLE_MAP = {
@@ -419,6 +420,17 @@ export async function PATCH(request) {
 
         const updatedReport = data[0];
         console.log('[API Admin Reports PATCH] Updated report:', reportId, 'to status:', newStatus);
+
+        // If rejecting, clean up face recognition data (AWS Rekognition + database)
+        if (action === 'reject') {
+            try {
+                const faceCleanupResult = await cleanupFacesOnReportDelete(reportId, 'missing');
+                console.log('[API Admin Reports PATCH] Face cleanup result:', faceCleanupResult);
+            } catch (faceErr) {
+                console.error('[API Admin Reports PATCH] Error cleaning up faces:', faceErr);
+                // Continue with the rejection even if face cleanup fails
+            }
+        }
 
         // Send notification to the report owner
         if (updatedReport.user_id) {
