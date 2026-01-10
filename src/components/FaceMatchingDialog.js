@@ -38,6 +38,20 @@ export default function FaceMatchingDialog({
     
     const isRTL = locale === 'ar';
 
+    // Set sessionStorage flag when dialog opens/closes to prevent FaceMatchAlert from showing
+    useEffect(() => {
+        if (isOpen) {
+            sessionStorage.setItem('faceMatchingDialogOpen', 'true');
+        } else {
+            sessionStorage.removeItem('faceMatchingDialogOpen');
+        }
+        
+        // Cleanup on unmount
+        return () => {
+            sessionStorage.removeItem('faceMatchingDialogOpen');
+        };
+    }, [isOpen]);
+
     // Translations
     const t = {
         en: {
@@ -204,23 +218,29 @@ export default function FaceMatchingDialog({
         };
     };
 
-    const handleViewMatches = () => {
-        onClose();
-        // Navigate to the first matched report's detail page with access token
-        if (faceRecognitionResult?.matches?.length > 0) {
-            const firstMatch = faceRecognitionResult.matches[0];
+    const handleViewMatches = (match = null) => {
+        // Use provided match or fall back to first match
+        const targetMatch = match || faceRecognitionResult?.matches?.[0];
+        
+        console.log('[FaceMatchingDialog] handleViewMatches called, targetMatch:', targetMatch);
+        
+        if (targetMatch && targetMatch.matchedReportId) {
             // Use the matchedReportType from the result, or determine from current report type
-            const matchedSource = firstMatch.matchedReportType || (reportType === 'missing' ? 'sighting' : 'missing');
+            const matchedSource = targetMatch.matchedReportType || (reportType === 'missing' ? 'sighting' : 'missing');
             
             // Build URL with access token if available
-            let url = `/reports/${firstMatch.matchedReportId}?source=${matchedSource}`;
-            if (firstMatch.accessToken) {
-                url += `&match_token=${firstMatch.accessToken}`;
+            let url = `/reports/${targetMatch.matchedReportId}?source=${matchedSource}`;
+            if (targetMatch.accessToken) {
+                url += `&match_token=${targetMatch.accessToken}`;
             }
             
+            console.log('[FaceMatchingDialog] Navigating to URL:', url);
+            
+            // Use the localized router.push - same as notification handler
             router.push(url);
         } else {
-            router.push('/my-report');
+            console.log('[FaceMatchingDialog] No valid target match, calling onClose');
+            onClose();
         }
     };
 
@@ -331,7 +351,7 @@ export default function FaceMatchingDialog({
                                             <div 
                                                 key={index}
                                                 className="group flex items-center gap-4 p-3 bg-white dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 hover:shadow-md transition-all cursor-pointer"
-                                                onClick={handleViewMatches}
+                                                onClick={() => handleViewMatches(match)}
                                             >
                                                 {/* Matched Photo */}
                                                 <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-800 ring-2 ring-white dark:ring-gray-700 shadow-sm relative group-hover:scale-105 transition-transform">
@@ -372,7 +392,7 @@ export default function FaceMatchingDialog({
 
                                     {/* Action Buttons */}
                                     <button
-                                        onClick={handleViewMatches}
+                                        onClick={() => handleViewMatches()}
                                         className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 group"
                                     >
                                         <Eye className="w-4 h-4" />
