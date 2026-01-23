@@ -397,6 +397,7 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                 overflow-hidden
                 transition-all duration-200
                 hover:shadow-md
+                flex flex-col h-full
             `}
             dir={isRTL ? 'rtl' : 'ltr'}
         >
@@ -519,7 +520,7 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
             </div>
 
             {/* Title & Description */}
-            <div className="px-4 py-3">
+            <div className="px-4 py-3 flex-1">
                 <h3 className="font-bold text-gray-900 dark:text-white text-base mb-1">
                     {getDisplayTitle()}
                 </h3>
@@ -552,7 +553,7 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
             </div>
 
             {/* Action Buttons */}
-            <div className="border-t border-gray-100 dark:border-gray-700 px-2 sm:px-3 py-2">
+            <div className="border-t border-gray-100 dark:border-gray-700 px-2 sm:px-3 py-2 mt-auto">
                 <div className="flex items-center justify-between gap-1 sm:gap-2">
                     {/* Like Button */}
                     <button

@@ -312,7 +312,7 @@ export default function LandingPage() {
                         <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">{t('categories.subtitle')}</p>
                     </div>
 
-                    <div ref={categoriesGridRef} style={animations.fadeUp(categoriesGridVisible)} className="grid grid-cols-2 sm:grid-cols-3 gap-4 md:gap-6">
+                    <div ref={categoriesGridRef} style={animations.fadeUp(categoriesGridVisible)} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                         <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 ease-out border border-gray-100 dark:border-gray-700 hover:border-red-200 dark:hover:border-red-800 hover:-translate-y-1">
                             <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 ease-out">
                                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
