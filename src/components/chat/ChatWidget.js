@@ -230,13 +230,13 @@ export default function ChatWidget() {
       case 'create_report':
         // Check if data has reportType to determine which form
         if (data?.reportType === 'sighting') {
-          handleNavigate('/report-sighting', data);
+          handleNavigate('/report-found', data);
         } else {
           handleNavigate('/report-missing', data);
         }
         break;
       case 'report_sighting':
-        handleNavigate('/report-sighting', data);
+        handleNavigate('/report-found', data);
         break;
       case 'search_reports':
         // For search, send a message to start search flow

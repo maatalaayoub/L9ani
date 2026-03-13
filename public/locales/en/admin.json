@@ -1,6 +1,6 @@
 {
     "title": "Admin Dashboard",
-    "subtitle": "Manage missing reports and sightings",
+    "subtitle": "Manage missing and found reports",
     "unauthorized": "Access Denied",
     "unauthorizedMessage": "You do not have permission to access this page. Admin privileges are required.",
     "loginRequired": "Please log in to access the admin dashboard.",
@@ -14,7 +14,7 @@
     
     "tabs": {
         "missing": "Missing Reports",
-        "sightings": "Sightings"
+        "sightings": "Found"
     },
     
     "reportTypes": {

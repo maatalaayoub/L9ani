@@ -29,7 +29,7 @@ function ChatQuickReplies({ replies, onSelect, isRTL }) {
         if (route.includes('report-missing') || text.includes('missing') || text.includes('ضايع') || text.includes('مفقود')) {
             return <FileText className="w-3.5 h-3.5" />;
         }
-        if (route.includes('report-sighting') || text.includes('sighting') || text.includes('لقية') || text.includes('مشاهدة')) {
+        if (route.includes('report-found') || text.includes('found') || text.includes('لقية') || text.includes('عُثر')) {
             return <Eye className="w-3.5 h-3.5" />;
         }
         if (route === '/' || text.includes('search') || text.includes('قلب') || text.includes('بحث')) {
@@ -70,7 +70,7 @@ function ChatQuickReplies({ replies, onSelect, isRTL }) {
             return 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/50';
         }
         // Report Sighting - Teal
-        if (route.includes('report-sighting') || text.includes('sighting') || text.includes('لقية') || text.includes('مشاهدة')) {
+        if (route.includes('report-found') || text.includes('found') || text.includes('لقية') || text.includes('عُثر')) {
             return 'bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 border-teal-200 dark:border-teal-800 hover:bg-teal-100 dark:hover:bg-teal-900/50';
         }
         // Search - Blue

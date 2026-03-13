@@ -3,7 +3,7 @@
         "badge": "Helping reunite people with what matters most",
         "title": "Find What You've Lost",
         "titleHighlight": "Reunite What Matters",
-        "subtitle": "Lqani uses advanced technology and community support to help find missing persons and lost items. Whether it's a loved one, important documents, a phone, keys, or even a pet — upload a photo or report a sighting to help bring them back.",
+        "subtitle": "Lqani uses advanced technology and community support to help find missing persons and lost items. Whether it's a loved one, important documents, a phone, keys, or even a pet — upload a photo or report a found item to help bring them back.",
         "reportMissing": "I Lost Something",
         "reportSighting": "I Found Something"
     },
@@ -43,7 +43,7 @@
         },
         "feature3": {
             "title": "Community Network",
-            "description": "Thousands of users across Morocco helping to spot and report sightings every day."
+            "description": "Thousands of users across Morocco helping to spot and report found items every day."
         },
         "feature4": {
             "title": "24/7 Support",

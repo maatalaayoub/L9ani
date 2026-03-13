@@ -1923,7 +1923,7 @@ export default function MyReport() {
                         <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
                             {activeTab === 'missing' ? (t('noReports.description') || 'You haven\'t submitted any missing reports yet.') : (t('noReports.sightingDescription') || 'You haven\'t submitted any sighting reports yet.')}
                         </p>
-                        <Link href={activeTab === 'missing' ? "/report-missing" : "/report-sighting"} className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors">
+                        <Link href={activeTab === 'missing' ? "/report-missing" : "/report-found"} className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 4v16m8-8H4" />
                             </svg>

@@ -131,7 +131,7 @@ export default function LandingPage() {
                     <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
                 </div>
 
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 md:pt-28 md:pb-16">
+                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20 md:pt-28 md:pb-16">
                     <div 
                         className="grid grid-cols-1 md:grid-cols-2 items-center gap-8 md:gap-10 lg:gap-12"
                         style={{ direction: 'ltr' }}
@@ -174,7 +174,7 @@ export default function LandingPage() {
                                             </span>
                                             <span className="whitespace-nowrap">{t('hero.reportMissing')}</span>
                                         </Link>
-                                        <Link href="/report-sighting" className="group w-full sm:w-[230px] px-5 py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-700 dark:text-white border-2 border-gray-200 dark:border-gray-600 rounded-xl font-semibold hover:border-orange-400 dark:hover:border-orange-500 hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 hover:-translate-y-0.5 shadow-sm hover:shadow-md flex flex-row-reverse items-center justify-center gap-2 text-sm sm:text-base sm:px-6 sm:py-3.5">
+                                        <Link href="/report-found" className="group w-full sm:w-[230px] px-5 py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-700 dark:text-white border-2 border-gray-200 dark:border-gray-600 rounded-xl font-semibold hover:border-orange-400 dark:hover:border-orange-500 hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 hover:-translate-y-0.5 shadow-sm hover:shadow-md flex flex-row-reverse items-center justify-center gap-2 text-sm sm:text-base sm:px-6 sm:py-3.5">
                                             <span className="w-5 h-5 flex items-center justify-center bg-orange-100 dark:bg-orange-900/30 rounded-md flex-shrink-0">
                                                 <svg className="w-3.5 h-3.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -208,7 +208,7 @@ export default function LandingPage() {
                                             </span>
                                             <span className="whitespace-nowrap">{t('hero.reportMissing')}</span>
                                         </Link>
-                                        <Link href="/report-sighting" className="group w-full sm:w-[230px] px-5 py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-700 dark:text-white border-2 border-gray-200 dark:border-gray-600 rounded-xl font-semibold hover:border-orange-400 dark:hover:border-orange-500 hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 hover:-translate-y-0.5 shadow-sm hover:shadow-md flex items-center justify-center gap-2 text-sm sm:text-base sm:px-6 sm:py-3.5">
+                                        <Link href="/report-found" className="group w-full sm:w-[230px] px-5 py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-700 dark:text-white border-2 border-gray-200 dark:border-gray-600 rounded-xl font-semibold hover:border-orange-400 dark:hover:border-orange-500 hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 hover:-translate-y-0.5 shadow-sm hover:shadow-md flex items-center justify-center gap-2 text-sm sm:text-base sm:px-6 sm:py-3.5">
                                             <span className="w-5 h-5 flex items-center justify-center bg-orange-100 dark:bg-orange-900/30 rounded-md flex-shrink-0">
                                                 <svg className="w-3.5 h-3.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -555,7 +555,7 @@ export default function LandingPage() {
                                     </svg>
                                     {t('cta.button1')}
                                 </Link>
-                                <Link href="/report-sighting" className="px-8 py-4 bg-white/20 text-white border border-white/30 rounded-[8px] font-semibold text-lg hover:bg-white/30 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                                <Link href="/report-found" className="px-8 py-4 bg-white/20 text-white border border-white/30 rounded-[8px] font-semibold text-lg hover:bg-white/30 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />

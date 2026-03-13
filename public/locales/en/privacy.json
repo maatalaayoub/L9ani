@@ -21,7 +21,7 @@
             "content": "Your information is used solely to fulfill our mission of reuniting people with what they've lost:",
             "items": {
                 "matching": "Photo Matching: Using advanced technology to compare uploaded photos and identify potential matches",
-                "communication": "Notifications: Alerting you about potential sightings, matches, or important updates about your case",
+                "communication": "Notifications: Alerting you about potential matches, found items, or important updates about your case",
                 "improvement": "Platform Enhancement: Improving our matching algorithms and user experience based on anonymized data",
                 "security": "Safety & Verification: Preventing fraud, verifying reports, and ensuring the platform is used for legitimate purposes"
             }

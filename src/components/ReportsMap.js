@@ -91,7 +91,7 @@ export default function ReportsMap({
         const isSighting = report.source === 'sighting';
         const name = getReportName(report);
         const statusColor = isSighting ? '#f97316' : '#3b82f6';
-        const statusText = isSighting ? (locale === 'ar' ? 'مشاهدة' : 'Sighting') : (locale === 'ar' ? 'مفقود' : 'Missing');
+        const statusText = isSighting ? (locale === 'ar' ? 'عُثر عليه' : 'Found') : (locale === 'ar' ? 'مفقود' : 'Missing');
         const location = report.city || (locale === 'ar' ? 'غير محدد' : 'Unknown');
         const photoUrl = report.photos && report.photos.length > 0 ? report.photos[0] : null;
 
@@ -117,8 +117,8 @@ export default function ReportsMap({
                     ${location}
                 </p>
                 <button 
-                    onclick="window.dispatchEvent(new CustomEvent('viewReportDetails', { detail: '${report.id}' }))"
-                    style="width: 100%; padding: 8px 16px; background: linear-gradient(to right, #3b82f6, #8b5cf6); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; transition: opacity 0.2s;"
+                    onclick="window.location.href='/${locale}/reports/${report.id}?source=${isSighting ? 'sighting' : 'missing'}'"
+                    style="width: 100%; padding: 8px 16px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; transition: opacity 0.2s;"
                     onmouseover="this.style.opacity='0.9'"
                     onmouseout="this.style.opacity='1'"
                 >
@@ -339,7 +339,7 @@ export default function ReportsMap({
     }, [externalSelectedReport, isReady]);
 
     return (
-        <div className="relative w-full overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg">
+        <div className="relative w-full overflow-hidden rounded-[6px] border border-gray-200 dark:border-gray-700">
             <div 
                 ref={mapContainerRef} 
                 className="w-full z-0"
@@ -372,7 +372,7 @@ export default function ReportsMap({
 
             {/* Report count */}
             {isReady && reports.length > 0 && (
-                <div className={`absolute top-4 ${locale === 'ar' ? 'left-4' : 'right-4'} z-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg px-3 py-2 border border-gray-200 dark:border-gray-700`}>
+                <div className="absolute top-4 right-4 z-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
                         {reports.length} {locale === 'ar' ? 'بلاغ' : 'reports'}
                     </span>

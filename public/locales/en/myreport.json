@@ -3,7 +3,7 @@
     "subtitle": "View and manage your missing item reports",
     "tabs": {
         "missing": "Missing Reports",
-        "sighting": "Sighting Reports"
+        "sighting": "Found Reports"
     },
     "options": {
         "title": "More options",
@@ -17,9 +17,9 @@
         "title": "No Reports Yet",
         "description": "You haven't created any reports yet. Create a report to get started.",
         "button": "Create New Report",
-        "sightingTitle": "No Sighting Reports Yet",
-        "sightingDescription": "You haven't submitted any sighting reports yet. Help others by reporting a sighting.",
-        "sightingButton": "Report a Sighting"
+        "sightingTitle": "No Found Reports Yet",
+        "sightingDescription": "You haven't submitted any found reports yet. Help others by reporting something you found.",
+        "sightingButton": "Report a Found Item"
     },
     "reportTypes": {
         "person": "Person",

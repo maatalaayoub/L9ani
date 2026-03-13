@@ -265,22 +265,22 @@ const RESPONSES = {
         en: (item) => {
             const itemText = item ? `a ${item}` : 'something';
             return {
-                text: `That's great that you found ${itemText}! 🎉 You can help reunite it with the owner!\n\n👁️ Go to **Report Sighting** (/report-sighting) to:\n• Post what you found\n• Add photos for identification\n• Share the location where you found it\n\nYou're helping make someone's day better! 💙`,
-                route: '/report-sighting'
+                text: `That's great that you found ${itemText}! 🎉 You can help reunite it with the owner!\n\n👁️ Go to **Report Found** (/report-found) to:\n• Post what you found\n• Add photos for identification\n• Share the location where you found it\n\nYou're helping make someone's day better! 💙`,
+                route: '/report-found'
             };
         },
         ar: (item) => {
             const itemText = item ? getItemArabic(item) : 'شيء';
             return {
-                text: `رائع أنك وجدت ${itemText}! 🎉 يمكنك مساعدة صاحبه في استرداده!\n\n👁️ اذهب إلى **بلاغ مشاهدة** (/report-sighting) حيث يمكنك:\n• نشر ما وجدته\n• إضافة صور للتعريف\n• مشاركة المكان الذي وجدته فيه\n\nأنت تساعد في إسعاد شخص ما! 💙`,
-                route: '/report-sighting'
+                text: `رائع أنك وجدت ${itemText}! 🎉 يمكنك مساعدة صاحبه في استرداده!\n\n👁️ اذهب إلى **بلاغ عثور** (/report-found) حيث يمكنك:\n• نشر ما وجدته\n• إضافة صور للتعريف\n• مشاركة المكان الذي وجدته فيه\n\nأنت تساعد في إسعاد شخص ما! 💙`,
+                route: '/report-found'
             };
         },
         darija: (item) => {
             const itemText = item ? getItemDarija(item) : 'شي حاجة';
             return {
-                text: `واعر! لقيتي ${itemText}! 🎉 دابا تقدر تعاون مولاها يلقاها!\n\n👁️ سير لـ **بلّغ على لقية** (/report-sighting) باش:\n• تنشر شنو لقيتي\n• تزيد تصاور\n• تقول فين لقيتيها\n\nراك غادي تفرح شي واحد! 💙`,
-                route: '/report-sighting'
+                text: `واعر! لقيتي ${itemText}! 🎉 دابا تقدر تعاون مولاها يلقاها!\n\n👁️ سير لـ **بلّغ على لقية** (/report-found) باش:\n• تنشر شنو لقيتي\n• تزيد تصاور\n• تقول فين لقيتيها\n\nراك غادي تفرح شي واحد! 💙`,
+                route: '/report-found'
             };
         }
     },
@@ -537,7 +537,7 @@ function generateQuickReplies(intent, language) {
             replies.push({ id: 'contact', text: L.contact, action: 'navigate', route: '/contact' });
             break;
         case 'found':
-            replies.push({ id: 'rs', text: L.reportSighting, action: 'navigate', route: '/report-sighting' });
+            replies.push({ id: 'rs', text: L.reportSighting, action: 'navigate', route: '/report-found' });
             replies.push({ id: 'search', text: L.search, action: 'navigate', route: '/' });
             break;
         case 'search':
@@ -571,7 +571,7 @@ function generateQuickReplies(intent, language) {
         default:
             // Default quick replies for greeting/thanks/unknown
             replies.push({ id: 'rm', text: L.reportMissing, action: 'navigate', route: '/report-missing' });
-            replies.push({ id: 'rs', text: L.reportSighting, action: 'navigate', route: '/report-sighting' });
+            replies.push({ id: 'rs', text: L.reportSighting, action: 'navigate', route: '/report-found' });
             replies.push({ id: 'search', text: L.search, action: 'navigate', route: '/' });
             replies.push({ id: 'contact', text: L.contact, action: 'navigate', route: '/contact' });
     }

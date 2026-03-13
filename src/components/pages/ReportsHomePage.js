@@ -120,7 +120,7 @@ export default function ReportsHomePage() {
                                 {tHome('hero.reportMissing')}
                             </Link>
                             <Link 
-                                href="/report-sighting" 
+                                href="/report-found" 
                                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-gray-700 rounded-xl font-medium hover:border-orange-500 dark:hover:border-orange-500 transition-all hover:-translate-y-0.5"
                             >
                                 <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

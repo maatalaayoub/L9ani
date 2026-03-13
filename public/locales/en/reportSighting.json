@@ -1,5 +1,5 @@
 {
-    "title": "Report a Sighting",
+    "title": "Report a Found Item",
     "subtitle": "Have you found something or seen someone who might be missing? Your report could help reunite them with their owner or family.",
     "backToHome": "Back to Home",
     "optional": "Optional",
@@ -10,7 +10,7 @@
 
     "types": {
         "selectType": "What did you find or see?",
-        "selectTypeDescription": "Select the type of sighting to show relevant fields",
+        "selectTypeDescription": "Select the type of found item to show relevant fields",
         "person": {
             "title": "Person",
             "description": "Seen someone who might be missing"
@@ -45,7 +45,7 @@
             "hint": "Upload up to 5 photos (JPG, PNG)"
         },
         "location": {
-            "title": "Sighting Location",
+            "title": "Found Location",
             "description": "Where did you find/see this? Mark the location on the map or describe it"
         },
         "personDetails": {
@@ -75,7 +75,7 @@
         },
         "contact": {
             "title": "Your Contact Information",
-            "description": "So we can follow up with you about the sighting",
+            "description": "So we can follow up with you about the found item",
             "yourName": "Your Name",
             "yourDetails": "Your Details",
             "importantIfProvided": "Important if provided",
@@ -261,7 +261,7 @@
     },
 
     "buttons": {
-        "submitReport": "Submit Sighting Report",
+        "submitReport": "Submit Found Report",
         "submitting": "Submitting..."
     },
 
@@ -293,7 +293,7 @@
     },
 
     "success": {
-        "reportSubmitted": "Thank you! Your sighting report has been submitted successfully. We will review it and contact you if needed.",
+        "reportSubmitted": "Thank you! Your found report has been submitted successfully. We will review it and contact you if needed.",
         "redirecting": "Redirecting you to My Reports..."
     },
 
@@ -306,7 +306,7 @@
 
     "reward": {
         "title": "🎁 Potential Reward",
-        "description": "If your sighting report helps reunite a lost item or person with their owner/family, you may be eligible to receive a reward. Your contribution could make a real difference!"
+        "description": "If your found report helps reunite a lost item or person with their owner/family, you may be eligible to receive a reward. Your contribution could make a real difference!"
     },
 
     "legalConfirmation": "I confirm that the information provided is true and accurate. I understand that providing false information is prohibited and may result in legal action."

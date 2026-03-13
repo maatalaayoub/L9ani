@@ -365,7 +365,7 @@ export default function Header() {
                             </Link>
 
                             {/* Report Sighting Button - Hidden on mobile */}
-                            <Link href="/report-sighting" onClick={closeDialogs} className={`btn-gradient btn-ripple hidden md:inline-flex items-center justify-center gap-2 px-3 h-9 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm font-semibold shadow-lg hover:shadow-orange-500/40 whitespace-nowrap ${isActive('/report-sighting') ? 'ring-2 ring-orange-300 ring-offset-2 dark:ring-offset-gray-900' : ''}`}>
+                            <Link href="/report-found" onClick={closeDialogs} className={`btn-gradient btn-ripple hidden md:inline-flex items-center justify-center gap-2 px-3 h-9 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm font-semibold shadow-lg hover:shadow-orange-500/40 whitespace-nowrap ${isActive('/report-found') ? 'ring-2 ring-orange-300 ring-offset-2 dark:ring-offset-gray-900' : ''}`}>
                                 <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -927,9 +927,9 @@ export default function Header() {
 
                                 {/* Report Sighting */}
                                 <Link
-                                    href="/report-sighting"
+                                    href="/report-found"
                                     onClick={closeDialogs}
-                                    className={`sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive('/report-sighting') ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:translate-x-1'}`}
+                                    className={`sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive('/report-found') ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:translate-x-1'}`}
                                 >
                                     <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -1076,7 +1076,7 @@ export default function Header() {
                         <span className="text-[10px] font-medium">{tCommon('navigation.home')}</span>
                     </Link>
 
-                    <Link href="/report-sighting" onClick={closeDialogs} className={`group flex flex-col items-center justify-center w-full h-full space-y-1 active:scale-95 transition-all duration-200 ${isActive('/report-sighting') ? 'text-orange-600 dark:text-orange-400' : 'text-gray-400 hover:text-orange-600 dark:hover:text-orange-400'}`}>
+                    <Link href="/report-found" onClick={closeDialogs} className={`group flex flex-col items-center justify-center w-full h-full space-y-1 active:scale-95 transition-all duration-200 ${isActive('/report-found') ? 'text-orange-600 dark:text-orange-400' : 'text-gray-400 hover:text-orange-600 dark:hover:text-orange-400'}`}>
                         <svg className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />

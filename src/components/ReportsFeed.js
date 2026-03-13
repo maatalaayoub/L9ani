@@ -87,7 +87,7 @@ export default function ReportsFeed({
     return (
         <div className="w-full">
             {/* Filters Bar */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
+            <div className="bg-white dark:bg-gray-800 rounded-[5px] border border-gray-300 dark:border-gray-600 p-4 mb-6">
                 <div className="flex flex-wrap items-center gap-3">
                     {/* Source Filter (Missing/Sighting) */}
                     <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">

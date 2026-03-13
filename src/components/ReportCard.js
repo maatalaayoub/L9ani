@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from '@/i18n/navigation';
 import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
@@ -391,8 +392,8 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
         <div 
             className={`
                 bg-white dark:bg-gray-800 
-                border border-gray-200 dark:border-gray-700
-                rounded-xl shadow-sm
+                border border-gray-300 dark:border-gray-600
+                rounded-[5px]
                 w-full max-w-2xl mx-auto
                 overflow-hidden
                 card-hover
@@ -436,7 +437,7 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                             `}>
                                 <span className={`w-1.5 h-1.5 rounded-full ${isSighting ? 'bg-orange-500' : 'bg-blue-500'}`}></span>
                                 {isSighting 
-                                    ? (locale === 'ar' ? 'مشاهدة' : 'Sighting')
+                                    ? (locale === 'ar' ? 'عُثر عليه' : 'Found')
                                     : (locale === 'ar' ? 'مفقود' : 'Missing')
                                 }
                             </span>
@@ -576,10 +577,7 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                         >
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
-                        <span className="flex items-center gap-0.5">
-                            {likeCount > 0 && <span>{likeCount}</span>}
-                            <span>{locale === 'ar' ? 'إعجاب' : 'Like'}</span>
-                        </span>
+                        {likeCount > 0 && <span>{likeCount}</span>}
                     </button>
 
                     {/* Comment Button */}
@@ -602,10 +600,10 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                     {/* View Details */}
                     <Link
                         href={`/reports/${report.id}?source=${report.source}`}
-                        className={`flex-shrink-0 flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold text-white shadow-sm hover:shadow transition-all ${
+                        className={`flex-shrink-0 flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold text-white transition-all ${
                             isSighting 
-                                ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600' 
-                                : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+                                ? 'bg-orange-500 hover:bg-orange-600' 
+                                : 'bg-blue-600 hover:bg-blue-700'
                         }`}
                     >
                         <span>{locale === 'ar' ? 'التفاصيل' : 'Details'}</span>
@@ -713,9 +711,9 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
             </div>
 
             {/* Comments Dialog */}
-            {showCommentsDialog && (
+            {showCommentsDialog && typeof document !== 'undefined' && createPortal(
                 <div 
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 pb-20 sm:pb-4 bg-black/50 backdrop-blur-sm"
+                    className="fixed inset-0 z-[9998] flex items-center justify-center p-4 pb-20 sm:pb-4 bg-black/50 backdrop-blur-sm"
                     onClick={(e) => {
                         if (e.target === e.currentTarget) setShowCommentsDialog(false);
                     }}
@@ -740,13 +738,14 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                             <CommentsSection reportId={report.id} source={report.source} hideHeader />
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Image Gallery Modal */}
-            {previewImages.length > 0 && (
+            {previewImages.length > 0 && typeof document !== 'undefined' && createPortal(
                 <div 
-                    className="fixed inset-0 z-[110] flex items-center justify-center p-4"
+                    className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
                     onClick={() => setPreviewImages([])}
                     onKeyDown={(e) => {
                         if (e.key === 'ArrowLeft') {
@@ -810,7 +809,7 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                     
                     {/* Image Container with Touch Support */}
                     <div 
-                        className="relative z-10 bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-2xl max-w-[90vw] max-h-[90vh] touch-pan-y"
+                        className="relative z-10 max-w-[90vw] max-h-[90vh] touch-pan-y"
                         onClick={(e) => e.stopPropagation()}
                         onTouchStart={(e) => {
                             const touch = e.touches[0];
@@ -851,7 +850,8 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                             ))}
                         </div>
                     )}
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
