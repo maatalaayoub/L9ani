@@ -1,8 +1,8 @@
 {
     "brand": "Lqani.ma",
-    "reportMissing": "Report Missing",
-    "reportSighting": "Report Sighting",
-    "sighting": "Sighting",
+    "reportMissing": "I Lost",
+    "reportSighting": "I Found",
+    "sighting": "I Found",
     "myReport": "My Report",
     "notifications": "Notifications",
     "noNotifications": "No notifications",

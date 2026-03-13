@@ -29,20 +29,21 @@ html {
   transition: none;
 }
 
-/* Prevent margin/padding transitions during scroll/layout to avoid jitter */
-* {
-  transition-property: margin, padding;
-  transition-duration: 0ms;
+/* Card hover transitions - smooth and professional */
+.card-hover {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.2s ease;
 }
 
-/* Allow smooth hover transitions for cards and interactive elements */
-.group,
-.group > *,
-[class*="hover:"],
-[class*="transition"] {
-  transition-property: transform, opacity, background-color, border-color, color, box-shadow, filter;
-  transition-duration: 300ms;
-  transition-timing-function: ease-out;
+.card-hover:hover,
+.group:hover > .card-hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 30px -10px rgb(0 0 0 / 0.15);
+}
+
+.icon-hover {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Prevent layout shift during locale change */

@@ -2,4 +2,4 @@
 export { default as ChatWidget } from './ChatWidget';
 export { default as ChatMessage } from './ChatMessage';
 export { default as ChatInput } from './ChatInput';
-export { default as ChatQuickReplies } from './ChatQuickRepliesu';
+export { default as ChatQuickReplies } from './ChatQuickReplies';

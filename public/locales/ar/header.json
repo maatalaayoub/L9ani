@@ -1,8 +1,8 @@
 {
     "brand": "Lqani.ma",
-    "reportMissing": "بلاغ مفقود",
-    "reportSighting": "بلاغ مشاهدة",
-    "sighting": "مشاهدة",
+    "reportMissing": "فقدت شيئاً",
+    "reportSighting": "وجدت شيئاً",
+    "sighting": "وجدت شيئاً",
     "myReport": "بلاغاتي",
     "notifications": "الإشعارات",
     "noNotifications": "لا توجد إشعارات",

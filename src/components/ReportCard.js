@@ -395,8 +395,7 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                 rounded-xl shadow-sm
                 w-full max-w-2xl mx-auto
                 overflow-hidden
-                transition-all duration-200
-                hover:shadow-md
+                card-hover
                 flex flex-col h-full
             `}
             dir={isRTL ? 'rtl' : 'ltr'}
@@ -483,7 +482,7 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                         <img
                             src={photoUrl}
                             alt={getDisplayTitle()}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-in-out"
                             onError={() => setImageError(true)}
                         />
                         {/* Hover overlay */}

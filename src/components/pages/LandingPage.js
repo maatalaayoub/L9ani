@@ -143,7 +143,7 @@ export default function LandingPage() {
                         {isRTL ? (
                             <>
                                 {/* Hero Image - LEFT side for Arabic */}
-                                <div className="relative w-full max-w-md md:max-w-lg mx-auto">
+                                <div className="hidden md:block relative w-full max-w-md md:max-w-lg mx-auto">
                                     <div style={{ ...animations.fadeUp(heroVisible), transitionDelay: '0.3s' }} className="relative">
                                         <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-500/20 dark:from-blue-600/20 dark:to-purple-600/20 rounded-3xl blur-2xl transform scale-110"></div>
                                         <img 
@@ -166,7 +166,7 @@ export default function LandingPage() {
                                         {t('hero.subtitle')}
                                     </p>
                                     <div style={{ ...animations.fadeUp(heroVisible), transitionDelay: '0.2s' }} className="flex flex-row flex-wrap gap-3 justify-center md:justify-end">
-                                        <Link href="/report-missing" className="group px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm sm:text-base sm:px-6 sm:py-3.5">
+                                        <Link href="/report-missing" className="group w-full sm:w-[230px] px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 hover:-translate-y-0.5 flex flex-row-reverse items-center justify-center gap-2 text-sm sm:text-base sm:px-6 sm:py-3.5">
                                             <span className="w-5 h-5 flex items-center justify-center bg-white/20 rounded-md flex-shrink-0">
                                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
@@ -174,7 +174,7 @@ export default function LandingPage() {
                                             </span>
                                             <span className="whitespace-nowrap">{t('hero.reportMissing')}</span>
                                         </Link>
-                                        <Link href="/report-sighting" className="group px-5 py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-700 dark:text-white border-2 border-gray-200 dark:border-gray-600 rounded-xl font-semibold hover:border-orange-400 dark:hover:border-orange-500 hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 hover:-translate-y-0.5 shadow-sm hover:shadow-md flex items-center justify-center gap-2 text-sm sm:text-base sm:px-6 sm:py-3.5">
+                                        <Link href="/report-sighting" className="group w-full sm:w-[230px] px-5 py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-700 dark:text-white border-2 border-gray-200 dark:border-gray-600 rounded-xl font-semibold hover:border-orange-400 dark:hover:border-orange-500 hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 hover:-translate-y-0.5 shadow-sm hover:shadow-md flex flex-row-reverse items-center justify-center gap-2 text-sm sm:text-base sm:px-6 sm:py-3.5">
                                             <span className="w-5 h-5 flex items-center justify-center bg-orange-100 dark:bg-orange-900/30 rounded-md flex-shrink-0">
                                                 <svg className="w-3.5 h-3.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -200,7 +200,7 @@ export default function LandingPage() {
                                         {t('hero.subtitle')}
                                     </p>
                                     <div style={{ ...animations.fadeUp(heroVisible), transitionDelay: '0.2s' }} className="flex flex-row flex-wrap gap-3 justify-center md:justify-start">
-                                        <Link href="/report-missing" className="group px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm sm:text-base sm:px-6 sm:py-3.5">
+                                        <Link href="/report-missing" className="group w-full sm:w-[230px] px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm sm:text-base sm:px-6 sm:py-3.5">
                                             <span className="w-5 h-5 flex items-center justify-center bg-white/20 rounded-md flex-shrink-0">
                                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
@@ -208,7 +208,7 @@ export default function LandingPage() {
                                             </span>
                                             <span className="whitespace-nowrap">{t('hero.reportMissing')}</span>
                                         </Link>
-                                        <Link href="/report-sighting" className="group px-5 py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-700 dark:text-white border-2 border-gray-200 dark:border-gray-600 rounded-xl font-semibold hover:border-orange-400 dark:hover:border-orange-500 hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 hover:-translate-y-0.5 shadow-sm hover:shadow-md flex items-center justify-center gap-2 text-sm sm:text-base sm:px-6 sm:py-3.5">
+                                        <Link href="/report-sighting" className="group w-full sm:w-[230px] px-5 py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-700 dark:text-white border-2 border-gray-200 dark:border-gray-600 rounded-xl font-semibold hover:border-orange-400 dark:hover:border-orange-500 hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 hover:-translate-y-0.5 shadow-sm hover:shadow-md flex items-center justify-center gap-2 text-sm sm:text-base sm:px-6 sm:py-3.5">
                                             <span className="w-5 h-5 flex items-center justify-center bg-orange-100 dark:bg-orange-900/30 rounded-md flex-shrink-0">
                                                 <svg className="w-3.5 h-3.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -221,7 +221,7 @@ export default function LandingPage() {
                                 </div>
                                 
                                 {/* Hero Image - RIGHT side for English */}
-                                <div className="relative w-full max-w-md md:max-w-lg mx-auto">
+                                <div className="hidden md:block relative w-full max-w-md md:max-w-lg mx-auto">
                                     <div style={{ ...animations.fadeUp(heroVisible), transitionDelay: '0.3s' }} className="relative">
                                         <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-500/20 dark:from-blue-600/20 dark:to-purple-600/20 rounded-3xl blur-2xl transform scale-110"></div>
                                         <img 
@@ -233,26 +233,6 @@ export default function LandingPage() {
                                 </div>
                             </>
                         )}
-                    </div>
-                </div>
-
-                {/* Stats bar */}
-                <div className="relative border-t border-gray-200/50 dark:border-gray-700/50 bg-white/60 dark:bg-gray-800/40 backdrop-blur-sm">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                        <div ref={statsRef} style={animations.fadeUp(statsVisible)} className="flex justify-center gap-8 sm:gap-16">
-                            <div className="text-center" style={animations.staggerChild(statsVisible, 0)}>
-                                <div className="text-2xl font-bold text-gray-900 dark:text-white">2K+</div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400">{t('stats.families')}</div>
-                            </div>
-                            <div className="text-center" style={animations.staggerChild(statsVisible, 0.1)}>
-                                <div className="text-2xl font-bold text-gray-900 dark:text-white">15K+</div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400">{t('stats.photos')}</div>
-                            </div>
-                            <div className="text-center" style={animations.staggerChild(statsVisible, 0.2)}>
-                                <div className="text-2xl font-bold text-gray-900 dark:text-white">500+</div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400">{t('stats.matches')}</div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </section>
@@ -268,8 +248,7 @@ export default function LandingPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <div ref={step1Ref} style={animations.staggerChild(step1Visible, 0)} className="relative group">
-                            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur opacity-0 group-hover:opacity-25 transition duration-500"></div>
-                            <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 h-full transition-transform duration-300 ease-out group-hover:-translate-y-1">
+                            <div className="relative bg-white dark:bg-gray-800 rounded-[5px] p-8 border border-gray-200 dark:border-gray-700 h-full card-hover">
                                 <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/30">
                                     <span className="text-2xl font-bold text-white">1</span>
                                 </div>
@@ -279,8 +258,7 @@ export default function LandingPage() {
                         </div>
 
                         <div ref={step2Ref} style={animations.staggerChild(step2Visible, 0.15)} className="relative group">
-                            <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl blur opacity-0 group-hover:opacity-25 transition duration-500"></div>
-                            <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 h-full transition-transform duration-300 ease-out group-hover:-translate-y-1">
+                            <div className="relative bg-white dark:bg-gray-800 rounded-[5px] p-8 border border-gray-200 dark:border-gray-700 h-full card-hover">
                                 <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-purple-500/30">
                                     <span className="text-2xl font-bold text-white">2</span>
                                 </div>
@@ -290,8 +268,7 @@ export default function LandingPage() {
                         </div>
 
                         <div ref={step3Ref} style={animations.staggerChild(step3Visible, 0.3)} className="relative group">
-                            <div className="absolute -inset-1 bg-gradient-to-r from-green-600 to-teal-600 rounded-2xl blur opacity-0 group-hover:opacity-25 transition duration-500"></div>
-                            <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 h-full transition-transform duration-300 ease-out group-hover:-translate-y-1">
+                            <div className="relative bg-white dark:bg-gray-800 rounded-[5px] p-8 border border-gray-200 dark:border-gray-700 h-full card-hover">
                                 <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-green-500/30">
                                     <span className="text-2xl font-bold text-white">3</span>
                                 </div>
@@ -313,8 +290,8 @@ export default function LandingPage() {
                     </div>
 
                     <div ref={categoriesGridRef} style={animations.fadeUp(categoriesGridVisible)} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 ease-out border border-gray-100 dark:border-gray-700 hover:border-red-200 dark:hover:border-red-800 hover:-translate-y-1">
-                            <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 ease-out">
+                        <div className="group bg-white dark:bg-gray-800 rounded-[5px] p-6 card-hover border border-gray-200 dark:border-gray-700">
+                            <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 icon-hover">
                                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                 </svg>
@@ -323,8 +300,8 @@ export default function LandingPage() {
                             <p className="text-sm text-gray-600 dark:text-gray-400">{t('categories.person.description')}</p>
                         </div>
 
-                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 ease-out border border-gray-100 dark:border-gray-700 hover:border-pink-200 dark:hover:border-pink-800 hover:-translate-y-1">
-                            <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 ease-out">
+                        <div className="group bg-white dark:bg-gray-800 rounded-[5px] p-6 card-hover border border-gray-200 dark:border-gray-700">
+                            <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 icon-hover">
                                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                 </svg>
@@ -333,8 +310,8 @@ export default function LandingPage() {
                             <p className="text-sm text-gray-600 dark:text-gray-400">{t('categories.pets.description')}</p>
                         </div>
 
-                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 ease-out border border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 hover:-translate-y-1">
-                            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 ease-out">
+                        <div className="group bg-white dark:bg-gray-800 rounded-[5px] p-6 card-hover border border-gray-200 dark:border-gray-700">
+                            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 icon-hover">
                                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
                                 </svg>
@@ -343,8 +320,8 @@ export default function LandingPage() {
                             <p className="text-sm text-gray-600 dark:text-gray-400">{t('categories.documents.description')}</p>
                         </div>
 
-                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 ease-out border border-gray-100 dark:border-gray-700 hover:border-purple-200 dark:hover:border-purple-800 hover:-translate-y-1">
-                            <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 ease-out">
+                        <div className="group bg-white dark:bg-gray-800 rounded-[5px] p-6 card-hover border border-gray-200 dark:border-gray-700">
+                            <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 icon-hover">
                                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                 </svg>
@@ -353,8 +330,8 @@ export default function LandingPage() {
                             <p className="text-sm text-gray-600 dark:text-gray-400">{t('categories.electronics.description')}</p>
                         </div>
 
-                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 ease-out border border-gray-100 dark:border-gray-700 hover:border-amber-200 dark:hover:border-amber-800 hover:-translate-y-1">
-                            <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 ease-out">
+                        <div className="group bg-white dark:bg-gray-800 rounded-[5px] p-6 card-hover border border-gray-200 dark:border-gray-700">
+                            <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 icon-hover">
                                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                                 </svg>
@@ -363,8 +340,8 @@ export default function LandingPage() {
                             <p className="text-sm text-gray-600 dark:text-gray-400">{t('categories.keys.description')}</p>
                         </div>
 
-                        <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 ease-out border border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:-translate-y-1">
-                            <div className="w-14 h-14 bg-gradient-to-br from-gray-500 to-gray-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 ease-out">
+                        <div className="group bg-white dark:bg-gray-800 rounded-[5px] p-6 card-hover border border-gray-200 dark:border-gray-700">
+                            <div className="w-14 h-14 bg-gradient-to-br from-gray-500 to-gray-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 icon-hover">
                                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                                 </svg>
@@ -380,7 +357,7 @@ export default function LandingPage() {
             <section className="py-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                        <div ref={featuresContentRef} style={animations.fadeRight(featuresContentVisible, isRTL)} className={isRTL ? 'order-2' : ''}>
+                        <div ref={featuresContentRef} style={animations.fadeRight(featuresContentVisible, isRTL)} className={isRTL ? 'lg:order-2' : ''}>
                             <span className="text-blue-600 dark:text-blue-400 font-semibold text-sm uppercase tracking-wider">{t('features.label')}</span>
                             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mt-2 mb-6">{t('features.title')}</h2>
                             <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">{t('features.subtitle')}</p>
@@ -436,42 +413,50 @@ export default function LandingPage() {
                             </div>
                         </div>
 
-                        <div ref={featuresIllustrationRef} style={animations.fadeLeft(featuresIllustrationVisible, isRTL)} className={`relative ${isRTL ? 'order-1' : ''}`}>
-                            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-3xl blur-3xl opacity-20"></div>
-                            <div className="relative bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-3xl p-8 sm:p-10 shadow-2xl">
+                        <div ref={featuresIllustrationRef} style={animations.fadeLeft(featuresIllustrationVisible, isRTL)} className={`relative ${isRTL ? 'lg:order-1' : ''}`}>
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-[8px] blur-3xl opacity-20"></div>
+                            <div className="relative bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-[8px] p-8 sm:p-10 shadow-2xl">
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="group bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center transition-all duration-300 ease-out hover:scale-105 border border-white/10" style={animations.scale(featuresIllustrationVisible)}>
-                                        <div className="w-14 h-14 mx-auto mb-3 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ease-out">
+                                    <div style={animations.scale(featuresIllustrationVisible)}>
+                                      <div className="group bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-[8px] p-6 text-center card-hover border border-white/10">
+                                        <div className="w-14 h-14 mx-auto mb-3 bg-white/20 rounded-[8px] flex items-center justify-center group-hover:scale-110 icon-hover">
                                             <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                             </svg>
                                         </div>
                                         <div className="text-white font-semibold text-sm">{t('features.card1')}</div>
+                                      </div>
                                     </div>
-                                    <div className="group bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center transition-all duration-300 ease-out hover:scale-105 border border-white/10" style={{ ...animations.scale(featuresIllustrationVisible), transitionDelay: '0.1s' }}>
-                                        <div className="w-14 h-14 mx-auto mb-3 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ease-out">
+                                    <div style={{ ...animations.scale(featuresIllustrationVisible), transitionDelay: '0.1s' }}>
+                                      <div className="group bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-[8px] p-6 text-center card-hover border border-white/10">
+                                        <div className="w-14 h-14 mx-auto mb-3 bg-white/20 rounded-[8px] flex items-center justify-center group-hover:scale-110 icon-hover">
                                             <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                             </svg>
                                         </div>
                                         <div className="text-white font-semibold text-sm">{t('features.card2')}</div>
+                                      </div>
                                     </div>
-                                    <div className="group bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center transition-all duration-300 ease-out hover:scale-105 border border-white/10" style={{ ...animations.scale(featuresIllustrationVisible), transitionDelay: '0.2s' }}>
-                                        <div className="w-14 h-14 mx-auto mb-3 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ease-out">
+                                    <div style={{ ...animations.scale(featuresIllustrationVisible), transitionDelay: '0.2s' }}>
+                                      <div className="group bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-[8px] p-6 text-center card-hover border border-white/10">
+                                        <div className="w-14 h-14 mx-auto mb-3 bg-white/20 rounded-[8px] flex items-center justify-center group-hover:scale-110 icon-hover">
                                             <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                             </svg>
                                         </div>
                                         <div className="text-white font-semibold text-sm">{t('features.card3')}</div>
+                                      </div>
                                     </div>
-                                    <div className="group bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-center transition-all duration-300 ease-out hover:scale-105 border border-white/10" style={{ ...animations.scale(featuresIllustrationVisible), transitionDelay: '0.3s' }}>
-                                        <div className="w-14 h-14 mx-auto mb-3 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ease-out">
+                                    <div style={{ ...animations.scale(featuresIllustrationVisible), transitionDelay: '0.3s' }}>
+                                      <div className="group bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-[8px] p-6 text-center card-hover border border-white/10">
+                                        <div className="w-14 h-14 mx-auto mb-3 bg-white/20 rounded-[8px] flex items-center justify-center group-hover:scale-110 icon-hover">
                                             <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                             </svg>
                                         </div>
                                         <div className="text-white font-semibold text-sm">{t('features.card4')}</div>
+                                      </div>
                                     </div>
                                 </div>
                                 <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
@@ -492,7 +477,8 @@ export default function LandingPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div ref={testimonial1Ref} style={animations.staggerChild(testimonial1Visible, 0)} className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 transition-transform duration-300 ease-out hover:-translate-y-1">
+                        <div ref={testimonial1Ref} style={animations.staggerChild(testimonial1Visible, 0)}>
+                          <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 card-hover h-full">
                             <div className="flex items-center gap-1 mb-4">
                                 {[...Array(5)].map((_, i) => (
                                     <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -508,9 +494,11 @@ export default function LandingPage() {
                                     <div className="text-sm text-gray-500 dark:text-gray-400">{t('impact.testimonial1.location')}</div>
                                 </div>
                             </div>
+                          </div>
                         </div>
 
-                        <div ref={testimonial2Ref} style={animations.staggerChild(testimonial2Visible, 0.15)} className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 transition-transform duration-300 ease-out hover:-translate-y-1">
+                        <div ref={testimonial2Ref} style={animations.staggerChild(testimonial2Visible, 0.15)}>
+                          <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 card-hover h-full">
                             <div className="flex items-center gap-1 mb-4">
                                 {[...Array(5)].map((_, i) => (
                                     <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -526,9 +514,11 @@ export default function LandingPage() {
                                     <div className="text-sm text-gray-500 dark:text-gray-400">{t('impact.testimonial2.location')}</div>
                                 </div>
                             </div>
+                          </div>
                         </div>
 
-                        <div ref={testimonial3Ref} style={animations.staggerChild(testimonial3Visible, 0.3)} className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 transition-transform duration-300 ease-out hover:-translate-y-1">
+                        <div ref={testimonial3Ref} style={animations.staggerChild(testimonial3Visible, 0.3)}>
+                          <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 card-hover h-full">
                             <div className="flex items-center gap-1 mb-4">
                                 {[...Array(5)].map((_, i) => (
                                     <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -544,6 +534,7 @@ export default function LandingPage() {
                                     <div className="text-sm text-gray-500 dark:text-gray-400">{t('impact.testimonial3.location')}</div>
                                 </div>
                             </div>
+                          </div>
                         </div>
                     </div>
                 </div>
@@ -552,19 +543,19 @@ export default function LandingPage() {
             {/* CTA Section */}
             <section className="py-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div ref={ctaRef} style={animations.scale(ctaVisible)} className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-3xl p-12 sm:p-16 text-center">
+                    <div ref={ctaRef} style={animations.scale(ctaVisible)} className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-[8px] p-12 sm:p-16 text-center">
                         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
                         <div className="relative">
                             <h2 style={animations.fadeUp(ctaVisible)} className="text-3xl sm:text-4xl font-bold text-white mb-4">{t('cta.title')}</h2>
                             <p style={{ ...animations.fadeUp(ctaVisible), transitionDelay: '0.1s' }} className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">{t('cta.description')}</p>
                             <div style={{ ...animations.fadeUp(ctaVisible), transitionDelay: '0.2s' }} className="flex flex-col sm:flex-row gap-4 justify-center">
-                                <Link href="/report-missing" className="px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-all hover:-translate-y-0.5 shadow-lg flex items-center justify-center gap-2">
+                                <Link href="/report-missing" className="px-8 py-4 bg-white text-blue-600 rounded-[8px] font-semibold text-lg hover:bg-gray-100 transition-all hover:-translate-y-0.5 shadow-sm flex items-center justify-center gap-2">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                                     </svg>
                                     {t('cta.button1')}
                                 </Link>
-                                <Link href="/report-sighting" className="px-8 py-4 bg-white/20 text-white border-2 border-white/30 rounded-xl font-semibold text-lg hover:bg-white/30 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                                <Link href="/report-sighting" className="px-8 py-4 bg-white/20 text-white border border-white/30 rounded-[8px] font-semibold text-lg hover:bg-white/30 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />

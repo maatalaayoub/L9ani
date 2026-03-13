@@ -4,8 +4,8 @@
         "title": "Find What You've Lost",
         "titleHighlight": "Reunite What Matters",
         "subtitle": "L9ani uses advanced technology and community support to help find missing persons and lost items. Whether it's a loved one, important documents, a phone, keys, or even a pet — upload a photo or report a sighting to help bring them back.",
-        "reportMissing": "Report Missing",
-        "reportSighting": "Report a Sighting"
+        "reportMissing": "I Lost Something",
+        "reportSighting": "I Found Something"
     },
     "stats": {
         "families": "People Helped",
@@ -109,8 +109,8 @@
     "cta": {
         "title": "Ready to Make a Difference?",
         "description": "Every report brings us closer to reuniting someone with what they've lost. Join thousands of Moroccans helping each other recover missing persons and lost belongings.",
-        "button1": "Report Something Missing",
-        "button2": "Report Something Found"
+        "button1": "I Lost Something",
+        "button2": "I Found Something"
     },
     "trust": {
         "secure": "256-bit Encryption",
