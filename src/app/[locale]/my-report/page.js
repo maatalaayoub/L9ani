@@ -394,7 +394,7 @@ export default function MyReport() {
             <html dir="${isRTL ? 'rtl' : 'ltr'}" lang="${locale}">
             <head>
                 <meta charset="UTF-8">
-                <title>${reportName} - L9ani</title>
+                <title>${reportName} - Lqani</title>
                 <style>
                     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap');
                     
@@ -829,7 +829,7 @@ export default function MyReport() {
                         </div>
                         <div class="qr-section">
                             <img src="${qrCodeUrl}" alt="QR Code" class="qr-code" />
-                            <div class="qr-label">l9ani.ma</div>
+                            <div class="qr-label">lqani.ma</div>
                         </div>
                     </div>
                 </div>
@@ -871,7 +871,7 @@ export default function MyReport() {
             <html dir="${isRTL ? 'rtl' : 'ltr'}" lang="${locale}">
             <head>
                 <meta charset="UTF-8">
-                <title>${reportName} - L9ani</title>
+                <title>${reportName} - Lqani</title>
                 <style>
                     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap');
                     
@@ -1231,7 +1231,7 @@ export default function MyReport() {
                         </div>
                         <div class="qr-section">
                             <img src="${qrCodeUrl}" alt="QR Code" class="qr-code" />
-                            <div class="qr-label">l9ani.ma</div>
+                            <div class="qr-label">lqani.ma</div>
                         </div>
                     </div>
                 </div>

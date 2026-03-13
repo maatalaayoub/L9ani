@@ -3,7 +3,7 @@
         "badge": "Helping reunite people with what matters most",
         "title": "Find What You've Lost",
         "titleHighlight": "Reunite What Matters",
-        "subtitle": "L9ani uses advanced technology and community support to help find missing persons and lost items. Whether it's a loved one, important documents, a phone, keys, or even a pet — upload a photo or report a sighting to help bring them back.",
+        "subtitle": "Lqani uses advanced technology and community support to help find missing persons and lost items. Whether it's a loved one, important documents, a phone, keys, or even a pet — upload a photo or report a sighting to help bring them back.",
         "reportMissing": "I Lost Something",
         "reportSighting": "I Found Something"
     },
@@ -30,7 +30,7 @@
         }
     },
     "features": {
-        "label": "Why Choose L9ani",
+        "label": "Why Choose Lqani",
         "title": "Powerful Features to Help You",
         "subtitle": "We've built a comprehensive platform with the tools and technology needed to maximize the chances of finding missing persons and recovering lost items.",
         "feature1": {
@@ -57,7 +57,7 @@
     "categories": {
         "label": "What We Help Find",
         "title": "More Than Just Missing Persons",
-        "subtitle": "L9ani is your go-to platform for finding anything that matters to you.",
+        "subtitle": "Lqani is your go-to platform for finding anything that matters to you.",
         "person": {
             "title": "Missing Persons",
             "description": "Help reunite families by reporting or searching for missing loved ones."
@@ -88,19 +88,19 @@
         "title": "Stories That Matter",
         "subtitle": "Real stories from people who have been reunited with what they lost through our platform.",
         "testimonial1": {
-            "quote": "Thanks to L9ani, we found our uncle after 3 years of searching. This platform gave us hope when we had none.",
+            "quote": "Thanks to Lqani, we found our uncle after 3 years of searching. This platform gave us hope when we had none.",
             "name": "Ahmed M.",
             "location": "Casablanca",
             "initial": "A"
         },
         "testimonial2": {
-            "quote": "I lost my wallet with all my documents at the market. Someone found it and posted on L9ani. Got it back the same day!",
+            "quote": "I lost my wallet with all my documents at the market. Someone found it and posted on Lqani. Got it back the same day!",
             "name": "Fatima Z.",
             "location": "Rabat",
             "initial": "F"
         },
         "testimonial3": {
-            "quote": "Our cat went missing for 2 weeks. A neighbor spotted her and reported it on L9ani. She's home now, safe and sound.",
+            "quote": "Our cat went missing for 2 weeks. A neighbor spotted her and reported it on Lqani. She's home now, safe and sound.",
             "name": "Omar B.",
             "location": "Marrakech",
             "initial": "O"

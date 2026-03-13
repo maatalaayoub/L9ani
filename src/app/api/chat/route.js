@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 /**
- * L9ani Smart Local Assistant
+ * Lqani Smart Local Assistant
  * 100% local - no external API calls
  * Uses semantic keyword analysis for intelligent responses
  */
@@ -332,7 +332,7 @@ const RESPONSES = {
     
     settings: {
         en: {
-            text: `Looking for settings? ⚙️\n\n🔧 Go to **Settings** (/settings) where you can:\n• Change your password\n• Switch language (English/Arabic/Darija)\n• Manage notifications\n• Toggle dark mode\n\nCustomize L9ani to fit your preferences!`,
+            text: `Looking for settings? ⚙️\n\n🔧 Go to **Settings** (/settings) where you can:\n• Change your password\n• Switch language (English/Arabic/Darija)\n• Manage notifications\n• Toggle dark mode\n\nCustomize Lqani to fit your preferences!`,
             route: '/settings'
         },
         ar: {
@@ -362,7 +362,7 @@ const RESPONSES = {
     
     about: {
         en: {
-            text: `Want to know about L9ani? 🌟\n\n**L9ani** (لقاني) means "Find me" in Moroccan Arabic. It's a free platform to help people in Morocco find their lost belongings and reunite found items with their owners.\n\n📖 Visit **About Us** (/about) to learn:\n• Our mission and story\n• How the platform works\n• Our team and values\n\nTogether, we help reconnect people with what matters!`,
+            text: `Want to know about Lqani? 🌟\n\n**Lqani** (لقاني) means "Find me" in Moroccan Arabic. It's a free platform to help people in Morocco find their lost belongings and reunite found items with their owners.\n\n📖 Visit **About Us** (/about) to learn:\n• Our mission and story\n• How the platform works\n• Our team and values\n\nTogether, we help reconnect people with what matters!`,
             route: '/about'
         },
         ar: {
@@ -392,7 +392,7 @@ const RESPONSES = {
     
     greeting: {
         en: {
-            text: `Hello! 👋 Welcome to L9ani - Morocco's Lost & Found platform!\n\nI'm here to help you with:\n• 📝 Report something you lost\n• 👁️ Report something you found\n• 🔍 Search for lost items\n• 📋 Manage your reports\n\nWhat would you like to do today?`,
+            text: `Hello! 👋 Welcome to Lqani - Morocco's Lost & Found platform!\n\nI'm here to help you with:\n• 📝 Report something you lost\n• 👁️ Report something you found\n• 🔍 Search for lost items\n• 📋 Manage your reports\n\nWhat would you like to do today?`,
             route: null
         },
         ar: {
@@ -422,7 +422,7 @@ const RESPONSES = {
     
     unknown: {
         en: {
-            text: `I'm your L9ani assistant, specialized in helping with lost & found items. 🔍\n\nI can help you with:\n• 📝 **Report Missing** - Lost something? Create a report\n• 👁️ **Report Sighting** - Found something? Help find the owner\n• 🔍 **Search** - Browse all lost & found reports\n• 📋 **My Reports** - Manage your submissions\n• 👤 **Profile** - Update your information\n• ⚙️ **Settings** - Change preferences\n• 📞 **Contact** - Get human support\n\nWhat would you like to do?`,
+            text: `I'm your Lqani assistant, specialized in helping with lost & found items. 🔍\n\nI can help you with:\n• 📝 **Report Missing** - Lost something? Create a report\n• 👁️ **Report Sighting** - Found something? Help find the owner\n• 🔍 **Search** - Browse all lost & found reports\n• 📋 **My Reports** - Manage your submissions\n• 👤 **Profile** - Update your information\n• ⚙️ **Settings** - Change preferences\n• 📞 **Contact** - Get human support\n\nWhat would you like to do?`,
             route: null
         },
         ar: {

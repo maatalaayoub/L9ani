@@ -1,5 +1,5 @@
 {
-    "title": "L9ani Assistant",
+    "title": "Lqani Assistant",
     "subtitle": "Here to help you",
     "toggle": "Open chat",
     "close": "Close chat",
@@ -12,7 +12,7 @@
     "newMessage": "New message",
     "welcome": {
         "greeting": "Hello",
-        "intro": "I'm your L9ani assistant. I can help you:",
+        "intro": "I'm your Lqani assistant. I can help you:",
         "options": {
             "report": "Report something missing",
             "search": "Search existing reports",

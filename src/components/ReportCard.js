@@ -644,7 +644,7 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                                         const url = `${window.location.origin}/reports/${report.id}?source=${report.source}`;
                                         const text = locale === 'ar' 
                                             ? `شاهد هذا التقرير على لقاني: ${report.title || getDisplayTitle()}`
-                                            : `Check out this report on L9ani: ${report.title || getDisplayTitle()}`;
+                                            : `Check out this report on Lqani: ${report.title || getDisplayTitle()}`;
                                         window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
                                         setShowShareMenu(false);
                                     }}
@@ -693,7 +693,7 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                                             const url = `${window.location.origin}/reports/${report.id}?source=${report.source}`;
                                             navigator.share({
                                                 title: report.title || getDisplayTitle(),
-                                                text: locale === 'ar' ? 'شاهد هذا التقرير على لقاني' : 'Check out this report on L9ani',
+                                                text: locale === 'ar' ? 'شاهد هذا التقرير على لقاني' : 'Check out this report on Lqani',
                                                 url: url
                                             });
                                             setShowShareMenu(false);

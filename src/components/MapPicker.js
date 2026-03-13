@@ -25,7 +25,7 @@ const reverseGeocode = async (lat, lng) => {
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1&accept-language=en,ar`,
             {
                 headers: {
-                    'User-Agent': 'L9ani-App/1.0'
+                    'User-Agent': 'Lqani-App/1.0'
                 }
             }
         );
