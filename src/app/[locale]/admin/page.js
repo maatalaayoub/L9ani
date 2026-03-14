@@ -1904,53 +1904,51 @@ export default function AdminPage() {
                     <div className="flex items-center justify-center min-h-screen px-4 py-8">
                         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setShowProfileModal(false)} />
                         <div className="relative bg-white dark:bg-[#101828] rounded-2xl shadow-2xl max-w-md w-full mx-auto z-10 overflow-hidden border border-gray-200 dark:border-gray-700/50">
-                            {/* Modal Header with gradient */}
-                            <div className="relative px-6 py-8 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600">
-                                {/* Decorative pattern */}
-                                <div className="absolute inset-0 opacity-10">
-                                    <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                                        <pattern id="profileGrid" width="10" height="10" patternUnits="userSpaceOnUse">
-                                            <circle cx="1" cy="1" r="1" fill="white"/>
-                                        </pattern>
-                                        <rect width="100" height="100" fill="url(#profileGrid)"/>
-                                    </svg>
+{/* Simple clean header */}
+                                <div className="flex items-center justify-between px-5 pt-5 pb-2">
+                                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                        User Info
+                                    </h2>
+                                    <button
+                                        onClick={() => setShowProfileModal(false)}
+                                        className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
                                 </div>
                                 
-                                {/* Close button */}
-                                <button
-                                    onClick={() => setShowProfileModal(false)}
-                                    className="absolute top-4 right-4 p-1.5 hover:bg-white/20 rounded-lg transition-colors"
-                                >
-                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-
-                                {/* Profile Picture */}
-                                <div className="flex flex-col items-center">
-                                    {selectedUserProfile.profile_picture ? (
-                                        <img 
-                                            src={selectedUserProfile.profile_picture} 
-                                            alt={selectedUserProfile.name || 'User'}
-                                            className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
-                                        />
-                                    ) : (
-                                        <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-4 border-white/50 shadow-lg">
-                                            <span className="text-white font-bold text-3xl">
+                                {/* Small clean Profile Info */}
+                                <div className="px-6 py-4 flex items-center gap-4 border-b border-gray-100 dark:border-gray-800">
+                                    <div className="relative flex-shrink-0">
+                                        {selectedUserProfile.profile_picture ? (
+                                            <img
+                                                src={selectedUserProfile.profile_picture}
+                                                alt={selectedUserProfile.name || 'User'}
+                                                className="w-16 h-16 rounded-full object-cover ring-2 ring-gray-100 dark:ring-gray-800"
+                                            />
+                                        ) : (
+                                            <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-xl ring-2 ring-gray-100 dark:ring-gray-800">
                                                 {(selectedUserProfile.name || selectedUserProfile.username || 'U').charAt(0).toUpperCase()}
-                                            </span>
-                                        </div>
-                                    )}
-                                    <h3 className="mt-4 text-xl font-bold text-white">
-                                        {selectedUserProfile.first_name && selectedUserProfile.last_name 
-                                            ? `${selectedUserProfile.first_name} ${selectedUserProfile.last_name}`
-                                            : selectedUserProfile.name || selectedUserProfile.username || t('modal.anonymous')}
-                                    </h3>
-                                    {selectedUserProfile.username && (
-                                        <p className="text-white/80 text-sm">@{selectedUserProfile.username}</p>
-                                    )}
+                                            </div>
+                                        )}
+                                        <div className="absolute bottom-0.5 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-[#101828] rounded-full z-20"></div>
+                                    </div>
+                                    
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">
+                                            {selectedUserProfile.first_name && selectedUserProfile.last_name
+                                                ? `${selectedUserProfile.first_name} ${selectedUserProfile.last_name}`
+                                                : selectedUserProfile.name || selectedUserProfile.username || t('modal.anonymous')}
+                                        </h3>
+                                        {selectedUserProfile.username && (
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                                                @{selectedUserProfile.username}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
 
                             {/* Profile Details */}
                             <div className="px-6 py-5 space-y-4">

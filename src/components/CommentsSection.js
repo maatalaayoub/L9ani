@@ -316,7 +316,7 @@ function Comment({ comment, reportId, source, onReply, onDelete, onLike, depth =
 export default function CommentsSection({ reportId, source = 'missing', hideHeader = false }) {
     const t = useTranslations('reports');
     const { locale } = useLanguage();
-    const { user, getAccessToken, isAdmin } = useAuth();
+    const { user, profile, getAccessToken, isAdmin } = useAuth();
     const inputRef = useRef(null);
     
     const [comments, setComments] = useState([]);
@@ -614,15 +614,15 @@ export default function CommentsSection({ reportId, source = 'missing', hideHead
                         <form onSubmit={handleAddComment} className="flex gap-2 items-center">
                             {/* Avatar */}
                             <div className="flex-shrink-0">
-                                {user.user_metadata?.avatar_url ? (
+                                {profile?.avatar_url || profile?.profile_picture ? (
                                     <img
-                                        src={user.user_metadata.avatar_url}
+                                        src={profile.avatar_url || profile.profile_picture}
                                         alt="You"
                                         className="w-8 h-8 rounded-full object-cover"
                                     />
                                 ) : (
                                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-xs">
-                                        {user.email?.charAt(0)?.toUpperCase() || '?'}
+                                        {(profile?.first_name || profile?.username || user?.user_metadata?.full_name || user?.email || '?').charAt(0).toUpperCase()}
                                     </div>
                                 )}
                             </div>
