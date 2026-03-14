@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { Link } from "@/i18n/navigation";
@@ -61,6 +62,12 @@ export default function Messages() {
     const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [showMobileChat, setShowMobileChat] = useState(false);
+    const [currentReportId, setCurrentReportId] = useState(null);
+    const [currentReportSource, setCurrentReportSource] = useState(null);
+
+    const searchParams = useSearchParams();
+    const contactParam = searchParams.get('contact');
+    const contactHandledRef = useRef(null);
 
     const messagesEndRef = useRef(null);
     const messageInputRef = useRef(null);
@@ -191,6 +198,8 @@ export default function Messages() {
     const openConversation = (conv) => {
         setSelectedConversation(conv.id);
         setOtherUser(conv.other_user);
+        setCurrentReportId(conv.report_id || null);
+        setCurrentReportSource(conv.report_source || null);
         setShowMobileChat(true);
         fetchMessages(conv.id);
     };
@@ -212,6 +221,8 @@ export default function Messages() {
         setSelectedConversation(null);
         setMessages([]);
         setOtherUser(null);
+        setCurrentReportId(null);
+        setCurrentReportSource(null);
         fetchConversations();
     };
 
@@ -221,6 +232,38 @@ export default function Messages() {
             fetchConversations();
         }
     }, [user, fetchConversations]);
+
+    // Handle ?contact= query parameter — open or start a conversation with the specified user
+    useEffect(() => {
+        if (!contactParam || !user || loading || contactHandledRef.current === contactParam) return;
+        if (contactParam === user.id) return; // Can't message yourself
+
+        contactHandledRef.current = contactParam;
+
+        // Check if we already have a conversation with this user
+        const existingConv = conversations.find(c => c.other_user?.id === contactParam);
+        if (existingConv) {
+            openConversation(existingConv);
+            return;
+        }
+
+        // No existing conversation — set up a new conversation
+        const setupNewConversation = async () => {
+            try {
+                const res = await fetch(`/api/user/public-profile?id=${encodeURIComponent(contactParam)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setOtherUser(data.profile);
+                    setSelectedConversation('new');
+                    setMessages([]);
+                    setShowMobileChat(true);
+                }
+            } catch (err) {
+                console.error('Error fetching contact profile:', err);
+            }
+        };
+        setupNewConversation();
+    }, [contactParam, user, loading, conversations]);
 
     // Lightweight polling - only check for new messages, no loading spinners
     useEffect(() => {
@@ -390,6 +433,18 @@ export default function Messages() {
                                                     </span>
                                                 )}
                                             </div>
+                                            {conv.report_id && (
+                                                <Link
+                                                    href={`/reports/${conv.report_id}?source=${conv.report_source || 'missing'}`}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="inline-flex items-center gap-1 mt-1 text-[11px] text-blue-600 dark:text-blue-400 hover:underline"
+                                                >
+                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                    </svg>
+                                                    {t('viewReport')}
+                                                </Link>
+                                            )}
                                         </div>
                                     </button>
                                 ))
@@ -439,6 +494,19 @@ export default function Messages() {
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                         </svg>
                                     </button>
+
+                                    {/* View Report button */}
+                                    {currentReportId && (
+                                        <Link
+                                            href={`/reports/${currentReportId}?source=${currentReportSource || 'missing'}`}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-blue-600 dark:text-blue-400 text-sm font-medium transition-colors"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            <span className="hidden sm:inline">{t('viewReport')}</span>
+                                        </Link>
+                                    )}
                                 </div>
 
                                 {/* Messages */}
@@ -491,8 +559,8 @@ export default function Messages() {
                                 </div>
 
                                 {/* Message Input */}
-                                <form onSubmit={sendMessage} className="flex items-center gap-2 px-4 py-3 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1e293b] fixed bottom-16 left-0 right-0 z-30 sm:static sm:z-auto">
-                                    <div className="flex-1 relative">
+                                <form onSubmit={sendMessage} className="px-4 py-3 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1e293b] fixed bottom-16 left-0 right-0 z-30 sm:static sm:z-auto">
+                                    <div className="flex items-end relative bg-gray-100 dark:bg-gray-800 rounded-xl focus-within:ring-2 focus-within:ring-blue-500">
                                         <textarea
                                             ref={messageInputRef}
                                             value={newMessage}
@@ -506,27 +574,27 @@ export default function Messages() {
                                             placeholder={t('messagePlaceholder')}
                                             rows={1}
                                             maxLength={2000}
-                                            className="w-full resize-none py-2.5 px-4 bg-gray-100 dark:bg-gray-800 border-0 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none max-h-32"
+                                            className="flex-1 resize-none py-2.5 px-4 bg-transparent border-0 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:ring-0 outline-none max-h-32"
                                             style={{ minHeight: '40px' }}
                                         />
+                                        <button
+                                            type="submit"
+                                            disabled={!newMessage.trim() || sending}
+                                            className={`p-2 m-1 rounded-lg transition-all flex-shrink-0 ${
+                                                newMessage.trim() && !sending
+                                                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
+                                                    : 'text-gray-400 cursor-not-allowed'
+                                            }`}
+                                        >
+                                            {sending ? (
+                                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                            ) : (
+                                                <svg className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                                                </svg>
+                                            )}
+                                        </button>
                                     </div>
-                                    <button
-                                        type="submit"
-                                        disabled={!newMessage.trim() || sending}
-                                        className={`p-2.5 rounded-xl transition-all flex-shrink-0 ${
-                                            newMessage.trim() && !sending
-                                                ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25'
-                                                : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
-                                        }`}
-                                    >
-                                        {sending ? (
-                                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                        ) : (
-                                            <svg className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                                            </svg>
-                                        )}
-                                    </button>
                                 </form>
                             </>
                         ) : (

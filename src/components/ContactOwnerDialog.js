@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useLanguage } from "@/context/LanguageContext";
 
-export default function ContactOwnerDialog({ isOpen, onClose, recipientId }) {
+export default function ContactOwnerDialog({ isOpen, onClose, recipientId, reportId, reportSource }) {
     const { locale } = useLanguage();
     const isRTL = locale === 'ar';
     const [message, setMessage] = useState('');
@@ -41,7 +41,9 @@ export default function ContactOwnerDialog({ isOpen, onClose, recipientId }) {
                 },
                 body: JSON.stringify({
                     recipient_id: recipientId,
-                    content: message.trim()
+                    content: message.trim(),
+                    report_id: reportId,
+                    report_source: reportSource
                 })
             });
 

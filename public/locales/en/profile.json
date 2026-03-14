@@ -179,5 +179,14 @@
             "confirm": "Confirm Delete",
             "deleting": "Deleting..."
         }
+    },
+    "publicProfile": {
+        "title": "User Profile",
+        "memberSince": "Member since",
+        "city": "City",
+        "sendMessage": "Send Message",
+        "userNotFound": "User not found",
+        "userNotFoundHint": "The user you're looking for doesn't exist or has been removed.",
+        "backHome": "Back to Home"
     }
 }

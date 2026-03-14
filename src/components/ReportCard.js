@@ -404,8 +404,8 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
             {/* Header - User Info & Status */}
             <div className="px-4 py-3 flex items-start justify-between gap-2">
                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                    {/* Owner Avatar */}
-                    <div className="relative flex-shrink-0">
+                    {/* Owner Avatar & Name - Links to profile */}
+                    <Link href={`/profile?id=${report.user_id}`} className="relative flex-shrink-0">
                         {ownerAvatar ? (
                             <img 
                                 src={ownerAvatar} 
@@ -419,14 +419,14 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                         )}
                         {/* Online indicator */}
                         <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-gray-800 ${isSighting ? 'bg-orange-500' : 'bg-blue-500'}`}></div>
-                    </div>
+                    </Link>
                     
                     {/* Owner Name & Time */}
                     <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-semibold text-gray-900 dark:text-white text-sm truncate max-w-[120px] sm:max-w-none">
+                            <Link href={`/profile?id=${report.user_id}`} className="font-semibold text-gray-900 dark:text-white text-sm truncate max-w-[120px] sm:max-w-none hover:underline">
                                 {ownerName}
-                            </span>
+                            </Link>
                             {/* Status Badge */}
                             <span className={`
                                 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0

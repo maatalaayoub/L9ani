@@ -178,6 +178,13 @@
         "buttons": {
             "confirm": "تأكيد الحذف",
             "deleting": "جارٍ الحذف..."
-        }
-    }
+        }    },
+    "publicProfile": {
+        "title": "الملف الشخصي",
+        "memberSince": "عضو منذ",
+        "city": "المدينة",
+        "sendMessage": "إرسال رسالة",
+        "userNotFound": "المستخدم غير موجود",
+        "userNotFoundHint": "المستخدم الذي تبحث عنه غير موجود أو تم حذفه.",
+        "backHome": "العودة للرئيسية"    }
 }

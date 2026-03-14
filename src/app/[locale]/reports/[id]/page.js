@@ -508,6 +508,8 @@ export default function ReportDetailsPage({ params }) {
                 isOpen={contactDialogOpen}
                 onClose={() => setContactDialogOpen(false)}
                 recipientId={report.user_id}
+                reportId={reportId}
+                reportSource={source}
             />
 
             {/* Image Gallery Modal */}

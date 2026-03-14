@@ -92,6 +92,13 @@ export default function ProfilePage() {
     // Track last country code to detect switches
     const lastCountryCode = useRef(null);
 
+    // Public profile viewing state
+    const viewedUserId = searchParams.get('id');
+    const isViewingOther = !!(viewedUserId && user && viewedUserId !== user.id);
+    const [viewedProfile, setViewedProfile] = useState(null);
+    const [viewedProfileLoading, setViewedProfileLoading] = useState(!!searchParams.get('id'));
+    const [viewedProfileError, setViewedProfileError] = useState(false);
+
     const handlePhoneChange = (value, data) => {
         let shouldClear = false;
 
@@ -204,6 +211,36 @@ export default function ProfilePage() {
             });
         }
     }, [profile]);
+
+    // Fetch other user's public profile when viewing someone else
+    useEffect(() => {
+        if (!isViewingOther) {
+            setViewedProfile(null);
+            setViewedProfileError(false);
+            setViewedProfileLoading(false);
+            return;
+        }
+
+        const fetchPublicProfile = async () => {
+            setViewedProfileLoading(true);
+            setViewedProfileError(false);
+            try {
+                const res = await fetch(`/api/user/public-profile?id=${encodeURIComponent(viewedUserId)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setViewedProfile(data.profile);
+                } else {
+                    setViewedProfileError(true);
+                }
+            } catch {
+                setViewedProfileError(true);
+            } finally {
+                setViewedProfileLoading(false);
+            }
+        };
+
+        fetchPublicProfile();
+    }, [isViewingOther, viewedUserId]);
 
     // Handle email_changed query parameter - refresh profile when redirected after email change
     useEffect(() => {
@@ -814,6 +851,130 @@ export default function ProfilePage() {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-[#101828] pt-24 px-4 flex justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+        );
+    }
+
+    // Public profile view for other users
+    if (isViewingOther) {
+        if (viewedProfileLoading) {
+            return (
+                <div className="min-h-screen bg-gray-50 dark:bg-[#101828] pt-24 px-4 flex justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+            );
+        }
+
+        if (viewedProfileError || !viewedProfile) {
+            return (
+                <div className="min-h-screen bg-gray-50 dark:bg-[#101828] pt-28 px-4 pb-12">
+                    <div className="max-w-md mx-auto text-center py-20">
+                        <svg className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t('publicProfile.userNotFound')}</h2>
+                        <p className="text-gray-500 dark:text-gray-400 mb-6">{t('publicProfile.userNotFoundHint')}</p>
+                        <Link href="/" className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors">
+                            {t('publicProfile.backHome')}
+                        </Link>
+                    </div>
+                </div>
+            );
+        }
+
+        const displayName = viewedProfile.first_name
+            ? `${viewedProfile.first_name}${viewedProfile.last_name ? ' ' + viewedProfile.last_name : ''}`
+            : viewedProfile.username || t('defaultUsername');
+
+        return (
+            <div className="min-h-screen bg-gray-50 dark:bg-[#101828] pt-28 px-4 pb-12">
+                <div className="max-w-3xl mx-auto space-y-6">
+
+                    {/* 1. Header Card - Avatar & Summary */}
+                    <div className="relative rounded-[5px] border overflow-hidden bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-800">
+                        <div className="relative p-6 sm:p-8">
+                            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+                                {/* Avatar */}
+                                <div className="relative flex-shrink-0">
+                                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center overflow-hidden ring-2 bg-gray-100 dark:bg-gray-800 ring-gray-200 dark:ring-gray-700">
+                                        {viewedProfile.avatar_url ? (
+                                            <img src={viewedProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <span className="text-2xl sm:text-3xl font-semibold text-gray-500 dark:text-gray-400">
+                                                {(viewedProfile.first_name || viewedProfile.username || '?')[0].toUpperCase()}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Name & Username */}
+                                <div className="flex-1 text-center sm:text-start sm:rtl:text-right sm:ltr:text-left min-w-0">
+                                    <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white truncate">
+                                        {displayName}
+                                    </h1>
+                                    {viewedProfile.username && (
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5" dir="ltr">@{viewedProfile.username}</p>
+                                    )}
+                                </div>
+
+                                {/* Send Message Button */}
+                                {user && (
+                                    <div className="flex-shrink-0 mt-2 sm:mt-0">
+                                        <Link
+                                            href={`/messages?contact=${viewedUserId}`}
+                                            className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                            </svg>
+                                            {t('publicProfile.sendMessage')}
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 2. Content Grid */}
+                    <div className="grid grid-cols-1 gap-6">
+                        {/* Personal Info */}
+                        <div className="rounded-[5px] p-6 border relative bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-800">
+                            <h2 className="relative text-lg font-bold mb-6 flex items-center gap-2 text-gray-900 dark:text-white">
+                                <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                {t('sections.personalInfo')}
+                            </h2>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* First Name */}
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">{tCommon('labels.firstName')}</label>
+                                    <p className="text-gray-900 dark:text-white font-medium text-start" dir="auto">{viewedProfile.first_name || t('notSet')}</p>
+                                </div>
+
+                                {/* Last Name */}
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">{tCommon('labels.lastName')}</label>
+                                    <p className="text-gray-900 dark:text-white font-medium text-start" dir="auto">{viewedProfile.last_name || t('notSet')}</p>
+                                </div>
+
+                                {/* Username */}
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">{tCommon('labels.username')}</label>
+                                    <p className="text-gray-900 dark:text-white font-medium text-start" dir="auto">@{viewedProfile.username || t('notSet')}</p>
+                                </div>
+
+                                {/* City */}
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">{tCommon('labels.city')}</label>
+                                    <p className="text-gray-900 dark:text-white font-medium text-start" dir="auto">
+                                        {viewedProfile.city ? getCityLabel(viewedProfile.city, locale) : t('notSet')}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
             </div>
         );
     }

@@ -84,7 +84,9 @@ export async function GET(request) {
                 last_message: lastMessages?.[0] || null,
                 unread_count: unreadCount || 0,
                 created_at: conv.created_at,
-                last_message_at: conv.last_message_at
+                last_message_at: conv.last_message_at,
+                report_id: conv.report_id || null,
+                report_source: conv.report_source || null
             };
         }));
 
@@ -109,7 +111,7 @@ export async function POST(request) {
         }
 
         const body = await request.json();
-        const { recipient_id, content } = body;
+        const { recipient_id, content, report_id, report_source } = body;
 
         if (!recipient_id || !content || typeof content !== 'string' || content.trim().length === 0) {
             return NextResponse.json({ error: 'recipient_id and content are required' }, { status: 400 });
@@ -174,13 +176,18 @@ export async function POST(request) {
             .single();
 
         if (!conversation) {
+            const insertData = {
+                participant_one: p1,
+                participant_two: p2,
+                last_message_at: new Date().toISOString()
+            };
+            if (report_id) {
+                insertData.report_id = report_id;
+                insertData.report_source = report_source || 'missing';
+            }
             const { data: newConv, error: convError } = await supabaseAdmin
                 .from('conversations')
-                .insert({
-                    participant_one: p1,
-                    participant_two: p2,
-                    last_message_at: new Date().toISOString()
-                })
+                .insert(insertData)
                 .select()
                 .single();
 

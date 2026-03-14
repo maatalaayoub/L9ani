@@ -7,6 +7,8 @@ CREATE TABLE IF NOT EXISTS conversations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     participant_one UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     participant_two UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    report_id UUID,
+    report_source TEXT, -- 'missing' or 'sighting'
     last_message_at TIMESTAMPTZ DEFAULT now(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     CONSTRAINT unique_conversation UNIQUE (participant_one, participant_two),
@@ -34,6 +36,7 @@ CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation
 CREATE INDEX IF NOT EXISTS idx_messages_sender_id ON messages(sender_id);
 CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(conversation_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_messages_unread ON messages(conversation_id, is_read) WHERE is_read = false;
+CREATE INDEX IF NOT EXISTS idx_conversations_report ON conversations(report_id, report_source);
 
 -- RLS Policies
 ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;

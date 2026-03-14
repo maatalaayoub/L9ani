@@ -13,5 +13,6 @@
     "sendError": "فشل إرسال الرسالة",
     "loginRequired": "تسجيل الدخول مطلوب",
     "loginDescription": "يرجى تسجيل الدخول للوصول إلى رسائلك.",
-    "loginButton": "تسجيل الدخول"
+    "loginButton": "تسجيل الدخول",
+    "viewReport": "عرض البلاغ"
 }

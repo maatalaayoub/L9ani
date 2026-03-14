@@ -18,7 +18,7 @@ export async function GET(request) {
 
         const { data: profile, error } = await supabaseAdmin
             .from('profiles')
-            .select('auth_user_id, username, first_name, last_name, avatar_url')
+            .select('auth_user_id, username, first_name, last_name, avatar_url, city, created_at')
             .eq('auth_user_id', userId)
             .single();
 
@@ -26,7 +26,7 @@ export async function GET(request) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        return NextResponse.json({ profile: { id: profile.auth_user_id, username: profile.username, first_name: profile.first_name, last_name: profile.last_name, avatar_url: profile.avatar_url } });
+        return NextResponse.json({ profile: { id: profile.auth_user_id, username: profile.username, first_name: profile.first_name, last_name: profile.last_name, avatar_url: profile.avatar_url, city: profile.city, created_at: profile.created_at } });
     } catch (err) {
         console.error('[API/public-profile] Error:', err);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

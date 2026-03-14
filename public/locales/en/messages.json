@@ -13,5 +13,6 @@
     "sendError": "Failed to send message",
     "loginRequired": "Login Required",
     "loginDescription": "Please log in to access your messages.",
-    "loginButton": "Log in"
+    "loginButton": "Log in",
+    "viewReport": "View Report"
 }
