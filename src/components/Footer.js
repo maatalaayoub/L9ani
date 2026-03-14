@@ -2,12 +2,17 @@
 
 import { Link } from "@/i18n/navigation";
 import { useTranslations, useLanguage } from "@/context/LanguageContext";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 
 export default function Footer() {
     const t = useTranslations('footer');
     const { locale } = useLanguage();
     const currentYear = new Date().getFullYear();
+    const pathname = usePathname();
+
+    // Hide footer on messages page
+    if (pathname?.includes('/messages')) return null;
 
     return (
         <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 mt-auto pb-20 sm:pb-0">

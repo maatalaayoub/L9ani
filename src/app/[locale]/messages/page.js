@@ -57,6 +57,7 @@ export default function Messages() {
     const [loading, setLoading] = useState(true);
     const [messagesLoading, setMessagesLoading] = useState(false);
     const [sending, setSending] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [showMobileChat, setShowMobileChat] = useState(false);
@@ -67,8 +68,8 @@ export default function Messages() {
 
     const getToken = () => localStorage.getItem('supabase_token');
 
-    const scrollToBottom = useCallback(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const scrollToBottom = useCallback((instant = false) => {
+        messagesEndRef.current?.scrollIntoView({ behavior: instant ? 'instant' : 'smooth' });
     }, []);
 
     // Fetch conversations list
@@ -92,36 +93,41 @@ export default function Messages() {
     }, []);
 
     // Fetch messages for a conversation
-    const fetchMessages = useCallback(async (conversationId) => {
+    const fetchMessages = useCallback(async (conversationId, { showLoading = true, markRead = true } = {}) => {
         const token = getToken();
         if (!token) return;
 
-        setMessagesLoading(true);
+        if (showLoading) setMessagesLoading(true);
         try {
             const res = await fetch(`/api/messages/${conversationId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
                 const data = await res.json();
-                setMessages(data.messages || []);
-                setOtherUser(data.other_user || null);
-                setTimeout(scrollToBottom, 100);
-
-                // Mark messages as read
-                await fetch(`/api/messages/${conversationId}`, {
-                    method: 'PATCH',
-                    headers: { 'Authorization': `Bearer ${token}` }
+                const newMsgs = data.messages || [];
+                setMessages(prev => {
+                    if (prev.length !== newMsgs.length || (newMsgs.length > 0 && prev[prev.length - 1]?.id !== newMsgs[newMsgs.length - 1]?.id)) {
+                        return newMsgs;
+                    }
+                    return prev;
                 });
+                setOtherUser(data.other_user || null);
 
-                // Update unread count in conversations list
-                setConversations(prev => prev.map(c =>
-                    c.id === conversationId ? { ...c, unread_count: 0 } : c
-                ));
+                // Mark messages as read only on first open
+                if (markRead) {
+                    await fetch(`/api/messages/${conversationId}`, {
+                        method: 'PATCH',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    setConversations(prev => prev.map(c =>
+                        c.id === conversationId ? { ...c, unread_count: 0 } : c
+                    ));
+                }
             }
         } catch (err) {
             console.error('Error fetching messages:', err);
         } finally {
-            setMessagesLoading(false);
+            if (showLoading) setMessagesLoading(false);
         }
     }, [scrollToBottom]);
 
@@ -189,6 +195,17 @@ export default function Messages() {
         fetchMessages(conv.id);
     };
 
+    // Refresh current conversation
+    const refreshMessages = async () => {
+        if (refreshing) return;
+        setRefreshing(true);
+        await fetchConversations();
+        if (selectedConversation && selectedConversation !== 'new') {
+            await fetchMessages(selectedConversation, { showLoading: false, markRead: true });
+        }
+        setRefreshing(false);
+    };
+
     // Go back to conversation list on mobile
     const goBack = () => {
         setShowMobileChat(false);
@@ -198,17 +215,22 @@ export default function Messages() {
         fetchConversations();
     };
 
-    // Initial fetch and polling
+    // Initial fetch
     useEffect(() => {
         if (user) {
             fetchConversations();
-            pollIntervalRef.current = setInterval(() => {
-                fetchConversations();
-                if (selectedConversation) {
-                    fetchMessages(selectedConversation);
-                }
-            }, 10000);
         }
+    }, [user, fetchConversations]);
+
+    // Lightweight polling - only check for new messages, no loading spinners
+    useEffect(() => {
+        if (!user) return;
+        pollIntervalRef.current = setInterval(() => {
+            fetchConversations();
+            if (selectedConversation && selectedConversation !== 'new') {
+                fetchMessages(selectedConversation, { showLoading: false, markRead: false });
+            }
+        }, 30000);
         return () => {
             if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
         };
@@ -278,19 +300,30 @@ export default function Messages() {
 
                     {/* Conversations Sidebar */}
                     <div className={`w-full md:w-[360px] md:min-w-[300px] border-e border-gray-200 dark:border-gray-800 flex flex-col ${showMobileChat ? 'hidden md:flex' : 'flex'}`}>
-                        {/* Search */}
+                        {/* Search + Refresh */}
                         <div className="p-4 border-b border-gray-200 dark:border-gray-800">
-                            <div className="relative">
-                                <svg className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                                <input
-                                    type="text"
+                            <div className="flex items-center gap-2">
+                                <div className="relative flex-1">
+                                    <svg className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                    <input
+                                        type="text"
                                     placeholder={t('searchPlaceholder')}
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className={`w-full py-2.5 bg-gray-100 dark:bg-gray-800 border-0 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'}`}
                                 />
+                                </div>
+                                <button
+                                    onClick={refreshMessages}
+                                    disabled={refreshing}
+                                    className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors flex-shrink-0"
+                                >
+                                    <svg className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                </button>
                             </div>
                         </div>
 
@@ -395,6 +428,17 @@ export default function Messages() {
                                             </p>
                                         </div>
                                     </Link>
+
+                                    {/* Refresh button */}
+                                    <button
+                                        onClick={refreshMessages}
+                                        disabled={refreshing}
+                                        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors"
+                                    >
+                                        <svg className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                    </button>
                                 </div>
 
                                 {/* Messages */}
@@ -447,7 +491,7 @@ export default function Messages() {
                                 </div>
 
                                 {/* Message Input */}
-                                <form onSubmit={sendMessage} className="flex items-end gap-2 px-4 py-3 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1e293b]">
+                                <form onSubmit={sendMessage} className="flex items-center gap-2 px-4 py-3 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1e293b] fixed bottom-16 left-0 right-0 z-30 sm:static sm:z-auto">
                                     <div className="flex-1 relative">
                                         <textarea
                                             ref={messageInputRef}
@@ -479,7 +523,7 @@ export default function Messages() {
                                             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                                         ) : (
                                             <svg className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                                             </svg>
                                         )}
                                     </button>

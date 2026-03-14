@@ -359,7 +359,11 @@ export default function ChatWidget() {
   }, []);
   
   const isRTL = locale === 'ar';
-  
+
+  // Only show on home page
+  const isHomePage = pathname === `/${locale}` || pathname === `/${locale}/`;
+  if (!isHomePage) return null;
+
   return (
     <>
       {/* Floating Action Button - Always visible when chat is closed */}
