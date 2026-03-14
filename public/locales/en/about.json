@@ -15,15 +15,15 @@
         },
         "step2": {
             "title": "Community Reports",
-            "description": "Community members who encounter someone upload their photo to help identify them."
+            "description": "Community members who find lost persons, pets, documents, or belongings upload photos and details to help identify them."
         },
         "step3": {
             "title": "AI Matching",
-            "description": "Our advanced AI compares photos to find potential matches."
+            "description": "Our advanced AI compares photos to find potential matches across all report types."
         },
         "step4": {
-            "title": "Reunite Families",
-            "description": "When a match is found, we notify both parties to help facilitate reunion."
+            "title": "Reunite & Recover",
+            "description": "When a match is found, we notify both parties to help facilitate the reunion or recovery of lost items."
         }
     },
     "values": {
@@ -34,11 +34,11 @@
         },
         "community": {
             "title": "Community Powered",
-            "description": "Every member of our community plays a vital role in reuniting families."
+            "description": "Every member of our community plays a vital role in reuniting people with their loved ones and lost belongings."
         },
         "compassion": {
             "title": "Compassion Driven",
-            "description": "We understand the pain of separation and work tirelessly to bring families together."
+            "description": "We understand the stress of losing something important and work tirelessly to help recover what matters most."
         }
     },
     "cta": {

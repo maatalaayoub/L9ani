@@ -29,7 +29,7 @@ export default function PrivacyPolicy() {
                 {/* Content */}
                 <div className="space-y-8">
                     {/* Introduction */}
-                    <section className="bg-white/80 dark:bg-[#1e293b]/50 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 p-8 shadow-xl shadow-gray-200/20 dark:shadow-black/20">
+                    <section className="bg-white/80 dark:bg-[#1e293b]/50 backdrop-blur-xl rounded-[6px] border border-gray-200 dark:border-gray-700 p-8">
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t('sections.introduction.title')}</h2>
                         <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                             {t('sections.introduction.content')}
@@ -37,7 +37,7 @@ export default function PrivacyPolicy() {
                     </section>
 
                     {/* Information We Collect */}
-                    <section className="bg-white/80 dark:bg-[#1e293b]/50 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 p-8 shadow-xl shadow-gray-200/20 dark:shadow-black/20">
+                    <section className="bg-white/80 dark:bg-[#1e293b]/50 backdrop-blur-xl rounded-[6px] border border-gray-200 dark:border-gray-700 p-8">
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t('sections.dataCollection.title')}</h2>
                         <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
                             {t('sections.dataCollection.content')}
@@ -51,7 +51,7 @@ export default function PrivacyPolicy() {
                     </section>
 
                     {/* How We Use Your Information */}
-                    <section className="bg-white/80 dark:bg-[#1e293b]/50 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 p-8 shadow-xl shadow-gray-200/20 dark:shadow-black/20">
+                    <section className="bg-white/80 dark:bg-[#1e293b]/50 backdrop-blur-xl rounded-[6px] border border-gray-200 dark:border-gray-700 p-8">
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t('sections.dataUsage.title')}</h2>
                         <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
                             {t('sections.dataUsage.content')}
@@ -65,7 +65,7 @@ export default function PrivacyPolicy() {
                     </section>
 
                     {/* Data Protection */}
-                    <section className="bg-white/80 dark:bg-[#1e293b]/50 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 p-8 shadow-xl shadow-gray-200/20 dark:shadow-black/20">
+                    <section className="bg-white/80 dark:bg-[#1e293b]/50 backdrop-blur-xl rounded-[6px] border border-gray-200 dark:border-gray-700 p-8">
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t('sections.dataProtection.title')}</h2>
                         <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                             {t('sections.dataProtection.content')}
@@ -73,7 +73,7 @@ export default function PrivacyPolicy() {
                     </section>
 
                     {/* Your Rights */}
-                    <section className="bg-white/80 dark:bg-[#1e293b]/50 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 p-8 shadow-xl shadow-gray-200/20 dark:shadow-black/20">
+                    <section className="bg-white/80 dark:bg-[#1e293b]/50 backdrop-blur-xl rounded-[6px] border border-gray-200 dark:border-gray-700 p-8">
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t('sections.yourRights.title')}</h2>
                         <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
                             {t('sections.yourRights.content')}
@@ -87,7 +87,7 @@ export default function PrivacyPolicy() {
                     </section>
 
                     {/* Contact */}
-                    <section className="bg-white/80 dark:bg-[#1e293b]/50 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 p-8 shadow-xl shadow-gray-200/20 dark:shadow-black/20">
+                    <section className="bg-white/80 dark:bg-[#1e293b]/50 backdrop-blur-xl rounded-[6px] border border-gray-200 dark:border-gray-700 p-8">
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t('sections.contact.title')}</h2>
                         <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
                             {t('sections.contact.content')}

@@ -107,7 +107,7 @@ export default async function LocaleLayout({ children, params }) {
                             <SettingsProvider>
                                 <ScrollToTop />
                                 <Header />
-                                <main className="main-content-with-sidebar">{children}</main>
+                                <main className="main-content-with-sidebar pb-20 sm:pb-0">{children}</main>
                                 <Footer />
                                 <TermsDialogWrapper />
                                 <ChatWidget />

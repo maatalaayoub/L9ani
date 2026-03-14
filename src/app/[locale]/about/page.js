@@ -22,7 +22,7 @@ export default function About() {
 
                 <div className="space-y-12">
                     {/* Mission Section */}
-                    <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 sm:p-10 border border-gray-200 dark:border-gray-800 shadow-xl">
+                    <div className="bg-white dark:bg-gray-900 rounded-[6px] p-8 sm:p-10 border border-gray-200 dark:border-gray-700">
                         <div className="flex items-center gap-4 mb-6">
                             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
                                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,7 +37,7 @@ export default function About() {
                     </div>
 
                     {/* How It Works */}
-                    <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 sm:p-10 border border-gray-200 dark:border-gray-800 shadow-xl">
+                    <div className="bg-white dark:bg-gray-900 rounded-[6px] p-8 sm:p-10 border border-gray-200 dark:border-gray-700">
                         <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-8">{t('howItWorks.title')}</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
@@ -83,7 +83,7 @@ export default function About() {
                     </div>
 
                     {/* Our Values */}
-                    <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 sm:p-10 border border-gray-200 dark:border-gray-800 shadow-xl">
+                    <div className="bg-white dark:bg-gray-900 rounded-[6px] p-8 sm:p-10 border border-gray-200 dark:border-gray-700">
                         <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-8">{t('values.title')}</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                             <div className="text-center">
@@ -125,7 +125,7 @@ export default function About() {
                     </div>
 
                     {/* Call to Action */}
-                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 sm:p-10 text-center text-white shadow-2xl">
+                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[6px] p-8 sm:p-10 text-center text-white">
                         <h2 className="text-3xl font-bold mb-4">{t('cta.title')}</h2>
                         <p className="text-lg mb-8 opacity-90">
                             {t('cta.description')}

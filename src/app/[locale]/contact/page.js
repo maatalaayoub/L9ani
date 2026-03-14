@@ -52,7 +52,7 @@ export default function Contact() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Contact Form */}
-                    <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 border border-gray-200 dark:border-gray-800 shadow-xl">
+                    <div className="bg-white dark:bg-gray-900 rounded-[6px] p-8 border border-gray-200 dark:border-gray-700">
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('form.title')}</h2>
 
                         <form className="space-y-6">
@@ -148,7 +148,7 @@ export default function Contact() {
                     {/* Contact Information */}
                     <div className="space-y-6">
                         {/* Emergency Notice */}
-                        <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-2xl p-6">
+                        <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-[6px] p-6">
                             <div className="flex items-start gap-3">
                                 <svg className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -163,7 +163,7 @@ export default function Contact() {
                         </div>
 
                         {/* Contact Methods */}
-                        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-200 dark:border-gray-800 shadow-xl">
+                        <div className="bg-white dark:bg-gray-900 rounded-[6px] p-6 border border-gray-200 dark:border-gray-700">
                             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">{t('otherWays.title')}</h3>
 
                             <div className="space-y-4">
@@ -212,12 +212,12 @@ export default function Contact() {
                         </div>
 
                         {/* FAQ Link */}
-                        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white">
+                        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[6px] p-6 text-white">
                             <h3 className="text-lg font-bold mb-2">{t('faq.title')}</h3>
                             <p className="text-sm mb-4 opacity-90">
                                 {t('faq.description')}
                             </p>
-                            <a href="/about" className="inline-flex items-center gap-2 px-4 py-2 bg-white text-blue-600 rounded-lg font-semibold hover:bg-gray-100 transition">
+                            <a href="/faq" className="inline-flex items-center gap-2 px-4 py-2 bg-white text-blue-600 rounded-lg font-semibold hover:bg-gray-100 transition">
                                 {t('faq.button')}
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />

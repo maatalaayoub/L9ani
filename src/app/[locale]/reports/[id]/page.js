@@ -166,7 +166,7 @@ export default function ReportDetailsPage({ params }) {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-20">
                 <div className="max-w-4xl mx-auto px-4 py-8 text-center">
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg">
+                    <div className="bg-white dark:bg-gray-800 rounded-[6px] p-8 border border-gray-200 dark:border-gray-700">
                         <div className="text-6xl mb-4">😔</div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                             {locale === 'ar' ? 'لم يتم العثور على البلاغ' : 'Report Not Found'}
@@ -288,7 +288,7 @@ export default function ReportDetailsPage({ params }) {
 
             <div className="max-w-4xl mx-auto px-4 py-6">
                 {/* Main Card */}
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-[6px] border border-gray-200 dark:border-gray-700 overflow-hidden">
                     {/* Photo Gallery */}
                     {photos.length > 0 && (
                         <div className="relative">
@@ -488,7 +488,7 @@ export default function ReportDetailsPage({ params }) {
                 </div>
 
                 {/* Comments Section */}
-                <div id="comments" className="mt-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+                <div id="comments" className="mt-6 bg-white dark:bg-gray-800 rounded-[6px] border border-gray-200 dark:border-gray-700 p-6">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
                         {locale === 'ar' ? 'التعليقات' : 'Comments'}
                     </h2>

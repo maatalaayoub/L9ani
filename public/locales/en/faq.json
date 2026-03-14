@@ -1,0 +1,82 @@
+{
+    "title": "Frequently Asked Questions",
+    "subtitle": "Find answers to the most common questions about Lqani.ma",
+    "categories": {
+        "general": {
+            "title": "General",
+            "q1": {
+                "question": "What is Lqani.ma?",
+                "answer": "Lqani.ma is a platform dedicated to helping people in Morocco find lost persons, pets, documents, electronics, vehicles, and other belongings. Users can post reports of missing or found items to connect with others."
+            },
+            "q2": {
+                "question": "What should I do if I find a missing person or item?",
+                "answer": "If you find someone or something that appears to be lost, create a sighting report on Lqani.ma by clicking 'I Found'. Provide as many details and photos as possible to help the owner identify their belongings."
+            },
+            "q3": {
+                "question": "Do I need an account to use Lqani.ma?",
+                "answer": "Yes, you need to create an account to use Lqani.ma. An account is required to browse reports, post listings, comment, and contact report owners."
+            }
+        },
+        "reports": {
+            "title": "Reports",
+            "q1": {
+                "question": "How do I report a missing person or item?",
+                "answer": "Click the 'I Lost' button in the header, fill in the details including photos, description, last known location, and submit your report. It will be visible to all users immediately."
+            },
+            "q2": {
+                "question": "How do I report a found person or item?",
+                "answer": "Click the 'I Found' button in the header, provide details about what you found including photos and location, and submit your sighting report."
+            },
+            "q3": {
+                "question": "Can I edit or delete my report after posting?",
+                "answer": "Yes, you can edit or delete your reports at any time from the 'My Reports' section in your profile."
+            },
+            "q4": {
+                "question": "What types of items can I report?",
+                "answer": "You can report missing or found persons, pets, documents (ID cards, passports), electronics (phones, laptops), vehicles, and other belongings."
+            }
+        },
+        "account": {
+            "title": "Account",
+            "q1": {
+                "question": "How do I create an account?",
+                "answer": "Click 'Sign Up' and provide your email, name, and password to create your account."
+            },
+            "q2": {
+                "question": "How do I reset my password?",
+                "answer": "Click 'Forgot Password' on the login dialog, enter your email address, and we'll send you a link to reset your password."
+            },
+            "q3": {
+                "question": "Can I change my email address?",
+                "answer": "Yes, you can change your email from the Profile settings page. A verification email will be sent to your new address to confirm the change."
+            }
+        },
+        "messaging": {
+            "title": "Messaging",
+            "q1": {
+                "question": "How do I contact a report owner?",
+                "answer": "Click the 'Contact Owner' button on any report to send a direct message. You can also visit their profile and click 'Send Message'."
+            },
+            "q2": {
+                "question": "Are my messages private?",
+                "answer": "Yes, all messages are private and can only be seen by you and the person you're messaging."
+            }
+        },
+        "safety": {
+            "title": "Safety & Privacy",
+            "q1": {
+                "question": "Is my personal information safe?",
+                "answer": "We take your privacy seriously. Your personal data is encrypted and never shared with third parties. See our Privacy Policy for more details."
+            },
+            "q2": {
+                "question": "How do I report inappropriate content?",
+                "answer": "If you see inappropriate content, please contact us through the Contact page with details about the report, and our team will review it promptly."
+            }
+        }
+    },
+    "contact": {
+        "title": "Still have questions?",
+        "description": "Can't find the answer you're looking for? Feel free to contact our support team.",
+        "button": "Contact Us"
+    }
+}
