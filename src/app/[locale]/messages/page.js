@@ -4,7 +4,6 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { Link } from "@/i18n/navigation";
-import { useSearchParams, useRouter } from "next/navigation";
 import LoginDialog from "@/components/LoginDialog";
 
 function formatRelativeTime(dateString, locale = 'en') {
@@ -49,9 +48,6 @@ export default function Messages() {
     const t = useTranslations('messages');
     const { locale } = useLanguage();
     const isRTL = locale === 'ar';
-    const searchParams = useSearchParams();
-    const router = useRouter();
-    const recipientParam = searchParams.get('recipient');
 
     const [conversations, setConversations] = useState([]);
     const [selectedConversation, setSelectedConversation] = useState(null);
@@ -68,7 +64,16 @@ export default function Messages() {
     const messagesEndRef = useRef(null);
     const messageInputRef = useRef(null);
     const pollIntervalRef = useRef(null);
-    const [pendingRecipient, setPendingRecipient] = useState(null);
+    const recipientProcessed = useRef(null);
+
+    // Read recipient from URL immediately (more reliable than useSearchParams for initial load)
+    const [pendingRecipient] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('recipient') || null;
+        }
+        return null;
+    });
 
     const getToken = () => localStorage.getItem('supabase_token');
 
@@ -160,9 +165,9 @@ export default function Messages() {
                 setTimeout(scrollToBottom, 100);
 
                 // If this was a new conversation, update the selected conversation ID
-                if (selectedConversation === 'new' && data.message?.conversation_id) {
-                    setSelectedConversation(data.message.conversation_id);
-                    // Refresh conversations list to show the new one
+                if (selectedConversation === 'new') {
+                    const newConvId = data.conversation_id || data.message?.conversation_id;
+                    if (newConvId) setSelectedConversation(newConvId);
                     fetchConversations();
                 } else {
                     // Update conversation in list
@@ -219,33 +224,31 @@ export default function Messages() {
         };
     }, [user, fetchConversations, fetchMessages, selectedConversation]);
 
-    // Capture recipient param on mount
+    // Handle recipient query parameter - open or create conversation with report owner
     useEffect(() => {
-        if (recipientParam && recipientParam !== user?.id) {
-            setPendingRecipient(recipientParam);
-            router.replace(`/${locale}/messages`, { scroll: false });
-        }
-    }, []);
-
-    // Handle pending recipient after conversations have loaded
-    useEffect(() => {
+        // Need: recipient param, logged in user, conversations finished loading
         if (!pendingRecipient || !user || loading) return;
+        // Don't process the same recipient twice
+        if (recipientProcessed.current === pendingRecipient) return;
+        // Can't message yourself
+        if (pendingRecipient === user.id) return;
+
+        recipientProcessed.current = pendingRecipient;
+
+        // Clean URL
+        window.history.replaceState(null, '', `/${locale}/messages`);
 
         // Check if we already have a conversation with this user
         const existingConv = conversations.find(c => c.other_user?.id === pendingRecipient);
         if (existingConv) {
             openConversation(existingConv);
-            setPendingRecipient(null);
             return;
         }
 
         // No existing conversation - fetch profile and set up new chat
-        let cancelled = false;
-
         const setupNewConversation = async () => {
             try {
                 const res = await fetch(`/api/user/public-profile?id=${pendingRecipient}`);
-                if (cancelled) return;
                 if (res.ok) {
                     const data = await res.json();
                     const recipientProfile = data.profile || data;
@@ -261,14 +264,11 @@ export default function Messages() {
                     setMessages([]);
                 }
             } catch (err) {
-                if (!cancelled) console.error('Error setting up new conversation:', err);
+                console.error('Error setting up new conversation:', err);
             }
-            if (!cancelled) setPendingRecipient(null);
         };
 
         setupNewConversation();
-
-        return () => { cancelled = true; };
     }, [pendingRecipient, user, loading, conversations]);
 
     // Filter conversations by search
