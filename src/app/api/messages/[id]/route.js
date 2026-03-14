@@ -49,8 +49,8 @@ export async function GET(request, { params }) {
 
         const { data: otherProfile } = await supabaseAdmin
             .from('profiles')
-            .select('id, username, first_name, last_name, avatar_url')
-            .eq('id', otherId)
+            .select('auth_user_id, username, first_name, last_name, avatar_url')
+            .eq('auth_user_id', otherId)
             .single();
 
         // Parse pagination
@@ -74,7 +74,7 @@ export async function GET(request, { params }) {
         return NextResponse.json({
             success: true,
             messages,
-            other_user: otherProfile || { id: otherId },
+            other_user: otherProfile ? { id: otherProfile.auth_user_id, username: otherProfile.username, first_name: otherProfile.first_name, last_name: otherProfile.last_name, avatar_url: otherProfile.avatar_url } : { id: otherId },
             conversation,
             pagination: { limit, offset, total: count, hasMore: offset + messages.length < count }
         });

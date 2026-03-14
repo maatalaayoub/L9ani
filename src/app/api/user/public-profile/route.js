@@ -18,15 +18,15 @@ export async function GET(request) {
 
         const { data: profile, error } = await supabaseAdmin
             .from('profiles')
-            .select('id, username, first_name, last_name, avatar_url')
-            .eq('id', userId)
+            .select('auth_user_id, username, first_name, last_name, avatar_url')
+            .eq('auth_user_id', userId)
             .single();
 
         if (error || !profile) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        return NextResponse.json({ profile });
+        return NextResponse.json({ profile: { id: profile.auth_user_id, username: profile.username, first_name: profile.first_name, last_name: profile.last_name, avatar_url: profile.avatar_url } });
     } catch (err) {
         console.error('[API/public-profile] Error:', err);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

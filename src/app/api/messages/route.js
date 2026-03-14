@@ -50,11 +50,11 @@ export async function GET(request) {
         if (otherUserIds.length > 0) {
             const { data: profiles } = await supabaseAdmin
                 .from('profiles')
-                .select('id, username, first_name, last_name, avatar_url')
-                .in('id', otherUserIds);
+                .select('auth_user_id, username, first_name, last_name, avatar_url')
+                .in('auth_user_id', otherUserIds);
 
             if (profiles) {
-                profiles.forEach(p => { profilesMap[p.id] = p; });
+                profiles.forEach(p => { profilesMap[p.auth_user_id] = { id: p.auth_user_id, username: p.username, first_name: p.first_name, last_name: p.last_name, avatar_url: p.avatar_url }; });
             }
         }
 
@@ -126,8 +126,8 @@ export async function POST(request) {
         // Check if recipient exists
         const { data: recipientProfile } = await supabaseAdmin
             .from('profiles')
-            .select('id')
-            .eq('id', recipient_id)
+            .select('auth_user_id')
+            .eq('auth_user_id', recipient_id)
             .single();
 
         if (!recipientProfile) {

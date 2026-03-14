@@ -3,10 +3,11 @@
 import { useState, useEffect, use, Suspense } from 'react';
 import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import CommentsSection from '@/components/CommentsSection';
 import ShareDialog from '@/components/ShareDialog';
+import ContactOwnerDialog from '@/components/ContactOwnerDialog';
 import { supabase } from '@/lib/supabase';
 
 // Type icons for report types
@@ -70,13 +71,13 @@ export default function ReportDetailsPage({ params }) {
     const t = useTranslations('reports');
     const { locale } = useLanguage();
     const { user } = useAuth();
-    const router = useRouter();
     
     const [report, setReport] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedPhoto, setSelectedPhoto] = useState(0);
     const [shareDialogOpen, setShareDialogOpen] = useState(false);
+    const [contactDialogOpen, setContactDialogOpen] = useState(false);
     const [liked, setLiked] = useState(false);
     const [likeCount, setLikeCount] = useState(0);
     const [showImageGallery, setShowImageGallery] = useState(false);
@@ -448,7 +449,7 @@ export default function ReportDetailsPage({ params }) {
                             {/* Contact Owner Button */}
                             {user && report.user_id && report.user_id !== user.id && (
                                 <button
-                                    onClick={() => router.push(`/${locale}/messages?recipient=${report.user_id}`)}
+                                    onClick={() => setContactDialogOpen(true)}
                                     className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors"
                                 >
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -500,6 +501,13 @@ export default function ReportDetailsPage({ params }) {
                 isOpen={shareDialogOpen}
                 onClose={() => setShareDialogOpen(false)}
                 report={report}
+            />
+
+            {/* Contact Owner Dialog */}
+            <ContactOwnerDialog
+                isOpen={contactDialogOpen}
+                onClose={() => setContactDialogOpen(false)}
+                recipientId={report.user_id}
             />
 
             {/* Image Gallery Modal */}

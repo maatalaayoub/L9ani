@@ -64,16 +64,6 @@ export default function Messages() {
     const messagesEndRef = useRef(null);
     const messageInputRef = useRef(null);
     const pollIntervalRef = useRef(null);
-    const recipientProcessed = useRef(null);
-
-    // Read recipient from URL immediately (more reliable than useSearchParams for initial load)
-    const [pendingRecipient] = useState(() => {
-        if (typeof window !== 'undefined') {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('recipient') || null;
-        }
-        return null;
-    });
 
     const getToken = () => localStorage.getItem('supabase_token');
 
@@ -223,53 +213,6 @@ export default function Messages() {
             if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
         };
     }, [user, fetchConversations, fetchMessages, selectedConversation]);
-
-    // Handle recipient query parameter - open or create conversation with report owner
-    useEffect(() => {
-        // Need: recipient param, logged in user, conversations finished loading
-        if (!pendingRecipient || !user || loading) return;
-        // Don't process the same recipient twice
-        if (recipientProcessed.current === pendingRecipient) return;
-        // Can't message yourself
-        if (pendingRecipient === user.id) return;
-
-        recipientProcessed.current = pendingRecipient;
-
-        // Clean URL
-        window.history.replaceState(null, '', `/${locale}/messages`);
-
-        // Check if we already have a conversation with this user
-        const existingConv = conversations.find(c => c.other_user?.id === pendingRecipient);
-        if (existingConv) {
-            openConversation(existingConv);
-            return;
-        }
-
-        // No existing conversation - fetch profile and set up new chat
-        const setupNewConversation = async () => {
-            try {
-                const res = await fetch(`/api/user/public-profile?id=${pendingRecipient}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    const recipientProfile = data.profile || data;
-                    setOtherUser({
-                        id: pendingRecipient,
-                        first_name: recipientProfile.first_name,
-                        last_name: recipientProfile.last_name,
-                        username: recipientProfile.username,
-                        avatar_url: recipientProfile.avatar_url
-                    });
-                    setSelectedConversation('new');
-                    setShowMobileChat(true);
-                    setMessages([]);
-                }
-            } catch (err) {
-                console.error('Error setting up new conversation:', err);
-            }
-        };
-
-        setupNewConversation();
-    }, [pendingRecipient, user, loading, conversations]);
 
     // Filter conversations by search
     const filteredConversations = conversations.filter(conv => {
