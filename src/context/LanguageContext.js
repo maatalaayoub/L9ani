@@ -29,7 +29,7 @@ async function loadTranslationsForLocale(locale) {
         return translationCache[locale];
     }
     
-    const [common, header, footer, about, contact, auth, myreport, profile, settings, home, privacy, reportMissing, reportSighting, admin, reports, notifications, chat] = await Promise.all([
+    const [common, header, footer, about, contact, auth, myreport, profile, settings, home, privacy, reportMissing, reportSighting, admin, reports, notifications, chat, messagesNs] = await Promise.all([
         import(`../../public/locales/${locale}/common.json`),
         import(`../../public/locales/${locale}/header.json`),
         import(`../../public/locales/${locale}/footer.json`),
@@ -47,6 +47,7 @@ async function loadTranslationsForLocale(locale) {
         import(`../../public/locales/${locale}/reports.json`),
         import(`../../public/locales/${locale}/notifications.json`),
         import(`../../public/locales/${locale}/chat.json`),
+        import(`../../public/locales/${locale}/messages.json`),
     ]);
 
     const messages = {
@@ -67,6 +68,7 @@ async function loadTranslationsForLocale(locale) {
         reports: reports.default,
         notifications: notifications.default,
         chat: chat.default,
+        messages: messagesNs.default,
     };
     
     translationCache[locale] = messages;

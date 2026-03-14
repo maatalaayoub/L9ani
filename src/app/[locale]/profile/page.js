@@ -9,7 +9,8 @@ import { useTranslations, useLanguage } from "@/context/LanguageContext";
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import LoginDialog from '@/components/LoginDialog';
-import Image from 'next/image';
+import SelectDropdown from '@/components/SelectDropdown';
+import { getCitiesForDropdown, getCityLabel } from '@/data/moroccanCities';
 
 export default function ProfilePage() {
     // Use isAdmin from AuthContext instead of making duplicate API call
@@ -41,6 +42,7 @@ export default function ProfilePage() {
         first_name: '',
         last_name: '',
         phone: '',
+        city: '',
         avatar_url: ''
     });
 
@@ -111,15 +113,6 @@ export default function ProfilePage() {
         }
     };
 
-    const PRESET_AVATARS = [
-        '/avatars/avatar1.png',
-        '/avatars/avatar2.png',
-        '/avatars/avatar3.png',
-        '/avatars/avatar4.png',
-        '/avatars/avatar5.png',
-        '/avatars/avatar6.png'
-    ];
-
     // Handle profile picture upload
     const handleProfilePictureUpload = async (e) => {
         const file = e.target.files?.[0];
@@ -144,11 +137,9 @@ export default function ProfilePage() {
                 throw new Error(result.error || t('profilePicture.errors.uploadFailed'));
             }
 
-            // Update form data with new URL
             setFormData(prev => ({ ...prev, avatar_url: result.url }));
             setShowAvatarSelector(false);
 
-            // Show success message
             setMessage(t('profilePicture.success'));
             setTimeout(() => setMessage(''), 3000);
 
@@ -157,7 +148,6 @@ export default function ProfilePage() {
             setUploadError(err.message || t('profilePicture.errors.uploadFailed'));
         } finally {
             setIsUploadingPicture(false);
-            // Reset file input
             if (profilePictureInputRef.current) {
                 profilePictureInputRef.current.value = '';
             }
@@ -180,11 +170,9 @@ export default function ProfilePage() {
                 throw new Error(result.error || t('profilePicture.errors.removeFailed'));
             }
 
-            // Clear avatar URL
             setFormData(prev => ({ ...prev, avatar_url: '' }));
             setShowAvatarSelector(false);
 
-            // Show success message
             setMessage(t('profilePicture.removed'));
             setTimeout(() => setMessage(''), 3000);
 
@@ -196,8 +184,7 @@ export default function ProfilePage() {
         }
     };
 
-    // Check if current avatar is a custom upload (not a preset)
-    const isCustomAvatar = formData.avatar_url && !PRESET_AVATARS.includes(formData.avatar_url);
+    const isCustomAvatar = !!formData.avatar_url;
 
     useEffect(() => {
         if (!isAuthLoading && !user) {
@@ -212,6 +199,7 @@ export default function ProfilePage() {
                 first_name: profile.first_name || '',
                 last_name: profile.last_name || '',
                 phone: profile.phone || '',
+                city: profile.city || '',
                 avatar_url: profile.avatar_url || ''
             });
         }
@@ -282,6 +270,7 @@ export default function ProfilePage() {
                 first_name: profile.first_name || '',
                 last_name: profile.last_name || '',
                 phone: profile.phone || '',
+                city: profile.city || '',
                 avatar_url: profile.avatar_url || ''
             });
         }
@@ -305,7 +294,8 @@ export default function ProfilePage() {
                     first_name: formData.first_name,
                     last_name: formData.last_name,
                     phone: formattedPhone,
-                    avatar_url: formData.avatar_url
+                    city: formData.city || null,
+                    avatar_url: formData.avatar_url || null
                 })
                 .eq('auth_user_id', user.id)
                 .select()
@@ -815,7 +805,8 @@ export default function ProfilePage() {
             normalize(formData.first_name) !== normalize(profile.first_name) ||
             normalize(formData.last_name) !== normalize(profile.last_name) ||
             normalize(formData.phone) !== normalize(profile.phone) ||
-            normalize(formData.avatar_url) !== normalize(profile.avatar_url)
+            normalize(formData.avatar_url) !== normalize(profile.avatar_url) ||
+            normalize(formData.city) !== normalize(profile.city)
         );
     }, [formData, profile]);
 
@@ -881,10 +872,10 @@ export default function ProfilePage() {
             <div className="max-w-3xl mx-auto space-y-6">
 
                 {/* 1. Header Card - Avatar & Summary */}
-                <div className={`relative rounded-xl border shadow-sm overflow-hidden ${
+                <div className={`relative rounded-[5px] border overflow-hidden ${
                     isAdmin 
                         ? 'bg-gradient-to-br from-amber-50 via-white to-orange-50 dark:from-amber-950/30 dark:via-gray-900 dark:to-orange-950/30 border-amber-200 dark:border-amber-800/50' 
-                        : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800'
+                        : 'bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-800'
                 }`}>
                     {/* Admin Background Pattern */}
                     {isAdmin && (
@@ -1005,21 +996,18 @@ export default function ProfilePage() {
                             </div>
                         </div>
 
-                        {/* Avatar Selector Panel */}
+                        {/* Avatar Upload Panel */}
                         {isEditing && showAvatarSelector && (
                             <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
-                                {/* Upload Error */}
                                 {uploadError && (
                                     <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                                         <p className="text-sm text-red-600 dark:text-red-400">{uploadError}</p>
                                     </div>
                                 )}
 
-                                {/* Upload Custom Photo Section */}
                                 <div className="mb-6">
                                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">{t('profilePicture.uploadTitle')}</p>
                                     <div className="flex items-center gap-4">
-                                        {/* Hidden file input */}
                                         <input
                                             ref={profilePictureInputRef}
                                             type="file"
@@ -1027,8 +1015,6 @@ export default function ProfilePage() {
                                             onChange={handleProfilePictureUpload}
                                             className="hidden"
                                         />
-                                        
-                                        {/* Upload button */}
                                         <button
                                             type="button"
                                             onClick={() => profilePictureInputRef.current?.click()}
@@ -1050,7 +1036,6 @@ export default function ProfilePage() {
                                             )}
                                         </button>
 
-                                        {/* Remove button - only show if custom avatar is set */}
                                         {isCustomAvatar && (
                                             <button
                                                 type="button"
@@ -1067,46 +1052,19 @@ export default function ProfilePage() {
                                     </div>
                                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">{t('profilePicture.hint')}</p>
                                 </div>
-
-                                {/* Divider */}
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
-                                    <span className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wider">{t('profilePicture.orChooseAvatar')}</span>
-                                    <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
-                                </div>
-
-                                {/* Preset Avatars */}
-                                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">{t('chooseAvatar')}</p>
-                                <div className="flex gap-3 overflow-x-auto py-2 px-1">
-                                    {PRESET_AVATARS.map((src, idx) => (
-                                        <button
-                                            key={idx}
-                                            onClick={() => {
-                                                setFormData({ ...formData, avatar_url: src });
-                                                setShowAvatarSelector(false);
-                                            }}
-                                            className="relative flex-shrink-0"
-                                        >
-                                            <img
-                                                src={src}
-                                                alt={`Avatar ${idx}`}
-                                                className={`w-14 h-14 rounded-full object-cover transition-all ${formData.avatar_url === src ? 'ring-2 ring-gray-900 dark:ring-white ring-offset-2 dark:ring-offset-gray-900' : 'hover:opacity-80'}`}
-                                            />
-                                        </button>
-                                    ))}
-                                </div>
                             </div>
                         )}
+
                     </div>
                 </div>
 
                 {/* 2. Content Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Left Column: Personal Info */}
-                    <div className={`md:col-span-2 rounded-2xl p-6 border relative overflow-hidden ${
+                    <div className={`md:col-span-2 rounded-[5px] p-6 border relative ${
                         isAdmin 
                             ? 'bg-gradient-to-br from-amber-50 via-white to-orange-50 dark:from-amber-950/30 dark:via-gray-900 dark:to-orange-950/30 border-amber-200 dark:border-amber-800/50' 
-                            : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800'
+                            : 'bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-800'
                     }`}>
                         {/* Admin Background Pattern */}
                         {isAdmin && (
@@ -1227,16 +1185,39 @@ export default function ProfilePage() {
                                     </p>
                                 )}
                             </div>
+
+                            {/* City */}
+                            <div className="md:col-span-2">
+                                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">{tCommon('labels.city')}</label>
+                                {isEditing ? (
+                                    <div className="relative z-50">
+                                        <SelectDropdown
+                                            value={formData.city}
+                                            onChange={(value) => setFormData(prev => ({ ...prev, city: value }))}
+                                            options={getCitiesForDropdown(locale)}
+                                            placeholder={locale === 'ar' ? 'اختر المدينة' : 'Select city'}
+                                            searchPlaceholder={locale === 'ar' ? 'ابحث عن مدينة...' : 'Search city...'}
+                                            isRTL={locale === 'ar'}
+                                            allowCustom={true}
+                                            customLabel={locale === 'ar' ? 'أخرى' : 'Other'}
+                                        />
+                                    </div>
+                                ) : (
+                                    <p className="text-gray-900 dark:text-white font-medium text-start" dir="auto">
+                                        {formData.city ? getCityLabel(formData.city, locale) : t('notSet')}
+                                    </p>
+                                )}
+                            </div>
                         </div>
                     </div>
 
                     {/* Right Column: Account & Actions */}
                     <div className="col-span-1 space-y-6">
                         {/* Account Details */}
-                        <div className={`rounded-2xl p-6 border relative overflow-hidden ${
+                        <div className={`rounded-[5px] p-6 border relative overflow-hidden ${
                             isAdmin 
                                 ? 'bg-gradient-to-br from-amber-50 via-white to-orange-50 dark:from-amber-950/30 dark:via-gray-900 dark:to-orange-950/30 border-amber-200 dark:border-amber-800/50' 
-                                : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800'
+                                : 'bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-800'
                         }`}>
                             {/* Admin Background Pattern */}
                             {isAdmin && (
@@ -1324,7 +1305,7 @@ export default function ProfilePage() {
                         {/* Logout Button */}
                         <button
                             onClick={logout}
-                            className="w-full py-4 mt-2 text-white bg-red-600 hover:bg-red-700 dark:bg-red-500/10 dark:text-red-500 dark:border dark:border-red-500/20 dark:hover:bg-red-500 dark:hover:text-white font-bold rounded-2xl shadow-lg shadow-red-500/30 hover:shadow-red-500/50 dark:shadow-none dark:hover:shadow-red-900/40 transition-all duration-300 transform active:scale-[0.98] flex items-center justify-center gap-3 group"
+                            className="w-full py-4 mt-2 text-white bg-red-600 hover:bg-red-700 dark:bg-red-500/10 dark:text-red-500 dark:border dark:border-red-500/20 dark:hover:bg-red-500 dark:hover:text-white font-bold rounded-[5px] transition-all duration-300 transform active:scale-[0.98] flex items-center justify-center gap-3 group"
                         >
                             <svg className="w-5 h-5 opacity-90 group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                             <span>{tCommon('buttons.logout')}</span>
@@ -1356,7 +1337,7 @@ export default function ProfilePage() {
                 {/* Email Change Modal */}
                 {isEmailChangeModalOpen && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
-                        <div className="bg-white dark:bg-[#1A202C] rounded-2xl p-8 w-full max-w-sm shadow-2xl border border-gray-100 dark:border-gray-700 relative overflow-hidden">
+                        <div className="bg-white dark:bg-[#1A202C] rounded-[5px] p-8 w-full max-w-sm shadow-2xl border border-gray-300 dark:border-gray-700 relative overflow-hidden">
                             <button
                                 onClick={() => setIsEmailChangeModalOpen(false)}
                                 className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2"
@@ -1500,7 +1481,7 @@ export default function ProfilePage() {
 
             {/* Password Setup Section (for OAuth users without password) */}
             {isOAuthUser && !hasPassword && (
-                <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-amber-200 dark:border-amber-900/30 mt-8">
+                <div className="bg-white dark:bg-gray-900 rounded-[5px] p-6 border border-gray-300 dark:border-gray-800 mt-8">
                     <h2 className="text-lg font-bold text-amber-600 dark:text-amber-500 mb-4 flex items-center gap-2">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -1675,7 +1656,7 @@ export default function ProfilePage() {
 
             {/* Password Change Section (for users with existing password) */}
             {hasPassword && (
-                <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-blue-200 dark:border-blue-900/30 mt-8">
+                <div className="bg-white dark:bg-gray-900 rounded-[5px] p-6 border border-gray-300 dark:border-gray-800 mt-8">
                     <h2 className="text-lg font-bold text-blue-600 dark:text-blue-500 mb-4 flex items-center gap-2">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
@@ -1895,7 +1876,7 @@ export default function ProfilePage() {
             )}
 
             {/* 3. Danger Zone */}
-            <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-red-200 dark:border-red-900/30 mt-8">
+            <div className="bg-white dark:bg-gray-900 rounded-[5px] p-6 border border-gray-300 dark:border-gray-800 mt-8">
                 <h2 className="text-lg font-bold text-red-600 dark:text-red-500 mb-4 flex items-center gap-2">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                     {t('dangerZone.title')}
@@ -1920,7 +1901,7 @@ export default function ProfilePage() {
             {/* Delete Confirmation Modal */}
             {showDeleteConfirm && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-gray-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-200 dark:border-gray-800 scale-100 animate-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-gray-900 rounded-[5px] max-w-md w-full p-6 shadow-2xl border border-gray-300 dark:border-gray-800 scale-100 animate-in zoom-in-95 duration-200">
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t('dangerZone.confirmModal.title')}</h3>
                         <p className="text-gray-500 dark:text-gray-400 mb-6">
                             {t('dangerZone.confirmModal.description')} <span className="font-bold text-red-500">{t('dangerZone.confirmModal.irreversible')}</span> {t('dangerZone.confirmModal.suffix')}

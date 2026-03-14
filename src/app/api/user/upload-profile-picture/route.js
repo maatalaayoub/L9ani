@@ -135,7 +135,7 @@ export async function DELETE(request) {
             }
         }
 
-        // Clear avatar_url in profile (set to null or empty)
+        // Clear avatar_url in profile
         const { error: updateError } = await supabaseAdmin
             .from('profiles')
             .update({ avatar_url: null })

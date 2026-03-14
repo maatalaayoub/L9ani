@@ -117,7 +117,6 @@ export async function GET(request) {
                                 .from('profiles')
                                 .update({ 
                                     auth_user_id: data.user.id,
-                                    // Keep has_password as is - they can still use their password
                                     avatar_url: data.user.user_metadata?.avatar_url || data.user.user_metadata?.picture || null
                                 })
                                 .eq('auth_user_id', profileByEmail.auth_user_id);

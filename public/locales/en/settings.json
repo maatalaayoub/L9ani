@@ -22,6 +22,19 @@
             "description": "Security alerts for unrecognized devices"
         }
     },
+    "privacy": {
+        "title": "Messages",
+        "allowMessages": {
+            "title": "Who can message you",
+            "description": "Control who is allowed to send you messages",
+            "everyone": "Everyone",
+            "everyoneDesc": "Any user can send you a message",
+            "reportsOnly": "My reports only",
+            "reportsOnlyDesc": "Only users linked to your lost or found reports",
+            "nobody": "Nobody",
+            "nobodyDesc": "No one can send you messages"
+        }
+    },
     "loginPrompt": {
         "title": "More Settings Available",
         "description": "For more settings like notifications and alerts, please log in to your account.",

@@ -69,6 +69,7 @@ export async function GET(request) {
             language: settings?.language || 'en',
             sighting_alerts: settings?.sighting_alerts ?? true,
             new_device_login: settings?.new_device_login ?? true,
+            allow_messages: settings?.allow_messages || 'everyone',
         });
     } catch (error) {
         console.error('Settings GET error:', error);
@@ -100,7 +101,7 @@ export async function POST(request) {
         }
 
         const body = await request.json();
-        const { theme, language, sighting_alerts, new_device_login } = body;
+        const { theme, language, sighting_alerts, new_device_login, allow_messages } = body;
 
         // Validate theme value
         if (theme && !['light', 'dark', 'system'].includes(theme)) {
@@ -112,12 +113,18 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Invalid language value' }, { status: 400 });
         }
 
+        // Validate allow_messages value
+        if (allow_messages !== undefined && !['everyone', 'reports_only', 'nobody'].includes(allow_messages)) {
+            return NextResponse.json({ error: 'Invalid allow_messages value' }, { status: 400 });
+        }
+
         // Build update object with only provided fields
         const updateData = { updated_at: new Date().toISOString() };
         if (theme !== undefined) updateData.theme = theme;
         if (language !== undefined) updateData.language = language;
         if (sighting_alerts !== undefined) updateData.sighting_alerts = sighting_alerts;
         if (new_device_login !== undefined) updateData.new_device_login = new_device_login;
+        if (allow_messages !== undefined) updateData.allow_messages = allow_messages;
 
         // Check if settings already exist for this user
         const { data: existingSettings } = await supabaseAdmin
@@ -149,6 +156,7 @@ export async function POST(request) {
                     language: language || 'en',
                     sighting_alerts: sighting_alerts ?? true,
                     new_device_login: new_device_login ?? true,
+                    allow_messages: allow_messages || 'everyone',
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()
                 })
@@ -168,7 +176,8 @@ export async function POST(request) {
             theme: settings.theme,
             language: settings.language,
             sighting_alerts: settings.sighting_alerts,
-            new_device_login: settings.new_device_login
+            new_device_login: settings.new_device_login,
+            allow_messages: settings.allow_messages
         });
     } catch (error) {
         console.error('Settings POST error:', error);

@@ -1,0 +1,17 @@
+{
+    "title": "Messages",
+    "subtitle": "Your conversations with other users.",
+    "searchPlaceholder": "Search conversations...",
+    "noConversations": "No messages yet",
+    "noConversationsHint": "When you message someone, it will appear here. Visit a report and tap the owner's profile to start chatting.",
+    "noMessages": "No messages yet",
+    "you": "You",
+    "startConversation": "Say hello! Send a message to start the conversation.",
+    "selectConversation": "Your Messages",
+    "selectConversationHint": "Select a conversation from the sidebar to read and reply to your messages.",
+    "messagePlaceholder": "Type a message...",
+    "sendError": "Failed to send message",
+    "loginRequired": "Login Required",
+    "loginDescription": "Please log in to access your messages.",
+    "loginButton": "Log in"
+}

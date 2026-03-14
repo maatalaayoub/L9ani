@@ -37,6 +37,9 @@ export default function Header() {
     const [notificationsLoading, setNotificationsLoading] = useState(false);
     const [selectedNotification, setSelectedNotification] = useState(null);
     
+    // Messages state
+    const [unreadMessages, setUnreadMessages] = useState(0);
+    
     const pathname = usePathname();
     const router = useRouter();
     // Use isAdmin from AuthContext instead of making a duplicate API call
@@ -102,15 +105,42 @@ export default function Header() {
         }
     }, [user]);
 
+    // Fetch unread messages count
+    const fetchUnreadMessages = useCallback(async () => {
+        if (!user) return;
+        try {
+            const token = localStorage.getItem('supabase_token');
+            if (!token) return;
+            const res = await fetch('/api/messages/unread', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setUnreadMessages(data.count || 0);
+            }
+        } catch (err) {
+            // Silently fail
+        }
+    }, [user]);
+
     // Fetch notifications when user logs in or dropdown opens
     useEffect(() => {
         if (user) {
             fetchNotifications();
+            fetchUnreadMessages();
         } else {
             setNotifications([]);
             setUnreadCount(0);
+            setUnreadMessages(0);
         }
     }, [user, fetchNotifications]);
+
+    // Poll unread messages count
+    useEffect(() => {
+        if (!user) return;
+        const interval = setInterval(fetchUnreadMessages, 30000);
+        return () => clearInterval(interval);
+    }, [user, fetchUnreadMessages]);
 
     // Subscribe to realtime notifications
     useEffect(() => {
@@ -359,7 +389,7 @@ export default function Header() {
                             {/* Upload Photo Button - Report Missing Person - Hidden on mobile */}
                             <Link href="/report-missing" onClick={closeDialogs} className={`btn-gradient btn-ripple hidden md:inline-flex items-center justify-center gap-2 px-3 h-9 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold shadow-lg hover:shadow-blue-500/40 whitespace-nowrap ${isActive('/report-missing') ? 'ring-2 ring-blue-300 ring-offset-2 dark:ring-offset-gray-900' : ''}`}>
                                 <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                                 </svg>
                                 <span className="hidden lg:inline">{t('reportMissing')}</span>
                             </Link>
@@ -375,6 +405,23 @@ export default function Header() {
 
                             {/* Notifications - Only visible when logged in */}
                             {user && (
+                                <>
+                                {/* Messages Link */}
+                                <Link
+                                    href="/messages"
+                                    onClick={closeDialogs}
+                                    className={`btn-icon flex relative p-2 rounded-full transition-colors ${isActive('/messages') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10' : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                    {unreadMessages > 0 && (
+                                        <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-blue-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                                            {unreadMessages > 9 ? '9+' : unreadMessages}
+                                        </span>
+                                    )}
+                                </Link>
+
                                 <div className="relative notifications-container">
                                     <button 
                                         onClick={() => {
@@ -491,6 +538,7 @@ export default function Header() {
                                         </div>
                                     )}
                                 </div>
+                                </>
                             )}
 
                             {/* Language Switcher - Hidden on large screens, shown on mobile */}
@@ -725,6 +773,23 @@ export default function Header() {
                             <span className="desktop-sidebar-label whitespace-nowrap text-sm font-medium">{t('myReport')}</span>
                         </Link>
 
+                        {/* Messages */}
+                        {user && (
+                        <Link href="/messages" onClick={closeDialogs} className={`desktop-sidebar-item group relative flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${isActive('/messages') ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white'}`}>
+                            <div className="relative">
+                                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                </svg>
+                                {unreadMessages > 0 && (
+                                    <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] px-1 bg-blue-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                                        {unreadMessages > 9 ? '9+' : unreadMessages}
+                                    </span>
+                                )}
+                            </div>
+                            <span className="desktop-sidebar-label whitespace-nowrap text-sm font-medium">{t('messages')}</span>
+                        </Link>
+                        )}
+
                         {/* Admin Dashboard - Only visible for admins */}
                         {isAdmin && (
                             <Link href="/admin" onClick={closeDialogs} className={`desktop-sidebar-item group relative flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${isActive('/admin') ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white'}`}>
@@ -909,6 +974,30 @@ export default function Header() {
                                     </svg>
                                     <span className="whitespace-nowrap">{t('myReport')}</span>
                                 </Link>
+
+                                {/* Messages */}
+                                {user && (
+                                <Link
+                                    href="/messages"
+                                    onClick={closeDialogs}
+                                    className={`sidebar-item flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive('/messages')
+                                        ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium'
+                                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:translate-x-1'
+                                        }`}
+                                >
+                                    <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                    <span className="whitespace-nowrap flex items-center gap-2">
+                                        {t('messages')}
+                                        {unreadMessages > 0 && (
+                                            <span className="min-w-[18px] h-[18px] px-1 bg-blue-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                                                {unreadMessages > 9 ? '9+' : unreadMessages}
+                                            </span>
+                                        )}
+                                    </span>
+                                </Link>
+                                )}
 
                                 {/* Report Missing Person */}
                                 <Link
@@ -1108,7 +1197,7 @@ export default function Header() {
                             {user && profile?.avatar_url ? (
                                 <img 
                                     src={profile.avatar_url} 
-                                    className={`w-6 h-6 rounded-full border group-hover:scale-110 transition-all duration-200 ${
+                                    className={`w-6 h-6 rounded-full border object-cover group-hover:scale-110 transition-all duration-200 ${
                                         isAdmin 
                                             ? 'border-amber-400 ring-2 ring-amber-400/50 shadow-[0_0_10px_rgba(251,191,36,0.5)]' 
                                             : 'border-gray-300 dark:border-gray-600 ring-2 ring-transparent group-hover:ring-blue-500'

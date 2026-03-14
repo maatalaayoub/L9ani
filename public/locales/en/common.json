@@ -25,7 +25,8 @@
         "phone": "Phone Number",
         "message": "Message",
         "subject": "Subject",
-        "name": "Name"
+        "name": "Name",
+        "city": "City"
     },
     "messages": {
         "loading": "Loading...",
@@ -45,6 +46,7 @@
         "profile": "Profile",
         "settings": "Settings",
         "myReport": "My Report",
-        "privacy": "Privacy Policy"
+        "privacy": "Privacy Policy",
+        "messages": "Messages"
     }
 }

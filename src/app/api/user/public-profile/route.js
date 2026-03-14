@@ -1,0 +1,34 @@
+import { NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/supabase';
+
+// GET /api/user/public-profile?id=USER_ID
+// Returns basic public profile info for a user
+export async function GET(request) {
+    try {
+        if (!supabaseAdmin) {
+            return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
+        }
+
+        const { searchParams } = new URL(request.url);
+        const userId = searchParams.get('id');
+
+        if (!userId) {
+            return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+        }
+
+        const { data: profile, error } = await supabaseAdmin
+            .from('profiles')
+            .select('id, username, first_name, last_name, avatar_url')
+            .eq('id', userId)
+            .single();
+
+        if (error || !profile) {
+            return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        }
+
+        return NextResponse.json({ profile });
+    } catch (err) {
+        console.error('[API/public-profile] Error:', err);
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
+}

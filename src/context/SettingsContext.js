@@ -15,6 +15,7 @@ export function SettingsProvider({ children }) {
     const [settingsLoaded, setSettingsLoaded] = useState(false);
     const [sightingAlerts, setSightingAlerts] = useState(true);
     const [newDeviceLogin, setNewDeviceLogin] = useState(true);
+    const [allowMessages, setAllowMessages] = useState('everyone');
 
     // Fetch user settings from database when user logs in
     const fetchUserSettings = useCallback(async () => {
@@ -46,6 +47,9 @@ export function SettingsProvider({ children }) {
                 }
                 if (data.new_device_login !== undefined) {
                     setNewDeviceLogin(data.new_device_login);
+                }
+                if (data.allow_messages !== undefined) {
+                    setAllowMessages(data.allow_messages);
                 }
             }
         } catch (error) {
@@ -103,6 +107,11 @@ export function SettingsProvider({ children }) {
         await saveSettings({ new_device_login: enabled });
     }, [saveSettings]);
 
+    const saveAllowMessages = useCallback(async (value) => {
+        setAllowMessages(value);
+        await saveSettings({ allow_messages: value });
+    }, [saveSettings]);
+
     // Fetch settings when user changes (login/logout)
     useEffect(() => {
         if (user && !settingsLoaded) {
@@ -112,6 +121,7 @@ export function SettingsProvider({ children }) {
             // Reset to defaults when logged out
             setSightingAlerts(true);
             setNewDeviceLogin(true);
+            setAllowMessages('everyone');
         }
     }, [user, settingsLoaded, fetchUserSettings]);
 
@@ -125,6 +135,8 @@ export function SettingsProvider({ children }) {
             setSightingAlerts: saveSightingAlerts,
             newDeviceLogin,
             setNewDeviceLogin: saveNewDeviceLogin,
+            allowMessages,
+            setAllowMessages: saveAllowMessages,
             isLoadingSettings,
             settingsLoaded
         }}>

@@ -1,0 +1,17 @@
+{
+    "title": "الرسائل",
+    "subtitle": "محادثاتك مع المستخدمين الآخرين.",
+    "searchPlaceholder": "البحث في المحادثات...",
+    "noConversations": "لا توجد رسائل بعد",
+    "noConversationsHint": "عندما تراسل شخصاً ما، ستظهر المحادثة هنا. قم بزيارة بلاغ وانقر على صاحبه لبدء الدردشة.",
+    "noMessages": "لا توجد رسائل",
+    "you": "أنت",
+    "startConversation": "قل مرحباً! أرسل رسالة لبدء المحادثة.",
+    "selectConversation": "رسائلك",
+    "selectConversationHint": "اختر محادثة من القائمة الجانبية لقراءة رسائلك والرد عليها.",
+    "messagePlaceholder": "اكتب رسالة...",
+    "sendError": "فشل إرسال الرسالة",
+    "loginRequired": "تسجيل الدخول مطلوب",
+    "loginDescription": "يرجى تسجيل الدخول للوصول إلى رسائلك.",
+    "loginButton": "تسجيل الدخول"
+}
