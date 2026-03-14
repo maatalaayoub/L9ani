@@ -396,7 +396,7 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                 rounded-[5px]
                 w-full max-w-2xl mx-auto
                 overflow-hidden
-                card-hover
+                transition-transform duration-300 hover:-translate-y-2
                 flex flex-col h-full
             `}
             dir={isRTL ? 'rtl' : 'ltr'}
@@ -583,14 +583,14 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                     {/* Comment Button */}
                     <button
                         onClick={() => setShowCommentsDialog(true)}
-                        className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+                        className="flex items-center gap-1 sm:gap-1.5 px-2 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all shrink-0"
                     >
                         <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
-                        <span className="flex items-center gap-0.5">
+                        <span className="flex items-center gap-0.5 whitespace-nowrap">
                             {commentsCount > 0 && <span>{commentsCount}</span>}
-                            <span>{locale === 'ar' ? 'تعليق' : 'Comment'}</span>
+                            <span className="hidden sm:inline-block lg:hidden xl:inline-block">{locale === 'ar' ? 'تعليق' : 'Comment'}</span>
                         </span>
                     </button>
 
@@ -600,7 +600,7 @@ export default function ReportCard({ report, onShare, onShowOnMap }) {
                     {/* View Details */}
                     <Link
                         href={`/reports/${report.id}?source=${report.source}`}
-                        className={`flex-shrink-0 flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold text-white transition-all ${
+                        className={`flex-shrink-0 flex items-center gap-1 sm:gap-1.5 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold text-white transition-all whitespace-nowrap ${
                             isSighting 
                                 ? 'bg-orange-500 hover:bg-orange-600' 
                                 : 'bg-blue-600 hover:bg-blue-700'
